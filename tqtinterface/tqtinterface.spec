@@ -1,4 +1,5 @@
-%define svn 0
+%define git 1
+%define gitdate 20111127
 %define version 3.5.14
 %define order 1
 %define realname tqtinterface
@@ -7,8 +8,8 @@
 
 Name:			tqtinterface
 Version:			%{version}
-%if %{svn}
-Release:		0.%{date}_%{order}%{?dist}
+%if %{git}
+Release:		2.%{date}_%{order}%{?dist}
 %else
 Release:		%{order}%{?dist}
 %endif
@@ -18,17 +19,13 @@ Group: System Environment/Libraries
 Group(zh_CN.UTF-8):		系统环境/库
 License:			GPL
 URL:			http://trinity.pearsoncomputing.net
-#目前主要以 svn 方式获取
-#mkdir tqtinterface-%{?date} && cd tqtinterface-%{?date}
-#svn co svn://anonsvn.kde.org/home/kde/branches/trinity/dependencies/tqtinterface/ .
-#find . -name .svn |xargs rm -rf
-#cd ..
-#tar Jcvf tqtinterface-%{?date}.tar.xz tqtinterface-%{?date}
-%if %{svn}
-Source0:		%{realname}-%{?date}.tar.xz
+%if %{git}
+Source0:		%{realname}-git%{gitdate}.tar.xz
 %else
 Source0:		%{realname}-%{version}.tar.xz
 %endif
+
+Source1:	make_tqtinterface_git_package.sh
 
 Prefix:		%{_prefix}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot-%(%{__id_u} -n)
@@ -67,8 +64,8 @@ Requires: kdelibs4-devel
 
 
 %prep
-%if %{svn}
-%setup -q -n %{realname}-%{version}-%{date}
+%if %{git}
+%setup -q -n %{realname}-git%{gitdate}
 %else
 %setup -q -n %{realname}-%{version}
 %endif
@@ -113,4 +110,4 @@ magic_rpm_clean.sh
 
 %changelog
 * Fri Oct 28 2011 Liu Di <liudidi@gmail.com> - 3.5.14-1
-- 升级到 svn 20111028
+- 升级到 git 20111028
