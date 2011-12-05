@@ -2,7 +2,7 @@
 Summary:        A rule-based device node and kernel event manager
 Name:           udev
 Version:        175
-Release:        1%{?dist}
+Release:        2%{?dist}
 License:        GPLv2+
 Group:          System Environment/Base
 Source:         ftp://ftp.kernel.org/pub/linux/utils/kernel/hotplug/%{name}-%{version}.tar.bz2
@@ -197,6 +197,9 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0644,root,root) %{_libdir}/pkgconfig/gudev-1.0*
 
 %changelog
+* Mon Dec 05 2011 Liu Di <liudidi@gmail.com> - 175-2
+- 为 Magic 3.0 重建
+
 * Mon Nov  7 2011 Kay Sievers <kay@redhat.com> 175-1
 - version 175
   - bug fix release
