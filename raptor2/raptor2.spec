@@ -2,7 +2,7 @@
 Summary: RDF Parser Toolkit for Redland
 Name:    raptor2
 Version: 2.0.4
-Release: 3%{?dist}
+Release: 4%{?dist}
 
 License: GPLv2+ or LGPLv2+ or ASL 2.0
 Source:  http://download.librdf.org/source/raptor2-%{version}.tar.gz
@@ -87,6 +87,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Jan 31 2012 Liu Di <liudidi@gmail.com> - 2.0.4-4
+- 为 Magic 3.0 重建
+
 * Thu Nov 10 2011 Rex Dieter <rdieter@fedoraproject.org> 2.0.4-3
 - rebuild (yajl)
 - pkgconfig-style deps
