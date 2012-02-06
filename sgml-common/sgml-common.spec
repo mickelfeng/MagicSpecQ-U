@@ -1,6 +1,6 @@
 Name: sgml-common
 Version: 0.6.3
-Release: 35%{?dist}
+Release: 36%{?dist}
 Group: Applications/Text
 
 Summary: Common SGML catalog and DTD files
@@ -139,6 +139,9 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_datadir}/xml
 
 %changelog
+* Mon Feb 06 2012 Liu Di <liudidi@gmail.com> - 0.6.3-36
+- 为 Magic 3.0 重建
+
 * Wed Feb 09 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.6.3-34
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 
