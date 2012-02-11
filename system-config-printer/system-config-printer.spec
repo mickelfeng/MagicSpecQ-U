@@ -29,7 +29,6 @@ Requires: notify-python%{?_isa}
 Requires: gnome-python2-gnomekeyring%{?_isa}
 Requires: libxml2-python%{?_isa}
 Requires: python-smbc%{?_isa}
-Requires: python-slip-gtk
 Requires(post): systemd-units
 Requires(preun): systemd-units
 Requires(postun): systemd-units
