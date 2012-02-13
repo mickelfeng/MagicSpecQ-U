@@ -1,14 +1,26 @@
+%define git 1
+%define gitdate 20120213
+
 Summary: Tiny C Compiler
 Summary(zh_CN.UTF-8): 小型 C 编译器
 Name: tcc
-Version: 0.9.25
+Version: 0.9.26
+%if %{git}
+Release: 0.git%{gitdate}%{?dist}
+%else
 Release: 1%{?dist}
+%endif
 License: LGPL
 Group: Development/Languages
 Group(zh_CN.UTF-8): 开发/语言
 URL: http://bellard.org/tcc/
 
-Source: http://download.savannah.nongnu.org/releases/tinycc/tcc-%{version}.tar.bz2
+%if %{git}
+Source0: tinycc-git%{gitdate}.tar.xz
+%else
+Source0: http://download.savannah.nongnu.org/releases/tinycc/tcc-%{version}.tar.bz2
+%endif
+Source1: make_tcc_git_package.sh
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
 %description
@@ -39,11 +51,20 @@ you will need to install %{name}-devel.
 %name 的开发包。
 
 %prep
+%if %{git}
+%setup -n tinycc-git%{gitdate}
+%else
 %setup
+%endif
 
 %build
+%if %{git}
+./configure --prefix=%{_prefix}
+%else
 %configure
+%endif
 %{__make} %{?_smp_mflags}
+make test
 
 %install
 %{__rm} -rf %{buildroot}
@@ -64,6 +85,7 @@ you will need to install %{name}-devel.
 %defattr(-, root, root, 0755)
 %{_includedir}/libtcc.h
 %{_libdir}/libtcc.a
+%{_infodir}/*
 
 %changelog
 
