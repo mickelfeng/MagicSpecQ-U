@@ -4,7 +4,7 @@
 
 Name:           SOAPpy
 Version:        0.11.6
-Release:        12%{?dist}
+Release:        13%{?dist}
 Summary:        Full-featured SOAP library for Python
 
 Group:          Development/Languages
@@ -80,6 +80,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Mon Feb 13 2012 Liu Di <liudidi@gmail.com> - 0.11.6-13
+- 为 Magic 3.0 重建
+
 * Sat Jul 01 2011 Pierre-Yves Chibon <pingou@pingoured.fr> - 0.11.6-12
 - Add m2crypto as R
 - Change License
