@@ -1,12 +1,12 @@
 %define	dbus_ver	0.95
 %define	dbus_glib_ver	0.82
 %define	glib_ver	2.28.0
-%define gobj_ver	0.9.6
-%define vala_ver	0.11.2
+%define gobj_ver	1.30
+%define vala_ver	0.14.0
 
 Name:           telepathy-glib
-Version:        0.16.1
-Release:        1%{?dist}
+Version:        0.17.4
+Release:        2%{?dist}
 Summary:        GLib bindings for Telepathy
 
 Group:          System Environment/Libraries
@@ -16,7 +16,7 @@ Source0:        http://telepathy.freedesktop.org/releases/%{name}/%{name}-%{vers
 # https://bugzilla.redhat.com/show_bug.cgi?id=436773
 Patch0:		telepathy-glib-broken-pkgconfig.patch
 
-BuildRequires:  gtk-doc >= 1.14
+BuildRequires:  gtk-doc >= 1.17
 BuildRequires:  dbus-devel >= %{dbus_ver}
 BuildRequires:	dbus-glib-devel >= %{dbus_glib_ver}
 BuildRequires:	glib2-devel >= %{glib_ver}
@@ -109,6 +109,22 @@ find $RPM_BUILD_ROOT -name '*.la' -exec rm -f {} ';'
 
 
 %changelog
+* Sun Jan 08 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.17.4-2
+- Rebuild for new gcc.
+
+* Mon Dec 19 2011 Brian Pepple <bpepple@fedoraproject.org> - 0.17.4-1
+- Update to 0.17.4.
+
+* Mon Nov 28 2011 Brian Pepple <bpepple@fedoraproject.org> - 0.17.3-1
+- Update to 0.17.3.
+
+* Wed Nov 23 2011 Brian Pepple <bpepple@fedoraproject.org> - 0.17.2-1
+- Update to 0.17.2.
+- Bump min version of gtk-doc needed.
+
+* Wed Nov 16 2011 Brian Pepple <bpepple@fedoraproject.org> - 0.17.1-1
+- Update to 0.17.1.
+
 * Tue Oct 25 2011 Brian Pepple <bpepple@fedoraproject.org> - 0.16.1-1
 - Update to 0.16.1.
 
