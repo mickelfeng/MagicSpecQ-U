@@ -1,6 +1,6 @@
 Name:		totem-pl-parser
 Version:	2.32.6
-Release:	3%{?dist}
+Release:	5%{?dist}
 Summary:	Totem Playlist Parser library
 
 Group:		System Environment/Libraries
@@ -73,6 +73,12 @@ find $RPM_BUILD_ROOT -name '*.la' -exec rm -f {} ';'
 %{_datadir}/gir-1.0/*.gir
 
 %changelog
+* Thu Jan 26 2012 Tomas Bzatek <tbzatek@redhat.com> - 2.32.6-5
+- Rebuilt for new libarchive
+
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.32.6-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
 * Thu Nov 17 2011 Daniel Drake <dsd@laptop.org> 2.32.6-3
 - Add upstream compile fix for libquvi.so.7 (and rebuild for this version)
 - Add upstream compile fix for glib-2.31
