@@ -9,7 +9,7 @@
 Name:			tqtinterface
 Version:			%{version}
 %if %{git}
-Release:		6.%{gitdate}_%{order}%{?dist}
+Release:		8.%{gitdate}_%{order}%{?dist}
 %else
 Release:		%{order}%{?dist}
 %endif
@@ -93,7 +93,7 @@ make install DESTDIR=%{buildroot}
 rm -f %{buildroot}%{_libdir}/*.la
 
 # 修正和 qt4 的 uic 冲突
-sed -i 's/ uic / \/usr\/bin\/uic /g' %{buildroot}%{_bindir}/uic-tqt
+sed -i '14,16s/uic/\/usr\/bin\/uic/g' %{buildroot}%{_bindir}/uic-tqt
 
 magic_rpm_clean.sh
 
@@ -113,6 +113,12 @@ magic_rpm_clean.sh
 %{_libdir}/pkgconfig/*.pc
 
 %changelog
+* Wed Feb 15 2012 Liu Di <liudidi@gmail.com> - 3.5.14-8.20120215_1
+- 为 Magic 3.0 重建
+
+* Wed Feb 15 2012 Liu Di <liudidi@gmail.com> - 3.5.14-7.20120215_1
+- 为 Magic 3.0 重建
+
 * Wed Feb 15 2012 Liu Di <liudidi@gmail.com> - 3.5.14-6.20120215_1
 - 为 Magic 3.0 重建
 
