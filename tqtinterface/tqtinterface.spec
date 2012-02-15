@@ -1,5 +1,5 @@
 %define git 1
-%define gitdate 20111127
+%define gitdate 20120215
 %define version 3.5.14
 %define order 1
 %define realname tqtinterface
@@ -9,7 +9,7 @@
 Name:			tqtinterface
 Version:			%{version}
 %if %{git}
-Release:		2.%{date}_%{order}%{?dist}
+Release:		2.%{gitdate}_%{order}%{?dist}
 %else
 Release:		%{order}%{?dist}
 %endif
