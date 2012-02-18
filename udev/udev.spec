@@ -1,33 +1,28 @@
-%define WITH_SELINUX 0
 Summary:        A rule-based device node and kernel event manager
 Name:           udev
-Version:        175
+Version:        181
 Release:        2%{?dist}
 License:        GPLv2+
 Group:          System Environment/Base
-Source:         ftp://ftp.kernel.org/pub/linux/utils/kernel/hotplug/%{name}-%{version}.tar.bz2
+Source:         ftp://ftp.kernel.org/pub/linux/utils/kernel/hotplug/%{name}-%{version}.tar.xz
 URL:            http://www.kernel.org/pub/linux/utils/kernel/hotplug/udev.html
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:  libtool
 BuildRequires:  pkgconfig
 BuildRequires:  gperf
-%if %{WITH_SELINUX}
-BuildRequires:  libselinux-devel libsepol-devel
-%endif
 BuildRequires:  glib2-devel
 BuildRequires:  hwdata
 BuildRequires:  gobject-introspection-devel >= 0.6.2
 BuildRequires:  usbutils >= 0.82
-Obsoletes:      dev <= 0:3.12-1
-Provides:       dev = 0:3.12-2
+BuildRequires:  kmod-devel >= 5
+BuildRequires:  libblkid-devel >= 2.20
 Requires(pre):  fileutils
 Requires(pre):  /usr/bin/getent /usr/sbin/groupadd
 Requires:       hwdata
 Requires:       systemd-units
-Requires:       pkgconfig
 Requires:       util-linux >= 2.15.1
-Conflicts:      systemd < 37
+Conflicts:      systemd < 39
 Conflicts:      dracut < 013-93
+Conflicts:      filesystem < 3-2
 
 %ifarch s390 s390x
 # Require s390utils-base, because it's essential on s390
@@ -45,6 +40,7 @@ removed from the system.
 Summary:        Dynamic library to access udev device information
 Group:          System Environment/Libraries
 Requires:       udev = %{version}-%{release}
+Conflicts:      filesystem < 3
 License:        LGPLv2+
 
 %description -n libudev
@@ -66,6 +62,7 @@ dynamic library, which provides access to udev device information.
 Summary:        Libraries for adding libudev support to applications that use glib
 Group:          Development/Libraries
 Requires:       libudev = %{version}-%{release}
+Conflicts:      filesystem < 3
 License:        LGPLv2+
 
 %description -n libgudev1
@@ -86,57 +83,43 @@ glib-based applications using libudev functionality.
 %setup -q
 
 %build
-# prevent man pages from re-building (xmlto)
+# prevent man pages from re-building (xsltproc)
 find . -name "*.[1-8]" -exec touch '{}' \;
 export CFLAGS="$CFLAGS $RPM_OPT_FLAGS -fPIE -DPIE -pie -Wl,-z,relro -Wl,-z,now"
 export V=1
 %configure \
-        --prefix=%{_prefix} \
-        --sysconfdir=%{_sysconfdir} \
-        --sbindir=/sbin \
-        --libexecdir=/lib/udev \
-        --with-rootlibdir=/%{_lib} \
-%if %{WITH_SELINUX}
-        --with-selinux \
-%endif
-        --with-systemdsystemunitdir=/lib/systemd/system \
-        --enable-floppy
+ --prefix=%{_prefix} \
+ --sysconfdir=%{_sysconfdir} \
+ --libexecdir=%{_prefix}/lib \
+ --without-selinux \
+ --with-systemdsystemunitdir=%{_prefix}/lib/systemd/system
 make %{?_smp_mflags}
 
 %install
-rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 rm -fr $RPM_BUILD_ROOT%{_docdir}/udev
 rm -f $RPM_BUILD_ROOT/%{_libdir}/*.la
-for i in \
-%ifarch ia64
-        rules/arch/40-ia64.rules \
-%endif
-%ifarch ppc ppc64
-        rules/arch/40-ppc.rules \
-%endif
+mkdir -p -m 0755 $RPM_BUILD_ROOT%{_prefix}/lib/firmware
+mkdir -p -m 0755 $RPM_BUILD_ROOT%{_prefix}/lib/firmware/updates
+mkdir -p -m 0755 $RPM_BUILD_ROOT%{_sbindir}
+ln -sf ../bin/udevadm $RPM_BUILD_ROOT%{_sbindir}/udevadm
 %ifarch s390 s390x
-        rules/arch/40-s390.rules \
+install -m 0644 rules/arch/40-s390.rules $RPM_BUILD_ROOT%{_prefix}/lib/udev/rules.d
 %endif
-        ; do
-        install -m 0644 "$i"  "$RPM_BUILD_ROOT/lib/udev/rules.d/${i##*/}"
-done
-mkdir -p -m 0755 $RPM_BUILD_ROOT/lib/firmware
-mkdir -p -m 0755 $RPM_BUILD_ROOT/lib/firmware/updates
 
 %pre
 getent group cdrom >/dev/null || /usr/sbin/groupadd -g 11 cdrom || :
 getent group tape >/dev/null || /usr/sbin/groupadd -g 33 tape || :
 getent group dialout >/dev/null || /usr/sbin/groupadd -g 18 dialout || :
 getent group floppy >/dev/null || /usr/sbin/groupadd -g 19 floppy || :
-/bin/systemctl stop udev.service udev-control.socket udev-kernel.socket >/dev/null 2>&1 || :
+systemctl stop udev.service udev-control.socket udev-kernel.socket >/dev/null 2>&1 || :
 
 %post
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
-/bin/systemctl start udev.service >/dev/null 2>&1 || :
+systemctl daemon-reload >/dev/null 2>&1 || :
+systemctl start udev.service >/dev/null 2>&1 || :
 
 %postun
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+systemctl daemon-reload >/dev/null 2>&1 || :
 
 %post -n libudev -p /sbin/ldconfig
 %postun -n libudev -p /sbin/ldconfig
@@ -144,49 +127,42 @@ getent group floppy >/dev/null || /usr/sbin/groupadd -g 19 floppy || :
 %post -n libgudev1 -p /sbin/ldconfig
 %postun -n libgudev1 -p /sbin/ldconfig
 
-%clean
-rm -rf $RPM_BUILD_ROOT
-
 %files
-%defattr(-, root, root, 0755)
-%doc NEWS COPYING README TODO ChangeLog  extras/keymap/README.keymap.txt
-%attr(0755,root,root) /sbin/udevadm
+%doc NEWS COPYING README TODO ChangeLog  src/extras/keymap/README.keymap.txt
+%{_bindir}/udevadm
+%{_sbindir}/udevadm
+%{_prefix}/lib/udev
 %config(noreplace) %attr(0644,root,root) %{_sysconfdir}/udev/udev.conf
 %attr(0755,root,root) %dir %{_sysconfdir}/udev/
 %attr(0755,root,root) %dir %{_sysconfdir}/udev/rules.d/
-%attr(0755,root,root) /lib/udev
 %attr(0644,root,root) %{_mandir}/man7/*.7*
 %attr(0644,root,root) %{_mandir}/man8/*.8*
 %{_datadir}/pkgconfig/udev.pc
-%dir %attr(0755,root,root) /lib/firmware
-%dir %attr(0755,root,root) /lib/firmware/updates
-%attr(0644,root,root) /lib/systemd/system/*.service
-%attr(0644,root,root) /lib/systemd/system/*.socket
-/lib/systemd/system/basic.target.wants/*.service
-/lib/systemd/system/sockets.target.wants/*.socket
+%dir %attr(0755,root,root) %{_prefix}/lib/firmware
+%dir %attr(0755,root,root) %{_prefix}/lib/firmware/updates
+%attr(0644,root,root) %{_prefix}/lib/systemd/system/*.service
+%attr(0644,root,root) %{_prefix}/lib/systemd/system/*.socket
+%{_prefix}/lib/systemd/system/basic.target.wants/*.service
+%{_prefix}/lib/systemd/system/sockets.target.wants/*.socket
 
 %files -n libudev
-%defattr(0644, root, root, 0755)
-%doc libudev/COPYING
-%attr(0755,root,root) /%{_lib}/libudev.so.*
+%doc src/COPYING
+%attr(0755,root,root) %{_libdir}/libudev.so.*
 
 %files -n libudev-devel
-%defattr(0644, root, root, 0755)
-%doc libudev/docs/html/*
+%doc src/docs/html/*
 %{_includedir}/libudev.h
 %{_libdir}/libudev.so
 %{_libdir}/pkgconfig/libudev.pc
 %{_datadir}/gtk-doc/html/libudev/*
 
 %files -n libgudev1
-%defattr(0644, root, root, 0755)
-%doc extras/gudev/COPYING
-%attr(0755,root,root) /%{_lib}/libgudev-1.0.so.*
+%doc src/extras/gudev/COPYING
+%attr(0755,root,root) %{_libdir}/libgudev-1.0.so.*
 %attr(0644,root,root) %{_libdir}/girepository-1.0/GUdev-1.0.typelib
 
 %files -n libgudev1-devel
-%defattr(0644, root, root, 0755)
-%doc extras/gudev/docs/html/*
+%doc src/extras/gudev/docs/html/*
 %attr(0755,root,root) %{_libdir}/libgudev-1.0.so
 %dir %attr(0755,root,root) %{_includedir}/gudev-1.0
 %dir %attr(0755,root,root) %{_includedir}/gudev-1.0/gudev
@@ -197,8 +173,46 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0644,root,root) %{_libdir}/pkgconfig/gudev-1.0*
 
 %changelog
-* Mon Dec 05 2011 Liu Di <liudidi@gmail.com> - 175-2
-- 为 Magic 3.0 重建
+* Thu Feb 09 2012 Kay Sievers <kay@redhat.com> - 181-2
+- rebuild with fixed binutils
+- remove 'dev' package dependency handling
+
+* Tue Feb  7 2012 Kay Sievers <kay@redhat.com> 181-1
+- version 181
+  - require kmod 5
+  - provide /dev/cdrom for /dev/sr0
+
+* Fri Feb  3 2012 Kay Sievers <kay@redhat.com> 180-3
+- require an newer filesystem (repo test rebuild)
+
+* Sun Jan 29 2012 Kay Sievers <kay@redhat.com> 180-2
+- install everything in /usr
+  https://fedoraproject.org/wiki/Features/UsrMove
+
+* Sun Jan 29 2012 Kay Sievers <kay@redhat.com> 180-1
+- version 180
+  - fix rule execution (brc#785148)
+  - ID_PART_* export for udisks2
+- temporarily revert 'install everything in /usr' to be
+  able to update teh current rawhide package without the
+  dependency on the /usr-move converted filessytem
+
+* Wed Jan 25 2012 Kay Sievers <kay@redhat.com> 179-3
+- use %{_sbindir}
+
+* Wed Jan 25 2012 Kay Sievers <kay@redhat.com> 179-2
+- install everything in /usr
+  https://fedoraproject.org/wiki/Features/UsrMove
+
+* Wed Jan 25 2012 Kay Sievers <kay@redhat.com> 179-1
+- version 179
+  - devtmpfs is mandatory now
+  - /run is mandatory now
+  - modules are loaded with 'libkmod'
+  - blkid is built-in now
+
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 175-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
 * Mon Nov  7 2011 Kay Sievers <kay@redhat.com> 175-1
 - version 175
