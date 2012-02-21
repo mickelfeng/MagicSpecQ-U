@@ -3,7 +3,7 @@
 # just for giggles, option to build with internal Berkeley DB
 %bcond_with int_bdb
 # run internal testsuite?
-%bcond_with check
+%bcond_without check
 # disable plugins initially
 %bcond_with plugins
 
@@ -21,7 +21,7 @@
 Summary: The RPM package management system
 Name: rpm
 Version: %{rpmver}
-Release: %{?snapver:0.%{snapver}.}11%{?dist}
+Release: %{?snapver:0.%{snapver}.}12%{?dist}
 Group: System Environment/Base
 Url: http://www.rpm.org/
 Source0: http://rpm.org/releases/rpm-4.9.x/%{name}-%{srcver}.tar.bz2
@@ -46,6 +46,7 @@ Patch6: rpm-4.9.0-armhfp-logic.patch
 Patch100: rpm-4.9.x-fontattr.patch
 Patch101: rpm-4.9.x-elfattr.patch
 Patch102: rpm-4.9.1.2-perl-python-attr.patch
+Patch103: rpm-4.9.x-mpsize.patch
 
 # These are not yet upstream
 Patch301: rpm-4.6.0-niagara.patch
@@ -62,10 +63,6 @@ Patch306: rpm-4.9.x-debugedit-stabs-warn.patch
 Patch400: rpm-4.9.1.2-rpmlib-filesystem-check.patch
 # Recognize Perl script as Perl code
 Patch401: rpm-4.9.1.2-perl-script.patch
-
-# for Magic
-Patch1000: rpm-4.5.90-default-i686.patch
-Patch1001: rpm-4.6.0-magic.patch
 
 # Partially GPL/LGPL dual-licensed and some bits with BSD
 # SourceLicense: (GPLv2+ and LGPLv2+ with exceptions) and BSD 
@@ -89,7 +86,7 @@ BuildRequires: fakechroot
 
 # XXX generally assumed to be installed but make it explicit as rpm
 # is a bit special...
-BuildRequires: magic-rpm-config
+BuildRequires: redhat-rpm-config
 BuildRequires: gawk
 BuildRequires: elfutils-devel%{_isa} >= 0.112
 BuildRequires: elfutils-libelf-devel%{_isa}
@@ -228,6 +225,7 @@ packages on a system.
 %patch100 -p1 -b .fontattr
 %patch101 -p1 -b .elfattr
 %patch102 -p1 -b .perl-python-attr
+%patch103 -p1 -b .mpsize
 
 %patch301 -p1 -b .niagara
 %patch302 -p1 -b .geode
@@ -238,9 +236,6 @@ packages on a system.
 
 %patch400 -p1 -b .rpmlib-filesystem-check
 %patch401 -p1 -b .perl-script
-
-%patch1000 -p1
-#%patch1001 -p1
 
 %patch5 -p1 -b .armhfp
 # this patch cant be applied on softfp builds
@@ -460,6 +455,9 @@ exit 0
 %doc COPYING doc/librpm/html/*
 
 %changelog
+* Thu Feb 09 2012 Panu Matilainen <pmatilai@redhat.com> - 4.9.1.2-12
+- switch back to smaller BDB cache default (#752897)
+
 * Sun Jan 15 2012 Dennis Gilmore <dennis@ausil.us> - 4.9.1.2-11
 - always apply arm hfp macros, conditionally apply the logic to detect hfp
 
