@@ -1,6 +1,6 @@
 Name: smokegen
 Version: 4.8.0
-Release: 2%{?dist}
+Release: 3%{?dist}
 Summary: Smoke Generator
 
 License: LGPLv2 and GPLv2+
@@ -71,6 +71,9 @@ make install/fast DESTDIR=%{buildroot} -C %{_target_platform}
 
 
 %changelog
+* Mon Mar 05 2012 Liu Di <liudidi@gmail.com> - 4.8.0-3
+- 为 Magic 3.0 重建
+
 * Tue Feb 28 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.8.0-2
 - Rebuilt for c++ ABI breakage
 
