@@ -3,7 +3,7 @@
 # just for giggles, option to build with internal Berkeley DB
 %bcond_with int_bdb
 # run internal testsuite?
-%bcond_without check
+%bcond_with check
 # disable plugins initially
 %bcond_with plugins
 
@@ -21,7 +21,7 @@
 Summary: The RPM package management system
 Name: rpm
 Version: %{rpmver}
-Release: %{?snapver:0.%{snapver}.}12%{?dist}
+Release: %{?snapver:0.%{snapver}.}12%{?dist}.1
 Group: System Environment/Base
 Url: http://www.rpm.org/
 Source0: http://rpm.org/releases/rpm-4.9.x/%{name}-%{srcver}.tar.bz2
@@ -97,7 +97,6 @@ BuildRequires: nss-softokn-freebl-devel%{_isa}
 BuildRequires: popt-devel%{_isa} >= 1.10.2
 BuildRequires: file-devel%{_isa}
 BuildRequires: gettext-devel%{_isa}
-# XXX semanage is only used by sepolicy plugin but configure requires it...
 BuildRequires: ncurses-devel%{_isa}
 BuildRequires: bzip2-devel%{_isa} >= 0.9.0c-2
 BuildRequires: python-devel%{_isa} >= 2.6
@@ -455,6 +454,9 @@ exit 0
 %doc COPYING doc/librpm/html/*
 
 %changelog
+* Wed Mar 07 2012 Liu Di <liudidi@gmail.com> - 4.9.1.2-12.1
+- 为 Magic 3.0 重建
+
 * Thu Feb 09 2012 Panu Matilainen <pmatilai@redhat.com> - 4.9.1.2-12
 - switch back to smaller BDB cache default (#752897)
 
