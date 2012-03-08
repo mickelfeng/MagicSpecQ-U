@@ -2,7 +2,7 @@
 Summary: A collection of basic system utilities
 Name: util-linux
 Version: 2.21
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2 and GPLv2+ and GPLv3+ and LGPLv2+ and BSD with advertising and Public Domain
 Group: System Environment/Base
 URL: http://kernel.org/~kzak/util-linux/
@@ -705,6 +705,9 @@ fi
 
 
 %changelog
+* Thu Mar 08 2012 Liu Di <liudidi@gmail.com> - 2.21-2
+- 为 Magic 3.0 重建
+
 * Fri Feb 24 2012 Karel Zak <kzak@redhat.com> 2.21-1
 - upgrade to release 2.21
 
