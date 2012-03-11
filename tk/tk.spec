@@ -4,7 +4,7 @@
 Summary: The graphical toolkit for the Tcl scripting language
 Name: tk
 Version: %{vers}
-Release: 2%{?dist}
+Release: 3%{?dist}
 Epoch:   1
 License: TCL
 Group: Development/Languages
@@ -119,6 +119,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/%{name}%{majorver}/tkAppInit.c
 
 %changelog
+* Sun Mar 11 2012 Liu Di <liudidi@gmail.com> - 1:8.5.11-3
+- 为 Magic 3.0 重建
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:8.5.11-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
