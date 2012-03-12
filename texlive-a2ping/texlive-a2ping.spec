@@ -15,7 +15,7 @@ Name: texlive-a2ping
 License: GPL+
 Summary: Advanced PS, PDF, EPS converter
 Version: %{tl_version}
-Release: %{tl_noarch_release}.svn24786%{?dist}
+Release: %{tl_noarch_release}.svn18835%{?dist}
 BuildArch: noarch
 Requires: texlive-base = %{tl_version}
 Requires: texlive-kpathsea-bin = %{tl_version}
