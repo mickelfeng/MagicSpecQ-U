@@ -1,4 +1,4 @@
-%define tl_version 2011
+%define tl_version 2010
 %define tl_noarch_release 9
 %define _binary_payload w6.xzdio
 
@@ -8,51 +8,65 @@
 %define __os_install_post /usr/lib/rpm/brp-compress %{nil}
 %define __debug_install_post %{nil}
 
-Source0: ftp://ftp.ctex.org/mirrors/texlive/tlpretest/archive/2up.tar.xz
-Source1: ftp://ftp.ctex.org/mirrors/texlive/tlpretest/archive/2up.doc.tar.xz
+Source0: ftp://ftp.ctex.org/mirrors/texlive/tlpretest/archive/aleph.tar.xz
+Source1: ftp://ftp.ctex.org/mirrors/texlive/tlpretest/archive/aleph.doc.tar.xz
+Source2: ftp://ftp.ctex.org/mirrors/texlive/tlpretest/archive/aleph.doc.tar.xz
 
-Name: texlive-2up
-License: LPPL
-Summary: 2up package
+Name: texlive-aleph
+License: GPL+
+Summary: Extended TeX
 Version: %{tl_version}
-Release: %{tl_noarch_release}.svn18310%{?dist}
+Release: %{tl_noarch_release}.RC2.svn18835%{?dist}
 BuildArch: noarch
 Requires: texlive-base = %{tl_version}
 Requires: texlive-kpathsea-bin = %{tl_version}
+Requires: texlive-tetex-bin = %{tl_version}
+Requires(post,postun): texlive-tetex-bin = %{tl_version}
 Requires(post,postun): texlive-kpathsea-bin = %{tl_version}
-Provides: tex(2up.sty)
+Requires: texlive-aleph-bin = %{tl_version}
 
 %description
-2up package
+An development of omega, using most of the extensions of TeX
+itself developed for e-TeX.
+
+date: 2009-11-09 13:03:38 +0100
 
 %post
 mkdir -p /var/run/texlive
 touch /var/run/texlive/run-texhash
+sed -i 's/^\#\!\ aleph/aleph aleph - *aleph.ini/' %{_texdir}/texmf/web2c/fmtutil.cnf
+sed -i 's/^\#\!\ lamed/lamed aleph language.dat *lambda.ini/' %{_texdir}/texmf/web2c/fmtutil.cnf
+touch /var/run/texlive/run-fmtutil
 :
 
 %postun
-if [ $1 == 1 ]; then
-  mkdir -p /var/run/texlive
-  touch /var/run/run-texhash
-else
+if [ $1 == 0 ]; then
+  sed -i 's/^aleph/\#\!\ aleph/' %{_texdir}/texmf/web2c/fmtutil.cnf
+  sed -i 's/^lamed/\#\!\ lamed/' %{_texdir}/texmf/web2c/fmtutil.cnf
   %{_bindir}/texhash 2> /dev/null
+  %{_bindir}/fmtutil-sys --missing &> /dev/null
+else
+  mkdir -p /var/run/texlive
+  touch /var/run/texlive/run-texhash
+  touch /var/run/texlive/run-fmtutil
 fi
 :
 
 %posttrans
 [ -e /var/run/texlive/run-texhash ] && %{_bindir}/texhash 2> /dev/null && rm -f /var/run/texlive/run-texhash
+[ -e /var/run/texlive/run-fmtutil ] && %{_bindir}/fmtutil-sys --missing &> /dev/null && rm -f /var/run/texlive/run-fmtutil
 [ -e /var/run/texlive ] && rm -rf /var/run/texlive
 :
 
 %package doc
-Summary: Documentation for 2up
+Summary: Documentation for aleph
 Version: %{tl_version}
-Release: %{tl_noarch_release}.svn18310%{?dist}
+Release: %{tl_noarch_release}.RC2.svn18835%{?dist}
 Requires: texlive-base = %{tl_version}
 BuildArch: noarch
 
 %description doc
-Documentation for 2up
+Documentation for aleph
 
 
 %prep
@@ -63,8 +77,10 @@ Documentation for 2up
 %install
 rm -rf %{buildroot}
 mkdir -p %{buildroot}%{_texdir}/texmf-dist
-xz -dc %{SOURCE0} | tar x -C %{buildroot}%{_texdir}/texmf-dist
-xz -dc %{SOURCE1} | tar x -C %{buildroot}%{_texdir}/texmf-dist
+ln -s %{_texdir}/licenses/gpl.txt gpl.txt
+xz -dc %{SOURCE0} | tar x -C %{buildroot}%{_texdir}
+xz -dc %{SOURCE1} | tar x -C %{buildroot}%{_texdir}
+xz -dc %{SOURCE2} | tar x -C %{buildroot}%{_texdir}
 # nuke useless tlmgr packaging stuff and doc droppings
 rm -rf %{buildroot}%{_texdir}/tlpkg/tlpobj/
 rm -rf %{buildroot}%{_texdir}/texmf-dist/tlpkg/tlpobj/
@@ -72,22 +88,23 @@ rm -rf %{buildroot}%{_texdir}/texmf/doc/man/man*/*.pdf
 rm -rf %{buildroot}%{_texdir}/texmf/doc/man/Makefile
 rm -rf %{buildroot}%{_texdir}/texmf/doc/man/man*/Makefile
 rm -rf %{buildroot}%{_texdir}/texmf/doc/info/dir
+mkdir -p %{buildroot}/%{_datadir}/
+mv %{buildroot}/%{_texdir}/texmf/doc/man %{buildroot}/%{_datadir}/
 
 %clean
 rm -rf %{buildroot}
 
 %files 
 %defattr(-,root,root)
-%{_texdir}/texmf-dist/tex/generic/2up/2up.sty
-%{_texdir}/texmf-dist/tex/generic/2up/2up.tex
+%doc gpl.txt
+%{_mandir}/man1/aleph.1*
+%{_mandir}/man1/lamed.1*
 
 %files doc
 %defattr(-,root,root)
-%{_texdir}/texmf-dist/doc/generic/2up/2up-doc.pdf
-%{_texdir}/texmf-dist/doc/generic/2up/2up-doc.tex
-%{_texdir}/texmf-dist/doc/generic/2up/Changes
-%{_texdir}/texmf-dist/doc/generic/2up/Makefile
-%{_texdir}/texmf-dist/doc/generic/2up/README
+%doc gpl.txt
+%{_texdir}/texmf-dist/doc/aleph/base/News
+%{_texdir}/texmf-dist/doc/aleph/base/readme.txt
 
 
 %changelog
