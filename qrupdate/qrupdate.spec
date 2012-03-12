@@ -1,6 +1,6 @@
 Name:		qrupdate
-Version:	1.1.1
-Release:	2%{?dist}
+Version:	1.1.2
+Release:	1%{?dist}
 Summary:	A Fortran library for fast updates of QR and Cholesky decompositions
 Group:		Development/Libraries
 License:	GPLv3+
@@ -60,6 +60,12 @@ make test FC=gfortran FFLAGS="%{optflags} -fimplicit-none -funroll-loops"
 
 
 %changelog
+* Tue Feb 07 2012 Jussi Lehtola <jussilehtola@fedoraproject.org> - 1.1.2-1
+- Update to 1.1.2.
+
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.1.1-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
 * Tue Feb 08 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.1.1-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 
