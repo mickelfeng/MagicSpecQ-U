@@ -4,7 +4,7 @@
 Summary: Connects C/C++/Objective C to some high-level programming languages
 Name: swig
 Version: 2.0.4
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv3+ and BSD
 Group: Development/Tools
 URL: http://swig.sourceforge.net/
@@ -122,6 +122,9 @@ rm -rf %{buildroot}
 %doc Doc Examples LICENSE LICENSE-GPL LICENSE-UNIVERSITIES COPYRIGHT
 
 %changelog
+* Sun Mar 11 2012 Liu Di <liudidi@gmail.com> - 2.0.4-5
+- 为 Magic 3.0 重建
+
 * Tue Nov 15 2011 Adam Tkac <atkac redhat com> 2.0.4-4
 - don't apply patch for #752054 till guile2 gets into distro
 
