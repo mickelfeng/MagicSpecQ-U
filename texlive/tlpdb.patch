@@ -1,0 +1,162 @@
+--- texlive.tlpdb.orig	2011-10-05 07:22:29.972963572 +0200
++++ texlive.tlpdb	2011-10-05 07:22:30.023963793 +0200
+@@ -76,7 +76,7 @@
+ catalogue-ctan /macros/latex/contrib/abc
+ catalogue-date 2008-03-08 20:47:21 +0100
+ catalogue-license lppl
+-catalogue-version .0
++catalogue-version 0
+ 
+ name abstract
+ category Package
+@@ -6702,7 +6702,7 @@
+ catalogue-license pd
+ catalogue-version 1.0a
+ 
+-name Asana-Math
++name asana-math
+ category Package
+ revision 23634
+ shortdesc A font to typeset maths in Xe(La)TeX and Lua(La)TeX.
+@@ -23513,7 +23513,6 @@
+ shortdesc TeX Live documentation
+ relocated 1
+ depend texlive-common
+-depend texlive-docindex
+ depend texlive-en
+ 
+ name collection-documentation-bulgarian
+@@ -23803,7 +23802,7 @@
+ revision 23709
+ shortdesc Extra fonts
+ relocated 1
+-depend Asana-Math
++depend asana-math
+ depend adforn
+ depend adfsymbols
+ depend allrunes
+@@ -23914,7 +23913,7 @@
+ depend lfb
+ depend libertine
+ depend libris
+-depend linearA
++depend lineara
+ depend lxfonts
+ depend ly1
+ depend mathabx
+@@ -26051,24 +26050,6 @@
+ depend texinfo
+ depend collection-basic
+ 
+-name collection-texworks
+-category Collection
+-revision 15618
+-shortdesc The TeXworks Editor
+-relocated 1
+-depend collection-basic
+-depend texworks
+-
+-name collection-wintools
+-category Collection
+-revision 13822
+-shortdesc Windows support programs
+-relocated 1
+-longdesc Utilities for Windows, since they are not readily available
+-longdesc there: chktex, unzip, wget, xpdf, and the dviout previewer.
+-depend wintools.win32
+-depend dviout.win32
+-
+ name collection-xetex
+ category Collection
+ revision 24140
+@@ -54848,7 +54829,6 @@
+ revision 19743
+ shortdesc i386-linux files of installfont
+ binfiles arch=i386-linux size=1
+- bin/i386-linux/installfont-tl
+ 
+ name interactiveworkbook
+ category Package
+@@ -60964,7 +60944,7 @@
+ catalogue-ctan /macros/latex/contrib/labels
+ catalogue-date 2009-09-29 00:01:21 +0200
+ catalogue-license lppl1.2
+-catalogue-version .13
++catalogue-version 13
+ 
+ name lacheck
+ category TLCore
+@@ -69173,7 +69153,7 @@
+ catalogue-date 2007-01-08 23:14:30 +0100
+ catalogue-license lppl
+ 
+-name linearA
++name lineara
+ category Package
+ revision 15878
+ shortdesc Linear A script fonts.
+@@ -71275,7 +71255,7 @@
+ catalogue-ctan /info/lshort/persian
+ catalogue-date 2009-11-09 23:05:00 +0100
+ catalogue-license pd
+-catalogue-version 4.26:2009-08-04
++catalogue-version 4.26-2009-08-04
+ 
+ name lshort-polish
+ category Package
+@@ -93267,7 +93247,7 @@
+ catalogue-ctan /graphics/pstricks/contrib/pst-layout
+ catalogue-date 2011-05-23 11:13:27 +0200
+ catalogue-license lppl
+-catalogue-version .95
++catalogue-version 95
+ 
+ name pst-lens
+ category Package
+@@ -105275,21 +105255,6 @@
+  RELOC/tex/latex/taupin/t1cmsc.fd
+  RELOC/tex/latex/taupin/varsects.sty
+ 
+-name tcdialog
+-category TLCore
+-revision 23089
+-depend tcdialog.ARCH
+-docfiles size=25
+- texmf/doc/man/man1/tcdialog.1
+- texmf/doc/man/man1/tcdialog.man1.pdf
+-
+-name tcdialog.i386-linux
+-category TLCore
+-revision 22641
+-shortdesc i386-linux files of tcdialog
+-binfiles arch=i386-linux size=35
+- bin/i386-linux/tcdialog
+-
+ name tcldoc
+ category Package
+ revision 22018
+@@ -107470,7 +107435,6 @@
+ revision 13663
+ shortdesc i386-linux files of texlive-scripts
+ binfiles arch=i386-linux size=2
+- bin/i386-linux/man
+  bin/i386-linux/rungs
+ 
+ name texlive-sr
+@@ -116435,7 +116399,7 @@
+ catalogue-ctan /macros/latex209/contrib/trees/tree-dvips
+ catalogue-date 2011-03-14 14:09:23 +0100
+ catalogue-license lppl1
+-catalogue-version .91
++catalogue-version 91
+ 
+ name treetex
+ category Package
+@@ -127207,7 +127171,6 @@
+ revision 22981
+ shortdesc i386-linux files of xetex
+ binfiles arch=i386-linux size=5178
+- bin/i386-linux/teckit_compile
+  bin/i386-linux/xdvipdfmx
+  bin/i386-linux/xelatex
+  bin/i386-linux/xetex
