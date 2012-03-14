@@ -16,7 +16,7 @@ Name: texlive-fontspec
 License: LPPL
 Summary: Advanced font selection in XeLaTeX and LuaLaTeX
 Version: %{tl_version}
-Release: %{tl_noarch_release}.v2.0b.svn19458%{?dist}
+Release: %{tl_noarch_release}.v2.0b.svn19458%{?dist}.1
 BuildArch: noarch
 Requires: texlive-base = %{tl_version}
 Requires: texlive-kpathsea-bin = %{tl_version}
@@ -25,7 +25,6 @@ Requires: lua
 Provides: tex(fontspec-patches.sty)
 Provides: tex(fontspec.sty)
 Requires: tex(fixltx2e.sty)
-Requires: tex(expl3.sty)
 Requires: tex(xparse.sty)
 Requires: tex(luatextra.sty)
 Requires: tex(calc.sty)
@@ -113,6 +112,9 @@ rm -rf %{buildroot}
 %{_texdir}/texmf-dist/doc/latex/fontspec/fontspec-example.tex
 
 %changelog
+* Wed Mar 14 2012 Liu Di <liudidi@gmail.com> - 2011-9.v2.0b.svn19458.1
+- 为 Magic 3.0 重建
+
 * Mon Aug 23 2010 Jindrich Novy <jnovy@redhat.com> 2010-9
 - rpmlint fixes
 
