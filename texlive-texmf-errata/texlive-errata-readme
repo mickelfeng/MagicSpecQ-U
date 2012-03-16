@@ -1,0 +1,11 @@
+texlive errata
+
+Due to the size of the texlive-texmf package, a small fix to a package in the
+TEXMF tree would result in large updates for the users.
+
+For this reason, the texlive errata package exists.
+
+Updates to the texlive TEXMF packages can be issued in the errata package,
+which will install them into /usr/share/texmf-errata.
+
+This should avoid large downloads being necessary for small bug fixes.
