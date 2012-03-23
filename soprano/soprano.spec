@@ -2,13 +2,13 @@
 # fedora review: http://bugzilla.redhat.com/248120
 
 # undef or set to 0 to disable items for a faster build
-%global apidocs 1
-%global tests 1
+%global apidocs 0
+%global tests 0
 
 Summary: Qt wrapper API to different RDF storage solutions
 Name:    soprano
-Version: 2.7.4
-Release: 3%{?dist}
+Version: 2.7.5
+Release: 1%{?dist}
 
 Group:   System Environment/Libraries
 License: LGPLv2+
@@ -22,12 +22,14 @@ Source0: http://downloads.sf.net/soprano/soprano-%{version}.tar.bz2
 %endif
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
+# hack around doxygen-1.8.0 no longer providing 'installdox' script
+Source1: installdox
+
 ## upstreamable patches
 # nuke rpaths
 Patch50: soprano-2.5.63-rpath.patch
 
 ## upstream patches
-Patch100: soprano-2.7.4-gcc47.patch
 
 BuildRequires: clucene-core-devel >= 0.9.20-2
 BuildRequires: cmake
@@ -98,6 +100,7 @@ Requires: redland-virtuoso
 %package apidocs
 Group: Development/Documentation
 Summary: Soprano API documentation
+Requires: kde-filesystem
 %if 0%{?fedora} > 9 || 0%{?rhel} > 5
 # help workaround yum bug http://bugzilla.redhat.com/502401
 Obsoletes: soprano-apidocs < 2.2.3-2 
@@ -112,7 +115,6 @@ format for easy browsing.
 %setup -q -n soprano-%{version}
 
 %patch50 -p1 -b .rpath
-%patch100 -p1 -b .gcc47
 
 
 %build
@@ -120,7 +122,7 @@ format for easy browsing.
 mkdir -p %{_target_platform}
 pushd %{_target_platform}
 # disable copious debug output
-export CXXFLAGS="%optflags -DQT_NO_DEBUG_OUTPUT"
+export CXXFLAGS="%{optflags} -DQT_NO_DEBUG_OUTPUT"
 %{cmake} \
   -DDATA_INSTALL_DIR:PATH=%{_kde4_appsdir} \
   -DQT_DOC_DIR=%{?_qt4_docdir}%{!?_qt4_docdir:%(pkg-config --variable=docdir Qt)} \
@@ -128,6 +130,11 @@ export CXXFLAGS="%optflags -DQT_NO_DEBUG_OUTPUT"
   -DSOPRANO_BUILD_TESTS:BOOL=%{!?tests:FALSE}%{?tests} \
   .. 
 popd
+
+# aka if using doxygen-1.8+
+%if 0%{?fedora} > 16
+install -D -m755 %{SOURCE1} %{_target_platform}/docs/html/installdox
+%endif
 
 make %{?_smp_mflags} -C %{_target_platform}
 
@@ -153,15 +160,16 @@ test "$(pkg-config --modversion soprano)" = "%{version}"
 ## expected doing manual build (with active dbus/user session?)
 ## TODO/FIXME: mock builds have many more, find out why.
 #The following tests FAILED:
-#          6 - redlandmemorymodeltest (Failed)
-#          7 - redlandpersistentmodeltest (Failed)
-#         17 - sopranodclienttest (Failed)
-#         18 - localsocketmultithreadtest (Failed)
-#         19 - sopranodsocketclienttest (Failed)
-#         20 - sopranodbusclienttest (Failed)
-#         21 - sopranodbusmultithreadtest (SEGFAULT)
-#         23 - virtuosobackendtest (Failed)
-#         24 - graphtest (Failed)
+#         13 - parsertest (Failed)
+#         14 - serializertest (Failed)
+#         17 - cluceneindextest (Failed)
+#         19 - sopranodclienttest (Failed)
+#         20 - localsocketmultithreadtest (Failed)
+#         21 - sopranodsocketclienttest (Failed)
+#         22 - sopranodbusclienttest (Failed)
+#         23 - sopranodbusmultithreadtest (OTHER_FAULT)
+#         25 - virtuosobackendtest (Failed)
+#         26 - graphtest (Failed)
 make -C %{_target_platform}/test test ||:
 %endif
 
@@ -205,13 +213,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/soprano/libsoprano_virtuosobackend.so
 %{_datadir}/soprano/plugins/virtuosobackend.desktop
 
-#files backend-seasame2
-#defattr(-,root,root,-)
-%{_libdir}/soprano/libsoprano_sesame2backend.so
-%{_datadir}/soprano/plugins/sesame2backend.desktop
-%{_datadir}/soprano/sesame2/*
-
-
 %files devel
 %defattr(-,root,root,-)
 %{_datadir}/soprano/cmake/
@@ -231,6 +232,10 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Tue Mar 06 2012 Rex Dieter <rdieter@fedoraproject.org> 2.7.5-1
+- 2.7.5
+- include our own 'installdox' script (doxygen-1.8+ no longer provides it)
+
 * Sat Jan 14 2012 Rex Dieter <rdieter@fedoraproject.org> 2.7.4-3
 - backport upstream gcc47 fix
 
