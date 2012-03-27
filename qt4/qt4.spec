@@ -6,6 +6,7 @@
 
 # switches: whether to build it or not
 %define with_phonon 1
+# 已经单列包
 %define with_webkit 1
 %define with_dbus_linked 1
 %define with_gtkstyle 1
@@ -43,7 +44,7 @@ done
 
 
 Version: %{real_version}
-Release: %{release_number}%{?dist}
+Release: %{release_number}%{?dist}.3
 %define ver %version
 
 Source0: http://get.qt.nokia.com/qt/source/qt-everywhere-opensource-src-%{version}.tar.gz
@@ -1411,6 +1412,7 @@ cat >%{buildroot}%{_sysconfdir}/rpm/macros.qt4<<EOF
 %%qt4_includedir	%%{qt4_prefix}/include
 %%qt4_pluginsdir	%%{qt4_prefix}/plugins
 %%qt4_qmake		%%{qt4_prefix}/bin/qmake
+%%qt4_importdir		%%{qt4_prefix}/imports
 #
 ###  以下为 fedora project 兼容部分  ###
 #
@@ -1428,6 +1430,7 @@ cat >%{buildroot}%{_sysconfdir}/rpm/macros.qt4<<EOF
 %%_qt4_qmake		%%{qt4_qmake}
 %%_qt4_sysconfdir	%%{_sysconfdir}
 %%_qt4_translationdir	%%{qt4_prefix}/translations
+%%_qt4_importdir	%%{qt4_importdir}
 EOF
 
 %clean
@@ -2000,6 +2003,15 @@ rm -rf %{buildroot} %{_builddir}/%{buildsubdir}
 %endif
 
 %changelog
+* Tue Mar 27 2012 Liu Di <liudidi@gmail.com> - 4.8.0-1.3
+- 为 Magic 3.0 重建
+
+* Tue Mar 13 2012 Liu Di <liudidi@gmail.com> - 4.8.0-1.2
+- 为 Magic 3.0 重建
+
+* Tue Mar 13 2012 Liu Di <liudidi@gmail.com> - 4.8.0-1.1
+- 为 Magic 3.0 重建
+
 * Tue Oct 20 2011 Liu Di <liudidi@gmail.com> - 4.8.0-1
 - 更新到 4.8.0
 - 添加在新版本 glib 上编译的补丁
