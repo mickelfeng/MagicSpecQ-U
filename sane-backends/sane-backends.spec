@@ -1,7 +1,7 @@
 Summary: Scanner access software
 Name: sane-backends
 Version: 1.0.22
-Release: 4%{?dist}
+Release: 5%{?dist}
 # lib/ is LGPLv2+, backends are GPLv2+ with exceptions
 # Tools are GPLv2+, docs are public domain
 # see LICENSE for details
@@ -171,6 +171,9 @@ rm -rf %{buildroot}
 %{_libdir}/pkgconfig/sane-backends.pc
 
 %changelog
+* Wed Mar 28 2012 Liu Di <liudidi@gmail.com> - 1.0.22-5
+- 为 Magic 3.0 重建
+
 * Mon Feb 06 2012 Liu Di <liudidi@gmail.com> - 1.0.22-4
 - 为 Magic 3.0 重建
 
