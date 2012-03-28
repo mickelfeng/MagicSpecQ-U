@@ -44,7 +44,7 @@ done
 
 
 Version: %{real_version}
-Release: %{release_number}%{?dist}.3
+Release: %{release_number}%{?dist}.4
 %define ver %version
 
 Source0: http://get.qt.nokia.com/qt/source/qt-everywhere-opensource-src-%{version}.tar.gz
@@ -2003,6 +2003,9 @@ rm -rf %{buildroot} %{_builddir}/%{buildsubdir}
 %endif
 
 %changelog
+* Wed Mar 28 2012 Liu Di <liudidi@gmail.com> - 4.8.0-1.4
+- 为 Magic 3.0 重建
+
 * Tue Mar 27 2012 Liu Di <liudidi@gmail.com> - 4.8.0-1.3
 - 为 Magic 3.0 重建
 
