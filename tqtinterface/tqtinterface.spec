@@ -1,5 +1,5 @@
 %define git 1
-%define gitdate 20120215
+%define gitdate 20120329
 %define version 3.5.14
 %define order 1
 %define realname tqtinterface
@@ -31,7 +31,7 @@ Prefix:		%{_prefix}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-buildroot-%(%{__id_u} -n)
 BuildRequires:  gettext
 %if "%{qt_version}" == "3"
-BuildRequires: qt-devel
+BuildRequires: tqt3-devel
 %else
 BuildRequires: qt4-devel
 %endif
@@ -71,6 +71,8 @@ Requires: kdelibs4-devel
 %endif
 
 %build
+unset QTDIR || :
+. /etc/profile.d/tqt.sh
 mkdir build
 cd build
 %{cmake} \
