@@ -43,7 +43,7 @@ Summary: The shared library for the Qt GUI toolkit.
 Summary(zh_CN.UTF-8): TQt GUI 工具包的共享库。
 Name: 	 tqt3
 Version: %{ver}
-Release: 1%{?dist}
+Release: 2%{?dist}
 %if %{git}
 Source0: tqt3-git%{gitdate}.tar.xz
 %else
@@ -614,6 +614,8 @@ mkdir -p %{buildroot}%{_bindir}
 for i in bin/*; do
   ln -s ../%{_lib}/%{qt_dirname}/bin/`basename $i` $RPM_BUILD_ROOT%{_bindir}/t`basename $i`
 done
+# 修正和 tqtinterface 的冲突
+mv %{buildroot}%{_bindir}/tmoc %{buildroot}%{_bindir}/tqmoc
 
 # make symbolic link to qt docdir
 mv %{buildroot}%{_docdir}/qt-devel-3.4 %{buildroot}%{_docdir}/tqt3-devel-3.4
@@ -812,7 +814,7 @@ exit 0
 %{qtdir}/translations
 %{qtdir}/phrasebooks
 %{_bindir}/tassistant*
-%{_bindir}/tmoc*
+%{_bindir}/tqmoc*
 %{_bindir}/tuic*
 %{_bindir}/tfindtr*
 %{_bindir}/tqt20fix*
@@ -888,6 +890,9 @@ exit 0
 
 
 %changelog
+* Thu Mar 29 2012 Liu Di <liudidi@gmail.com> - 3.4-2
+- 为 Magic 3.0 重建
+
 * Mon Oct 30 2006 KanKer <kanker@163.com> -3.3.7-1mgc
 - update 3.3.7
 
