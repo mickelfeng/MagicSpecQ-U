@@ -1,84 +1,79 @@
-Summary: A cross-platform multimedia library.
-Summary(zh_CN.UTF-8): 一个跨平台的多媒体库。
-Name: SDL
-Version: 1.2.14
-Release: 3%{?dist}
-Source: http://www.libsdl.org/release/%{name}-%{version}.tar.gz
-Source2: SDL_config.h
-Patch0: SDL-1.2.14-byteorder.patch
-Patch1: SDL-1.2.12-multilib.patch
-Patch2: SDL-1.2.12-disable_yasm.patch
-Patch3: SDL-1.2.14-audiodriver.patch
-# Submitted upstream: http://bugzilla.libsdl.org/show_bug.cgi?id=1009
-Patch4: SDL-1.2.14-xio_error-rh603984.patch
-# From upstream <http://bugzilla.libsdl.org/show_bug.cgi?id=894>, rh556608
-Patch5: SDL-1.2.14-x11_grab_down_button.patch
-# Newer Linux has bigger structure for joystick, in upstream, sdl900, rh624241
-Patch6: SDL-1.2.14-linux_2.6_joystick.patch
-# Do not call memcpy() on overlapping areas, in upstream, sdl1090, rh669844
-Patch7: SDL-1.2.14-SDL_BlitCopyOverlap_memcpy.patch
-# nasm-2.09 aliased elf to elf32, in upstream, sdl1152, rh678818
-Patch8: SDL-1.2.14-nasm-2.09-compat.patch
+Name:       SDL
+Version:    1.2.15
+Release:    1%{?dist}
+Summary:    A cross-platform multimedia library
+Group:      System Environment/Libraries
+URL:        http://www.libsdl.org/
+# The license of the file src/video/fbcon/riva_mmio.h is bad, but the contents
+# of the file has been relicensed to MIT in 2008 by Nvidia for the 
+# xf86_video-nv driver, therefore it can be considered ok.
+License:    LGPLv2+
+# Source: http://www.libsdl.org/release/%%{name}-%%{version}.tar.gz
+# To create the repackaged archive use ./repackage.sh %%{version}
+Source0:    %{name}-%{version}.tar.gz
+Source1:    SDL_config.h
+Source2:    repackage.sh
+Patch0:     SDL-1.2.12-multilib.patch
+# Rejected by upstream as sdl1155, rh480065
+Patch1:     SDL-1.2.10-GrabNotViewable.patch
 
-
-URL: http://www.libsdl.org/
-License: LGPL
-Group: System Environment/Libraries
-Group(zh_CN.UTF-8): 系统环境/库
-BuildRoot: %{_tmppath}/%{name}-%{version}-root
-BuildRequires: nasm arts-devel audiofile-devel
-BuildRequires: esound-devel alsa-lib-devel
-BuildRequires: libXext-devel libX11-devel
-BuildRequires: libGL-devel libGLU-devel
-BuildRequires: libXt-devel libXrender-devel libXrandr-devel gettext-devel
-BuildRequires: imake automake autoconf
+BuildRequires:  alsa-lib-devel
+BuildRequires:  arts-devel
+BuildRequires:  audiofile-devel
+BuildRequires:  esound-devel
+BuildRequires:  libGL-devel
+BuildRequires:  libGLU-devel
+BuildRequires:  libXext-devel
+BuildRequires:  libX11-devel
+BuildRequires:  libXrandr-devel
+BuildRequires:  libXrender-devel
+BuildRequires:  pulseaudio-libs-devel
+%ifarch %{ix86}
+BuildRequires:  nasm
+%endif
+# Autotools
+BuildRequires:  automake
+BuildRequires:  autoconf
+BuildRequires:  libtool
 
 %description
-Simple DirectMedia Layer (SDL) is a cross-platform multimedia library
-designed to provide fast access to the graphics frame buffer and audio
-device.
-
-%description -l zh_CN.UTF-8
-简单直接介质层，Simple DirectMedia Layer (SDL)，是一个跨平台的多媒体库。
-它的设计目的是提供对图形帧缓冲及音频设备的快速访问。
+Simple DirectMedia Layer (SDL) is a cross-platform multimedia library designed
+to provide fast access to the graphics frame buffer and audio device.
 
 %package devel
-Summary: Files needed to develop Simple DirectMedia Layer applications.
-Summary(zh_CN.UTF-8): 开发简单直接介质层(Simple DirectMedia Layer)程序所需的文件。
-Group: Development/Libraries
-Group(zh_CN.UTF-8): 开发/库
-Requires: SDL = %{version}-%{release} alsa-lib-devel
-Requires: libX11-devel
-Requires: libXext-devel
-Requires: libGL-devel
-Requires: libGLU-devel
-Requires: libXt-devel libXrender-devel libXrandr-devel
+Summary:    Files needed to develop Simple DirectMedia Layer applications
+Group:      Development/Libraries
+Requires:   SDL%{?_isa} = %{version}-%{release}
+Requires:   alsa-lib-devel
+Requires:   libGL-devel
+Requires:   libGLU-devel
+Requires:   libX11-devel
+Requires:   libXext-devel
+Requires:   libXrandr-devel
+Requires:   libXrender-devel
 
 %description devel
-Simple DirectMedia Layer (SDL) is a cross-platform multimedia library
-designed to provide fast access to the graphics frame buffer and audio
-device. This package provides the libraries, include files, and other
-resources needed for developing SDL applications.
+Simple DirectMedia Layer (SDL) is a cross-platform multimedia library designed
+to provide fast access to the graphics frame buffer and audio device. This
+package provides the libraries, include files, and other resources needed for
+developing SDL applications.
 
-%description devel -l zh_CN.UTF-8
-简单直接介质层，Simple DirectMedia Layer(SDL)，是一个跨平台的多媒体库。
-它的设计目的是为图形帧缓冲和音频设备提供快速访问。该软件包提供了开发 SDL 
-程序所需的库、包含文件、以及其它资源。
+%package static
+Summary:    Files needed to develop static Simple DirectMedia Layer applications
+Group:      Development/Libraries
+Requires:   SDL-devel%{?_isa} = %{version}-%{release}
+
+%description static
+Simple DirectMedia Layer (SDL) is a cross-platform multimedia library designed
+to provide fast access to the graphics frame buffer and audio device. This
+package provides the static libraries needed for developing static SDL
+applications.
 
 %prep
-rm -rf %{buildroot}
-
-%setup -q
-%patch0 -p1 -b .byteorder
-%patch1 -p1 -b .multilib
-%patch2 -p1 -b .disable_yasm
-%patch3 -p1 -b .audiodriver
-%patch4 -p1 -b .xio_error
-%patch5 -p1 -b .x11_grab_down_button
-%patch6 -p1 -b .linux_2.6_joystick
-%patch7 -p1 -b .SDL_BlitCopyOverlap_memcpy
-%patch8 -p1 -b .nasm209
-for F in CREDITS; do
+%setup -q -b0
+%patch0 -p1 -b .multilib
+%patch1 -p0 -b .grabnotviewable
+for F in CREDITS; do 
     iconv -f iso8859-1 -t utf-8 < "$F" > "${F}.utf"
     touch --reference "$F" "${F}.utf"
     mv "${F}.utf" "$F"
@@ -88,74 +83,207 @@ done
 aclocal
 libtoolize
 autoconf
-CFLAGS="$RPM_OPT_FLAGS -O3" CXXFLAGS="$RPM_OPT_FLAGS -O3" \
 %configure \
-   --disable-video-svga --disable-video-ggi --disable-video-aalib \
-   --disable-debug \
-   --enable-sdl-dlopen \
-   --enable-dlopen \
-   --enable-arts-shared \
-   --enable-esd-shared \
-   --enable-alsa \
-   --disable-rpath 
+    --disable-video-svga \
+    --disable-video-ggi \
+    --disable-video-aalib \
+    --enable-sdl-dlopen \
+    --enable-arts-shared \
+    --enable-esd-shared \
+    --enable-pulseaudio-shared \
+    --enable-alsa \
+    --enable-video-ps3 \
+    --disable-rpath
 make %{?_smp_mflags}
 
 %install
-rm -rf %{buildroot}
-
 make install DESTDIR=%{buildroot}
 
 # Rename SDL_config.h to SDL_config-<arch>.h to avoid file conflicts on
 # multilib systems and install SDL_config.h wrapper
-basearch=%{_arch}
-# always use i386 for iX86
-%ifarch %{ix86}
-basearch=i386
-%endif
-# always use arm for arm*
-%ifarch %{arm}
-basearch=arm
-%endif
-# Rename SDL_config.h
-mv %{buildroot}/%{_includedir}/SDL/SDL_config.h %{buildroot}/%{_includedir}/SDL/SDL_config-${basearch}.h
-install -m644 %{SOURCE2} %{buildroot}/%{_includedir}/SDL/SDL_config.h
- 
+mv %{buildroot}/%{_includedir}/SDL/SDL_config.h %{buildroot}/%{_includedir}/SDL/SDL_config-%{_arch}.h
+install -m644 %{SOURCE1} %{buildroot}/%{_includedir}/SDL/SDL_config.h
+
 # remove libtool .la file
 rm -f %{buildroot}%{_libdir}/*.la
-
-%clean
-rm -rf %{buildroot}
 
 %post -p /sbin/ldconfig
 
 %postun -p /sbin/ldconfig
 
 %files
-%defattr(-,root,root)
-%doc README-SDL.txt COPYING CREDITS BUGS
+%doc BUGS COPYING CREDITS README-SDL.txt
 %{_libdir}/lib*.so.*
 
 %files devel
-%defattr(-,root,root)
-%doc README README-SDL.txt COPYING CREDITS BUGS WhatsNew docs.html docs/html
-%doc docs/index.html
+%doc README docs.html docs/html docs/index.html TODO WhatsNew
 %{_bindir}/*-config
 %{_libdir}/lib*.so
-%{_libdir}/*a
 %{_libdir}/pkgconfig/sdl.pc
 %{_includedir}/SDL
 %{_datadir}/aclocal/*
 %{_mandir}/man3/SDL*.3*
 
+%files static
+%{_libdir}/lib*.a
+
 %changelog
-* Wed Nov 07 2007 Liu Di <liudidi@gmail.com> - 1.2.12-1mgc
-- update to 1.2.12
+* Thu Feb 23 2012 Petr Pisar <ppisar@redhat.com> - 1.2.15-1
+- Beautify spec code
+- 1.2.15 bump
 
-* Thu Jan 11 2007 Liu Di <liudidi@gmail.com> - 1.2.11-1mgc
-- update to 1.2.11
+* Thu Jan 19 2012 Petr Pisar <ppisar@redhat.com> - 1.2.14-16
+- Replace my patch with upstream one (bug #782251)
 
-* Tue Oct 10 2006 Liu Di <liudidi@gmail.com> - 1.2.10-1mgc
-- rebuild for Magic
+* Tue Jan 17 2012 Petr Pisar <ppisar@redhat.com> - 1.2.14-15
+- Restore compatibility with libX11-1.4.99.1 (bug #782251)
+
+* Thu Jan 12 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.2.14-14
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
+* Fri Aug 26 2011 Petr Pisar <ppisar@redhat.com> - 1.2.14-13
+- Don't block SDL_WM_GrabInput() if window is not viewable (bug #480065)
+
+* Thu Feb 24 2011 Petr Pisar <ppisar@redhat.com> - 1.2.14-12
+- Adapt to nasm-2.09 (bug #678818)
+
+* Fri Feb 18 2011 Petr Pisar <ppisar@redhat.com> - 1.2.14-11
+- Correct patch application
+- Make intradependecies architecture specific
+
+* Fri Feb 18 2011 Petr Pisar <ppisar@redhat.com> - 1.2.14-10
+- Do not call memcpy() on overlapping areas (bug #669844)
+
+* Mon Feb 07 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.2.14-9
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
+
+* Mon Aug 16 2010 Petr Pisar <ppisar@redhat.com> - 1.2.14-8
+- Kernel joystick structure has grown in unknown 2.6 Linux version (rh624241,
+  sdl900)
+
+* Thu Aug 12 2010 Petr Pisar <ppisar@redhat.com> - 1.2.14-7
+- Fix left button press event in windowed mode (rh556608, sdl894)
+- Remove unrecognized --disable-debug and --enable-dlopen configure options
+  (rh581056)
+
+* Mon Aug 02 2010 Petr Pisar <ppisar@redhat.com> - 1.2.14-6
+- Make repacked source tar ball relative
+- Remove useless src/joystick/darwin/10.3.9-FIX/IOHIDLib.h because of APSL-2.0
+  license
+- Apply SDL-1.2.14-xio_error-rh603984.patch (rh603984, sdl1009)
+- Escape spec file comments
+- Convert CREDITS to UTF-8
+
+* Wed Jun 23 2010 Hans de Goede <hdegoede@redhat.com> 1.2.14-5
+- Don't crash when trying to exit because of an xio-error (rh603984, sdl1009)
+
+* Wed Mar 24 2010 Thomas Woerner <twoerner@redhat.com> 1.2.14-4
+- added repackage.sh script to remove joyos2,h and symbian.zip because of
+  licensing problems
+- added comment about riva_mmio.h license
+
+* Tue Feb 16 2010 Josh Boyer <jwboyer@gmail.com> 1.2.14-3
+- disable ps3 video support that was added in 2.14.  It fails to
+  build on ppc/ppc64
+
+* Fri Feb 12 2010 Thomas Woerner <twoerner@redhat.com> 1.2.14-2
+- fixed build for libtool 2.2.6 in F-13 (rhbz#555501)
+
+* Tue Oct 27 2009 Thomas Woerner <twoerner@redhat.com> 1.2.14-1
+- new version 1.2.14
+- dropped patches for upstream fixes: libdir, dynamic-esd, x11dyn64,
+  dynamic-pulse, pa-rewrite, rh484362 and rh487720
+
+* Fri Jul 24 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.2.13-10
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
+
+* Tue Apr  7 2009 Thomas Woerner <twoerner@redhat.com> 1.2.13-9
+- fixed qemu-kvm segfaults on startup in SDL_memcpyMMX/SSE (rhbz#487720)
+  upstream patch
+
+* Mon Feb 23 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.2.13-8
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_11_Mass_Rebuild
+
+* Fri Feb 13 2009 Hans de Goede <hdegoede@redhat.com> 1.2.13-7
+- Rewrite pulseaudio support to stop the crackle crackle with the
+  new glitch free pulseaudio, this also gives us much better latency,
+  as good as with directly using alsa (rh 474745, sdl 698)
+- Workaround an obscure bug in the inline-asm revcpy function (by disabling it) 
+  This fixes Ri-li crashing on i386 (rh 484121, rh 484362, sdl 699)
+
+* Tue Sep  2 2008 Thomas Woerner <twoerner@redhat.com> 1.2.13-6
+- dropped pulseaudio hack (rhbz#448270)
+- pulseaudio is now used by default
+- simplified spec file for new architecture support (rhbz#433618)
+
+* Mon Jul 14 2008 Tom "spot" Callaway <tcallawa@redhat.com> 1.2.13-5
+- fix license tag
+
+* Wed May 28 2008 Dennis Gilmore <dennis@ausil.us> 1.2.13-4
+- fix sparc multilib handling
+
+* Mon Apr  7 2008 Thomas Woerner <twoerner@redhat.com> 1.2.13-3
+- updated PulseAudio driver (rhbz#439847)
+  Thanks to Lennart Poettering for the patch
+
+* Fri Feb  1 2008 Thomas Woerner <twoerner@redhat.com> 1.2.13-2
+- new static sub package for static libraries
+
+* Mon Jan  7 2008 Thomas Woerner <twoerner@redhat.com> 1.2.13-1
+- new version 1.2.13
+  - fixes i810 video overlay problem (rhbz#310841)
+  - fixes c++ style comments in header files (rhbz#426475)
+- review fixes: spec file cleanup, dropped static libs (rhbz#226402)
+- fixed pulseaudio hack scripts from Warren for multilib systems (rhbz#426579)
+- fixed pulseaudio detection in configure to enable dynamic use of pulseaudio
+  libraries
+
+* Fri Dec 21 2007 Warren Togami <wtogami@redhat.com> 1.2.12-5
+- correct stupid mistake that broke SDL-devel
+  RPM should error out if a SourceX is defined twice...
+
+* Wed Dec 19 2007 Warren Togami <wtogami@redhat.com> 1.2.12-4
+- Build with --enable-pulseaudio-shared for testing purposes (#343911)
+  It is known to not work in some cases, so not enabled by default.
+- Move pulseaudio enabler hack from SDL_mixer (#426275)
+- Make pulseaudio enabler hack conditional.  It will only attempt to use it if
+  alsa-plugins-pulseaudio is installed.
+
+* Tue Nov  6 2007 Thomas Woerner <twoerner@redhat.com> 1.2.12-3
+- fixed latest multiarch conflicts: dropped libdir from sdl-config completely
+  (rhbz#343141)
+
+* Tue Aug 28 2007 Thomas Woerner <twoerner@redhat.com> 1.2.12-2
+- use uname -m in multilib patch instead of arch
+
+* Mon Aug 27 2007 Thomas Woerner <twoerner@redhat.com> 1.2.12-1
+- new version 1.2.12
+  fixes TEXTRELs (rhbz#179407)
+- added arm support (rhbz#245411)
+  Thanks to Lennert Buytenhek for the patch
+- added alpha support (rhbz#246463)
+  Thanks to Oliver Falk for the patch
+- disabled yasm for SDL (rhbz#234823)
+  Thanks to Nikolay Ulyanitsky for the patch
+
+* Tue Mar 20 2007 Thomas Woerner <twoerner@redhat.com> 1.2.11-2
+- use X11 dlopen code for 64 bit architectures (rhbz#207903)
+
+* Mon Mar 19 2007 Thomas Woerner <twoerner@redhat.com> 1.2.11-1
+- new version 1.2.11
+- fixed man page SDL_ListModes (rhbz#208212)
+- fixed spurious esound, audiofile dependencies (rhbz#217389)
+  Thanks to Ville Skyttä for the patch
+- dropped requirements for imake and libXt-devel (rhbz#226402)
+- made nasm arch %%{ix86} only (rhbz#226402)
+- dropped O3 from options (rhbz#226402)
+- dropped tagname environment variable (rhbz#226402)
+
+* Thu Nov  2 2006 Thomas Woerner <twoerner@redhat.com> 1.2.10-9
+- fixed arch order in SDL_config.h wrapper
+
+* Fri Oct 27 2006 Thomas Woerner <twoerner@redhat.com> 1.2.10-8
+- fixed multilib conflicts for SDL (#212288)
 
 * Wed Jul 26 2006 Thomas Woerner <twoerner@redhat.com> 1.2.10-6.2
 - setting the X11 lib and include paths hard to get shared X11 support on all
@@ -456,7 +584,7 @@ rm -rf %{buildroot}
 - Re-integrated spec file into SDL distribution
 - 'name' and 'version' come from configure 
 - Some of the documentation is devel specific
-- Removed SMP support from %build - it doesn't work with libtool anyway
+- Removed SMP support from %%build - it doesn't work with libtool anyway
 
 * Tue Jan 18 2000 Hakan Tandogan <hakan@iconsult.com>
 - Hacked Mandrake sdl spec to build 1.1
