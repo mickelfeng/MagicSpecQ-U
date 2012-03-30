@@ -2,11 +2,11 @@
 # options
 #define examples 1 
 
-%define snap 20110922
+%define snap 20120224git
 
 Name:    qt-mobility
-Version: 1.2.0
-Release: 6.%{snap}%{?dist}
+Version: 1.2.2
+Release: 0.1.%{snap}%{?dist}
 Summary: Qt Mobility Framework
 Group:   System Environment/Libraries
 License: LGPLv2 with exceptions
@@ -14,7 +14,7 @@ URL:     http://qt.nokia.com/products/qt-addons/mobility
 %if 0%{?snap:1}
 # git clone git://gitorious.org/qt-mobility/qt-mobility.git
 # cd qt-mobility; git archive --prefix=qt-mobility-opensource-src-1.2.0/ master | xz -9 >  qt-mobility-opensources-src-1.2.0-20110922.tar.xz
-Source0: qt-mobility-opensource-src-1.2.0-%{snap}.tar.xz
+Source0: qt-mobility-opensource-src-%{version}-%{snap}.tar.xz
 %else
 Source0: http://get.qt.nokia.com/qt/add-ons/qt-mobility-opensource-src-%{version}.tar.gz
 %endif
@@ -27,10 +27,15 @@ Provides: qt4-mobility%{?_isa} = %{version}-%{release}
 Patch50: qt-mobility-opensource-src-1.2.0-translationsdir.patch
 # add pkgconfig for linux-* platforms too
 Patch51: qt-mobility-opensource-src-1.2.0-pkgconfig.patch
+# gcc 4.7, missing unistd.h for getppid
+Patch52: qt-mobility-opensource-src-1.2.0-include-unistdh.patch
+# dso
+Patch53: qt-mobility-opensource-src-1.1.0-pulseaudio-lib.patch
+# -fpermissive hack around failed bluez checks
+# see also https://bugzilla.redhat.com/show_bug.cgi?id=797266
+#Patch54: qt-mobility-opensource-src-1.2.2-bluez_gcc47.patch
 
 ## upstream patches
-# double-check if this is still required -- Rex
-Patch101: qt-mobility-opensource-src-1.1.0-pulseaudio-lib.patch
 
 BuildRequires: chrpath
 BuildRequires: pkgconfig(alsa)
@@ -98,7 +103,9 @@ Requires: %{name}%{?_isa} = %{version}-%{release}
 
 %patch50 -p1 -b .translationsdir
 %patch51 -p1 -b .pkgconfig
-%patch101 -p1 -b .pulseaudio_lib
+%patch52 -p1 -b .include-unistdh
+%patch53 -p1 -b .pulseaudio_lib
+#patch54 -p1 -b .bluez_gcc47
 
 
 %build
@@ -111,6 +118,7 @@ PATH=%{_qt4_bindir}:$PATH; export PATH
   -libdir %{_qt4_libdir} \
   -plugindir %{_qt4_plugindir} \
   -qmake-exec %{_qt4_qmake} \
+  -release \
   %{?examples:-examples} 
 
 make %{?_smp_mflags} 
@@ -238,6 +246,18 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri Feb 24 2012 Rex Dieter <rdieter@fedoraproject.org> 1.2.2-0.1.20120224git
+- 1.2.2 20120224git snapshot
+
+* Fri Feb 24 2012 Rex Dieter <rdieter@fedoraproject.org> 1.2.0-9.20110922
+- build in release mode
+
+* Fri Feb 24 2012 Jaroslav Reznik <jreznik@redhat.com> - 1.2.0-8.20110922
+- fix FTBFS because of missing unistd.h include
+
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.2.0-7.20110922
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
 * Sat Oct 29 2011 Rex Dieter <rdieter@fedoraproject.org> 1.2.0-6.20110922
 - add pkgconfig support
 
