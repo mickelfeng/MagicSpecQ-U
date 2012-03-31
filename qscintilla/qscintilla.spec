@@ -5,8 +5,8 @@
 %global python 1
 
 Name:    qscintilla
-Version: 2.6
-Release: 4%{?dist}
+Version: 2.6.1
+Release: 1%{?dist}
 Summary: A Scintilla port to Qt
 # matches up (pretty much) with qt4
 License: GPLv3 or GPLv2 with exceptions
@@ -23,7 +23,7 @@ Obsoletes: qscintilla-designer < 2.4-3
 Provides:  qscintilla-designer = %{version}-%{release}
 %{?_isa:Provides: qscintilla-designer%{_isa} = %{version}-%{release}}
 
-BuildRequires:  qt4-devel
+BuildRequires: pkgconfig(QtDesigner) pkgconfig(QtGui) pkgconfig(QtScript) pkgconfig(QtXml)
 
 # for -python
 %if 0%{?python}
@@ -152,8 +152,9 @@ rm -rf %{buildroot}
 
 
 %changelog
-* Mon Jan 30 2012 Liu Di <liudidi@gmail.com> - 2.6-4
-- 为 Magic 3.0 重建
+* Sat Feb 11 2012 Rex Dieter <rdieter@fedoraproject.org> 2.6.1-1
+- 2.6.1
+- pkgconfig-style deps
 
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.6-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
