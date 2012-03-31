@@ -9,8 +9,8 @@
 
 Summary: SIP - Python/C++ Bindings Generator
 Name: sip
-Version: 4.13.1
-Release: 2%{?dist}
+Version: 4.13.2
+Release: 1%{?dist}
 # sipgen/parser.{c.h} is GPLv3+ with exceptions (bison)
 License: GPLv2 or GPLv3 and (GPLv3+ with exceptions)
 Group: Development/Tools
