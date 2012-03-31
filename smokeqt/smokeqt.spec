@@ -1,5 +1,6 @@
+%define rversion %{kde4_kdelibs_version}
 Name:    smokeqt
-Version: 4.8.0
+Version: %{rversion}
 Release: 1%{?dist}
 Summary: Bindings for Qt libraries
 
