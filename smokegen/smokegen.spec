@@ -1,6 +1,7 @@
+%define rversion %{kde4_kdelibs_version}
 Name: smokegen
-Version: 4.8.0
-Release: 3%{?dist}
+Version: %{rversion}
+Release: 1%{?dist}
 Summary: Smoke Generator
 
 License: LGPLv2 and GPLv2+
