@@ -66,13 +66,15 @@ rm -rf %{buildroot} %{_builddir}/%{buildsubdir}
 %defattr(-,root,root,-)
 %{_bindir}/*
 %{_libdir}/*.so.*
-%{_libdir}/ruby/site_ruby/*
+%{_libdir}/ruby/vendor_ruby/*
+%{_datadir}/ruby/vendor_ruby/*
 
 %files devel
 %defattr(-,root,root,-)
 %{_includedir}/*
 %{_datadir}/qtruby4/cmake/*
 %{_libdir}/*.so
+
 %changelog
 * Tue Aug 11 2009 Ni Hui <shuizhuyuanluo@126.com> - 3.2.3-1mgc
 - 更新至 3.2.3
