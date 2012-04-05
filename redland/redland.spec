@@ -1,6 +1,6 @@
 Name:           redland
-Version:        1.0.14
-Release:        2%{?dist}
+Version:        1.0.15
+Release:        1%{?dist}
 Summary:        RDF Application Framework
 
 Group:          System Environment/Libraries
@@ -10,7 +10,7 @@ Source0:        http://download.librdf.org/source/%{name}-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  curl-devel
-BuildRequires:  db4-devel
+BuildRequires:  libdb-devel
 BuildRequires:  libiodbc-devel
 BuildRequires:  libtool-ltdl-devel
 BuildRequires:  libxml2-devel >= 2.4.0
@@ -140,6 +140,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Mon Mar 05 2012 Rex Dieter <rdieter@fedoraproject.org> 1.0.15-1
+- 1.0.15
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.0.14-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
