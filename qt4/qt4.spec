@@ -1,7 +1,7 @@
 #define pre_tag rc1
 #define pre -%{pre_tag}
 
-%define real_version 4.8.0
+%define real_version 4.8.1
 %define release_number 1
 
 # switches: whether to build it or not
@@ -44,7 +44,7 @@ done
 
 
 Version: %{real_version}
-Release: %{release_number}%{?dist}.4
+Release: %{release_number}%{?dist}
 %define ver %version
 
 Source0: http://get.qt.nokia.com/qt/source/qt-everywhere-opensource-src-%{version}.tar.gz
