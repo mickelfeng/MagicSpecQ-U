@@ -1,14 +1,10 @@
-
-%if 0%{?fedora} > 16
+%define rversion %{kde4_kdelibs_version}
 %global monodir /usr/lib/mono
-%else
-%global monodir %{_libdir}/mono
-%endif
 
 Name:    qyoto 
 Summary: .NET/Mono bindings for the Qt libraries 
-Version: 4.8.0
-Release: 2%{?dist}
+Version: %{rversion}
+Release: 1%{?dist}
 
 # libqyoto LGPLv2+, mono bindings GPLv2+
 License: LGPLv2+ and GPLv2+
