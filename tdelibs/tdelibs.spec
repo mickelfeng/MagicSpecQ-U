@@ -1,11 +1,11 @@
 %define debug 0
 %define final 1
 
-%define qt_version 3.3.8d
+%define qt_version 3.4
 %define arts_version 1.5.14
 
 %define git 1
-%define gitdate 20111127
+%define gitdate 20120408
 
 %define libtool 1
 %define fam 1
@@ -89,7 +89,7 @@ Patch211:	kdelibs-3.5.1-fix-ogg-to-wav.patch
 #Patch1000:	post-3.5.7-kdelibs-kdecore-2.diff
 
 
-Requires: qt >= %{qt_version}
+Requires: tqt3 >= %{qt_version}
 Requires: openssl >= 0.9.8j
 Requires: cups >= 1.1.12, cups-libs >= 1.1.12, cups-lpd >= 1.1.12
 Requires: audiofile, bzip2-libs
@@ -117,7 +117,7 @@ BuildRequires: pcre-devel
 %endif
 
 BuildRequires: cups-devel >= 1.1.12
-BuildRequires: qt-devel >= %{qt_version}
+BuildRequires: tqt3-devel >= %{qt_version}
 BuildRequires: flex >= 2.5.4a-13
 #BuildRequires: doxygen
 BuildRequires: libxslt-devel >= 1.1.2
@@ -166,7 +166,7 @@ Group: Development/Libraries
 Group(zh_CN.UTF-8): 开发/库
 Summary: Header files and documentation for compiling KDE applications.
 Summary(zh_CN.UTF-8): 编译 KDE 应用程序所需要的头文件和文档
-Requires: qt-devel >= %{qt_version}
+Requires: tqt3-devel >= %{qt_version}
 Requires: %{name} = %{version}-%{release}
 %if %{arts}
 Requires: arts-devel
@@ -247,11 +247,8 @@ cd build
 	-DWITH_HSPELL=ON \
         ..
 
-#sed -i 's/LDFLAGS\ \=\ \ \-L\/usr\/kerberos\/lib\ /LDFLAGS\ =\ \ -L\/usr\/kerberos\/lib\ \-L\/usr\/lib\/qt-3.3\/lib/g' dcop/client/Makefile
-#sed -i 's/LDFLAGS\ \=\ \ \-L\/usr\/kerberos\/lib\ /LDFLAGS\ =\ \ -L\/usr\/kerberos\/lib\ \-L\/usr\/lib\/qt-3.3\/lib/g' kdeui/Makefile
 #不支持并行编译参数： %{?_smp_mflags}
-#make %{?_smp_mflags}
-make
+make %{?_smp_mflags}
 
 %install
 rm -rf %{buildroot}
@@ -272,6 +269,9 @@ install -D -m 644 %{SOURCE4} %{buildroot}/usr/share/mimelnk/video/flv.desktop
 #and the icon
 install -D -m 644 %{SOURCE5} %{buildroot}/usr/share/pixmaps/flv.png
 
+#
+mv %{buildroot}%{_sysconfdir}/xdg/menus/applications.menu %{buildroot}%{_sysconfdir}/xdg/menus/tde-applications.menu
+
 %clean
 rm -rf %{buildroot} %{_builddir}/%{buildsubdir}
 
@@ -284,7 +284,7 @@ rm -rf %{buildroot} %{_builddir}/%{buildsubdir}
 %attr(4755,root,root) %{_bindir}/kgrantpty
 /etc
 /usr
-%config(noreplace) /etc/xdg/menus/applications.menu 
+%config(noreplace) %{_sysconfdir}/xdg/menus/tde-applications.menu 
 %{_datadir}/config/*
 %exclude /usr/include*
 %exclude /usr/*/debug*
