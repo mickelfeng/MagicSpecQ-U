@@ -12,7 +12,7 @@ URL: https://projects.kde.org/projects/kde/kdebindings/smoke
 %else
 %global stable stable
 %endif
-Source0: ftp://ftp.kde.org/pub/kde/%{stable}/%{version}/src/%{name}-%{version}.tar.bz2
+Source0: ftp://ftp.kde.org/pub/kde/%{stable}/%{version}/src/%{name}-%{version}.tar.xz
 
 ## upstreamable patches
 
