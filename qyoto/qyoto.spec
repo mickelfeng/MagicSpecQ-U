@@ -16,7 +16,7 @@ URL:     http://techbase.kde.org/Development/Languages/Qyoto
 %else
 %global stable stable
 %endif
-Source0: http://download.kde.org/%{stable}/%{version}/src/%{name}-%{version}.tar.bz2
+Source0: http://download.kde.org/%{stable}/%{version}/src/%{name}-%{version}.tar.xz
 
 BuildRequires: cmake
 BuildRequires: pkgconfig(mono)
