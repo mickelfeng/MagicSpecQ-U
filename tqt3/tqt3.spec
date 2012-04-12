@@ -1,5 +1,5 @@
 %define git 1
-%define gitdate 20120328
+%define gitdate 20120411
 
 %define qt_dirname tqt-3.4
 %define qtdir %{_libdir}/%{qt_dirname}
@@ -43,7 +43,11 @@ Summary: The shared library for the Qt GUI toolkit.
 Summary(zh_CN.UTF-8): TQt GUI 工具包的共享库。
 Name: 	 tqt3
 Version: %{ver}
+%if %{git}
+Release: 3.git%{gitdate}%{?dist}
+%else
 Release: 2%{?dist}
+%endif
 %if %{git}
 Source0: tqt3-git%{gitdate}.tar.xz
 %else
@@ -120,10 +124,6 @@ Patch10009: qt3-gcc46.patch
 Patch99999: http://www.trinitydesktop.org/wiki/pub/Developers/Qt3/qt3_3.3.8c.diff
 
 %define theme %{name}
-Prereq: /sbin/ldconfig
-Prereq: fileutils
-# Wierd, but true. (-: -- Rex
-#BuildConflicts: qt < %{version}
 
 BuildRequires: libmng-devel
 BuildRequires: libjpeg-devel
@@ -563,8 +563,8 @@ done
 
 # create/fix symlinks, lib64 fixes
 /sbin/ldconfig -n $RPM_BUILD_ROOT%{qtdir}/%{_lib}
-for link in qt.so qt.so.3 ; do
-  ln -sf libqt-mt.so.%{version} $RPM_BUILD_ROOT%{qtdir}/%{_lib}/lib${link}
+for link in tqt.so tqt.so.3 ; do
+  ln -sf libtqt-mt.so.%{version} $RPM_BUILD_ROOT%{qtdir}/%{_lib}/lib${link}
 done
 pushd mkspecs
 rm -rf default
@@ -611,11 +611,10 @@ mkdir -p $RPM_BUILD_ROOT/etc/profile.d
 install -m 755 %{SOURCE2} %{SOURCE3} %{buildroot}/etc/profile.d/
 
 mkdir -p %{buildroot}%{_bindir}
+install -m 0755 bin/conv2ui %{buildroot}%{qtdir}/bin/conv2ui
 for i in bin/*; do
-  ln -s ../%{_lib}/%{qt_dirname}/bin/`basename $i` $RPM_BUILD_ROOT%{_bindir}/t`basename $i`
+  ln -s ../%{_lib}/%{qt_dirname}/bin/`basename $i` $RPM_BUILD_ROOT%{_bindir}/tqt-`basename $i`
 done
-# 修正和 tqtinterface 的冲突
-mv %{buildroot}%{_bindir}/tmoc %{buildroot}%{_bindir}/tqmoc
 
 # make symbolic link to qt docdir
 mv %{buildroot}%{_docdir}/qt-devel-3.4 %{buildroot}%{_docdir}/tqt3-devel-3.4
@@ -666,7 +665,7 @@ wheelScrollLines=3
 
 [KDE]
 contrast=7
-kdeAddedLibraryPaths=~/.kde/lib/kde3/plugins/^e/usr/lib/kde3/plugins/^e
+kdeAddedLibraryPaths=~/.kde/lib/trinity/plugins/^e/usr/lib/trinity/plugins/^e
 
 [KWinPalette]
 activeBackground=#6b91b8
@@ -712,7 +711,7 @@ popd
 cp -aR mkspecs %{buildroot}%{qtdir}
 
 # Patch qmake to use qt-mt unconditionally
-perl -pi -e "s,-lqt ,-lqt-mt ,g;s,-lqt$,-lqt-mt,g" %{buildroot}%{qtdir}/mkspecs/*/qmake.conf
+perl -pi -e "s,-lqt ,-ltqt-mt ,g;s,-lqt$,-ltqt-mt,g" %{buildroot}%{qtdir}/mkspecs/*/qmake.conf
 
 # remove broken links
 rm -f %{buildroot}%{qtdir}/mkspecs/default/linux-g++*
@@ -754,7 +753,8 @@ exit 0
 %dir %{qtdir}/etc/settings
 # qt-theme
 %config(noreplace) %{qtdir}/etc/settings/*rc.%{theme}
-%ghost  %{qtdir}/etc/settings/*rc
+%ghost  %{qtdir}/etc/settings/tqtrc
+%ghost  %{qtdir}/etc/settings/tqtrc.tqt3
 %ghost %verify(not md5 size mtime) %{qtdir}/etc/settings/tqt_plugins_3.4rc
 %dir %{qtdir}/plugins
 %if %{immodule}
@@ -773,7 +773,7 @@ exit 0
 %files config
 %defattr(-,root,root,-)
 %{qtdir}/bin/qtconfig
-%{_bindir}/tqtconfig*
+%{_bindir}/tqt-qtconfig*
 
 %files devel
 %defattr(-,root,root,-)
@@ -782,6 +782,7 @@ exit 0
 %{qtdir}/bin/findtr
 %{qtdir}/bin/qt20fix
 %{qtdir}/bin/qtrename140
+%{qtdir}/bin/conv2ui
 %{qtdir}/bin/assistant
 %{qtdir}/bin/qm2ts
 %{qtdir}/bin/qmake
@@ -790,7 +791,6 @@ exit 0
 %{qtdir}/bin/lupdate
 %{qtdir}/bin/lrelease
 #以下需要确定所属包
-%{_bindir}/tconv2ui
 %{qtdir}/bin/createcw
 %{qtdir}/bin/makeqpf
 %{qtdir}/bin/mergetr
@@ -802,8 +802,7 @@ exit 0
 #结束
 %{qtdir}/include
 %{qtdir}/mkspecs
-%{qtdir}/lib/libqt*.so
-%{qtdir}/lib/libtqt-mt.so
+%{qtdir}/lib/libtqt*.so
 %{qtdir}/lib/libtqui.so
 %{qtdir}/lib/libtqt-mt.la
 %{qtdir}/lib/libeditor.a
@@ -813,18 +812,18 @@ exit 0
 %exclude %{_mandir}/*
 %{qtdir}/translations
 %{qtdir}/phrasebooks
-%{_bindir}/tassistant*
-%{_bindir}/tqmoc*
-%{_bindir}/tuic*
-%{_bindir}/tfindtr*
-%{_bindir}/tqt20fix*
-%{_bindir}/tqtrename140*
-%{_bindir}/tqmake*
-%{_bindir}/tqm2ts*
-#%{_bindir}/qembed
-%{_bindir}/tlinguist
-%{_bindir}/tlrelease
-%{_bindir}/tlupdate
+%{_bindir}/tqt-assistant*
+%{_bindir}/tqt-moc*
+%{_bindir}/tqt-uic*
+%{_bindir}/tqt-findtr*
+%{_bindir}/tqt-qt20fix*
+%{_bindir}/tqt-qtrename140*
+%{_bindir}/tqt-qmake*
+%{_bindir}/tqt-qm2ts*
+%{_bindir}/tqt-linguist
+%{_bindir}/tqt-lrelease
+%{_bindir}/tqt-lupdate
+%{_bindir}/tqt-conv2ui
 %{_libdir}/pkgconfig/*
 %{qtdir}/lib/pkgconfig
 %{qtdir}/doc
@@ -876,7 +875,7 @@ exit 0
 
 %files designer
 %defattr(-,root,root,-)
-%{_bindir}/tdesigner*
+%{_bindir}/tqt-designer*
 %dir %{qtdir}/plugins/designer
 %{qtdir}/templates
 %{qtdir}/plugins/designer/*
