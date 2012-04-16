@@ -2,8 +2,8 @@
 
 Name:           systemd
 Url:            http://www.freedesktop.org/wiki/Software/systemd
-Version:        43
-Release:        2%{?gitcommit:.git%{gitcommit}}%{?dist}
+Version:        44
+Release:        4%{?gitcommit:.git%{gitcommit}}%{?dist}
 License:        GPLv2+
 Group:          System Environment/Base
 Summary:        A System and Service Manager
@@ -13,14 +13,10 @@ BuildRequires:  libcap-devel
 BuildRequires:  tcp_wrappers-devel
 BuildRequires:  pam-devel
 BuildRequires:  cryptsetup-luks-devel
+BuildRequires:  dbus-devel
 BuildRequires:  libxslt
 BuildRequires:  docbook-style-xsl
-BuildRequires:  vala >= 0.11
 BuildRequires:  pkgconfig
-BuildRequires:  gtk2-devel
-BuildRequires:  glib2-devel
-BuildRequires:  libgee06-devel
-BuildRequires:  libnotify-devel >= 0.7
 BuildRequires:  libacl-devel
 BuildRequires:  intltool >= 0.40.0
 BuildRequires:  gperf
@@ -39,9 +35,9 @@ Requires:       udev >= 179-2
 Requires:       libudev >= 179-2
 Requires:       initscripts >= 9.28
 Requires:       filesystem >= 3
-Conflicts:      selinux-policy < 3.9.16-12.fc15
 Conflicts:      kernel < 2.6.35.2-9.fc14
 Requires:       nss-myhostname
+Provides:	/bin/systemctl
 %if %{defined gitcommit}
 # Snapshot tarball can be created using: ./make-git-shapshot.sh [gitcommit]
 Source0:        %{name}-git%{gitcommit}.tar.xz
@@ -55,6 +51,7 @@ Source2:        systemd-sysv-convert
 Source3:        udlfb.conf
 # Stop-gap, just to ensure things work fine with rsyslog without having to change the package right-away
 Source4:        listen.conf
+Patch0:         systemd-PAGE_SIZE.patch
 
 # For sysvinit tools
 Obsoletes:      SysVinit < 2.86-24, sysvinit < 2.86-24
@@ -67,7 +64,7 @@ Obsoletes:      upstart-sysvinit < 1.2-3
 Conflicts:      upstart-sysvinit
 Obsoletes:      readahead < 1:1.5.7-3
 Provides:       readahead = 1:1.5.7-3
-Provides:       /bin/systemctl
+Provides:       /usr/bin/systemctl
 Provides:       /sbin/shutdown
 Obsoletes:      systemd-units < 38-5
 Provides:       systemd-units = %{version}-%{release}
@@ -91,15 +88,6 @@ Requires:       %{name} = %{version}-%{release}
 
 %description devel
 Development headers and auxiliary files for developing applications for systemd.
-
-%package gtk
-Group:          System Environment/Base
-Summary:        Graphical frontend for systemd
-Requires:       %{name} = %{version}-%{release}
-Requires:       polkit
-
-%description gtk
-Graphical front-end for systemd.
 
 %package sysv
 Group:          System Environment/Base
@@ -126,10 +114,11 @@ at boot.
 
 %prep
 %setup -q %{?gitcommit:-n %{name}-git%{gitcommit}}
+%patch0 -p1
 
 %build
 %{?gitcommit: ./autogen.sh }
-%configure --with-distro=fedora --disable-static
+%configure --with-distro=fedora --disable-static --disable-gtk
 make %{?_smp_mflags}
 
 %install
@@ -141,12 +130,12 @@ find %{buildroot} \( -name '*.a' -o -name '*.la' \) -exec rm {} \;
 mkdir -p %{buildroot}/%{_sbindir}
 ln -s ../lib/systemd/systemd %{buildroot}%{_sbindir}/init
 ln -s ../lib/systemd/systemd %{buildroot}%{_bindir}/systemd
-ln -s ../bin/systemctl %{buildroot}%{_sbindir}/reboot
-ln -s ../bin/systemctl %{buildroot}%{_sbindir}/halt
-ln -s ../bin/systemctl %{buildroot}%{_sbindir}/poweroff
-ln -s ../bin/systemctl %{buildroot}%{_sbindir}/shutdown
-ln -s ../bin/systemctl %{buildroot}%{_sbindir}/telinit
-ln -s ../bin/systemctl %{buildroot}%{_sbindir}/runlevel
+ln -s ../usr/bin/systemctl %{buildroot}%{_sbindir}/reboot
+ln -s ../usr/bin/systemctl %{buildroot}%{_sbindir}/halt
+ln -s ../usr/bin/systemctl %{buildroot}%{_sbindir}/poweroff
+ln -s ../usr/bin/systemctl %{buildroot}%{_sbindir}/shutdown
+ln -s ../usr/bin/systemctl %{buildroot}%{_sbindir}/telinit
+ln -s ../usr/bin/systemctl %{buildroot}%{_sbindir}/runlevel
 
 # We create all wants links manually at installation time to make sure
 # they are not owned and hence overriden by rpm after the used deleted
@@ -202,11 +191,13 @@ rm -f %{buildroot}%{_prefix}/lib/sysctl.d/coredump.conf
 # Let rsyslog read from /proc/kmsg for now
 sed -i -e 's/\#ImportKernel=yes/ImportKernel=no/' %{buildroot}%{_sysconfdir}/systemd/systemd-journald.conf
 
+magic_rpm_clean.sh
+
 %post
-/sbin/ldconfig
+/usr/sbin/ldconfig
 /usr/bin/systemd-machine-id-setup > /dev/null 2>&1 || :
 /usr/lib/systemd/systemd-random-seed save > /dev/null 2>&1 || :
-/bin/systemctl daemon-reexec > /dev/null 2>&1 || :
+/usr/bin/systemctl daemon-reexec > /dev/null 2>&1 || :
 
 # Make sure pam_systemd is enabled
 if ! /bin/grep -q pam_systemd /etc/pam.d/system-auth-ac >/dev/null 2>&1 || ! [ -h /etc/pam.d/system-auth ] ; then
@@ -218,7 +209,7 @@ fi
 
 # Stop-gap until rsyslog.rpm does this on its own. (This is supposed
 # to fail when the link already exists)
-/bin/ln -s /usr/lib/systemd/system/rsyslog.service /etc/systemd/system/syslog.service >/dev/null 2>&1 || :
+/usr/bin/ln -s /usr/lib/systemd/system/rsyslog.service /etc/systemd/system/syslog.service >/dev/null 2>&1 || :
 
 if [ $1 -eq 1 ] ; then
         # Try to read default runlevel from the old inittab if it exists
@@ -233,7 +224,7 @@ if [ $1 -eq 1 ] ; then
         /bin/ln -sf "$target" /etc/systemd/system/default.target >/dev/null 2>&1 || :
 
         # Enable the services we install by default.
-        /bin/systemctl enable \
+        /usr/bin/systemctl enable \
                 getty@.service \
                 remote-fs.target \
                 systemd-readahead-replay.service \
@@ -245,15 +236,15 @@ else
 fi
 
 %postun
-/sbin/ldconfig
+/usr/sbin/ldconfig
 if [ $1 -ge 1 ] ; then
-        /bin/systemctl daemon-reload > /dev/null 2>&1 || :
-        /bin/systemctl try-restart systemd-logind.service >/dev/null 2>&1 || :
+        /usr/bin/systemctl daemon-reload > /dev/null 2>&1 || :
+        /usr/bin/systemctl try-restart systemd-logind.service >/dev/null 2>&1 || :
 fi
 
 %preun
 if [ $1 -eq 0 ] ; then
-        /bin/systemctl disable \
+        /usr/bin/systemctl disable \
                 getty@.service \
                 remote-fs.target \
                 systemd-readahead-replay.service \
@@ -261,6 +252,17 @@ if [ $1 -eq 0 ] ; then
 
         /bin/rm -f /etc/systemd/system/default.target >/dev/null 2>&1 || :
 fi
+
+%triggerun -- systemd-units < 38-5
+mv /etc/systemd/system/default.target /etc/systemd/system/default.target.save >/dev/null 2>&1 || :
+
+%triggerpostun -- systemd-units < 38-5
+mv /etc/systemd/system/default.target.save /etc/systemd/system/default.target >/dev/null 2>&1
+/usr/bin/systemctl enable \
+        getty@.service \
+        remote-fs.target \
+        systemd-readahead-replay.service \
+        systemd-readahead-collect.service
 
 %files
 %doc %{_docdir}/systemd
@@ -370,11 +372,6 @@ fi
 %ghost %config(noreplace) %{_sysconfdir}/systemd/system/runlevel4.target
 %ghost %config(noreplace) %{_sysconfdir}/systemd/system/runlevel5.target
 
-%files gtk
-%{_bindir}/systemadm
-%{_bindir}/systemd-gnome-ask-password-agent
-%{_mandir}/man1/systemadm.*
-
 %files devel
 %{_libdir}/libsystemd-daemon.so
 %{_libdir}/libsystemd-login.so
@@ -398,6 +395,22 @@ fi
 %{_bindir}/systemd-analyze
 
 %changelog
+* Wed Mar 28 2012 Michal Schmidt <mschmidt@redhat.com> - 44-4
+- Add triggers from Bill Nottingham to correct the damage done by
+  the obsoleted systemd-units's preun scriptlet (#807457).
+
+* Mon Mar 26 2012 Dennis Gilmore <dennis@ausil.us> - 44-3
+- apply patch from upstream so we can build systemd on arm and ppc
+- and likely the rest of the secondary arches
+
+* Tue Mar 20 2012 Michal Schmidt <mschmidt@redhat.com> - 44-2
+- Don't build the gtk parts anymore. They're moving into systemd-ui.
+- Remove a dead patch file.
+
+* Fri Mar 16 2012 Lennart Poettering <lpoetter@redhat.com> - 44-1
+- New upstream release
+- Closes #798760, #784921, #783134, #768523, #781735
+
 * Mon Feb 27 2012 Dennis Gilmore <dennis@ausil.us> - 43-2
 - don't conflict with fedora-release systemd never actually provided
 - /etc/os-release so there is no actual conflict
