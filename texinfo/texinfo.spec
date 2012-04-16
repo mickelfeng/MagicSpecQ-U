@@ -1,13 +1,13 @@
 %define tex_texinfo %{_datadir}/texmf/tex/texinfo
 
 Summary: Tools needed to create Texinfo format documentation files
-Summary(zh_CN.GB18030): ½¨Á¢ Texinfo ¸ñÊ½ÎÄµµÎÄ¼şËùĞèÒªµÄ¹¤¾ß
+Summary(zh_CN.UTF-8): å»ºç«‹ Texinfo æ ¼å¼æ–‡æ¡£æ–‡ä»¶æ‰€éœ€è¦çš„å·¥å…·
 Name: texinfo
 Version: 4.13a
-Release: 11%{?dist}
+Release: 13%{?dist}
 License: GPLv3+
 Group: Applications/Publishing
-Group(zh_CN.GB18030): Ó¦ÓÃ³ÌĞò/³ö°æ
+Group(zh_CN.UTF-8): åº”ç”¨ç¨‹åº/å‡ºç‰ˆ
 Url: http://www.gnu.org/software/texinfo/
 Source0: ftp://ftp.gnu.org/gnu/texinfo/texinfo-%{version}.tar.lzma
 Source1: info-dir
@@ -24,6 +24,8 @@ Requires(preun): /sbin/install-info
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: zlib-devel, ncurses-devel
 
+Provides: /sbin/install-info
+
 %description
 Texinfo is a documentation system that can produce both online
 information and printed output from a single source file. The GNU
@@ -33,30 +35,30 @@ Install texinfo if you want a documentation system for producing both
 online and print documentation from the same source file and/or if you
 are going to write documentation for the GNU Project.
 
-%description -l zh_CN.GB18030
-Texinfo ÊÇÒ»¸öÎÄµµÏµÍ³£¬Ëü¿ÉÒÔ´ÓÒ»¸öÀ´Ô´ÎÄ¼şÍ¬Ê±²úÉúÔÚÏßĞÅÏ¢ºÍ¿É´òÓ¡Êä³ö¡£
-GNU ÏîÄ¿´ó²¿·ÖÊ¹ÓÃ Texinfo ¸ñÊ½×öËüÃÇµÄÎÄµµ¡£
+%description -l zh_CN.UTF-8
+Texinfo æ˜¯ä¸€ä¸ªæ–‡æ¡£ç³»ç»Ÿï¼Œå®ƒå¯ä»¥ä»ä¸€ä¸ªæ¥æºæ–‡ä»¶åŒæ—¶äº§ç”Ÿåœ¨çº¿ä¿¡æ¯å’Œå¯æ‰“å°è¾“å‡ºã€‚
+GNU é¡¹ç›®å¤§éƒ¨åˆ†ä½¿ç”¨ Texinfo æ ¼å¼åšå®ƒä»¬çš„æ–‡æ¡£ã€‚
 
 %package -n info
 Summary: A stand-alone TTY-based reader for GNU texinfo documentation
-Summary(zh_CN.GB18030): Ò»¸ö¶ÀÁ¢µÄÓÃÓÚ GNU texinfo ÎÄµµµÄ»ùÓÚ TTY µÄÔÄ¶ÁÆ÷
+Summary(zh_CN.UTF-8): ä¸€ä¸ªç‹¬ç«‹çš„ç”¨äº GNU texinfo æ–‡æ¡£çš„åŸºäº TTY çš„é˜…è¯»å™¨
 Group: System Environment/Base
-Group(zh_CN.GB18030): ÏµÍ³»·¾³/»ù±¾
+Group(zh_CN.UTF-8): ç³»ç»Ÿç¯å¢ƒ/åŸºæœ¬
 
 %description -n info
 The GNU project uses the texinfo file format for much of its
 documentation. The info package provides a standalone TTY-based
 browser program for viewing texinfo files.
 
-%description -n info -l zh_CN.GB18030
-GNU ¼Æ»®ÔÚ¶àÊıÎÄµµÖĞÊ¹ÓÃ texinfo ÎÄ¼ş¸ñÊ½¡£info Èí¼ş°üÌá¹©ÁËÒ»¸öµ¥¶ÀµÄ
-»ùÓÚ TTY µÄä¯ÀÀÆ÷³ÌĞòÀ´²é¿´ texinfo ÎÄ¼ş¡£
+%description -n info -l zh_CN.UTF-8
+GNU è®¡åˆ’åœ¨å¤šæ•°æ–‡æ¡£ä¸­ä½¿ç”¨ texinfo æ–‡ä»¶æ ¼å¼ã€‚info è½¯ä»¶åŒ…æä¾›äº†ä¸€ä¸ªå•ç‹¬çš„
+åŸºäº TTY çš„æµè§ˆå™¨ç¨‹åºæ¥æŸ¥çœ‹ texinfo æ–‡ä»¶ã€‚
 
 %package tex
 Summary: Tools for formatting Texinfo documentation files using TeX
-Summary(zh_CN.GB18030): Ê¹ÓÃ TeX ¸ñÊ½»¯ Texinfo ÎÄµµÎÄ¼şµÄ¹¤¾ß
+Summary(zh_CN.UTF-8): ä½¿ç”¨ TeX æ ¼å¼åŒ– Texinfo æ–‡æ¡£æ–‡ä»¶çš„å·¥å…·
 Group: Applications/Publishing
-Group(zh_CN.GB18030): Ó¦ÓÃ³ÌĞò/³ö°æ
+Group(zh_CN.UTF-8): åº”ç”¨ç¨‹åº/å‡ºç‰ˆ
 Requires: texinfo = %{version}-%{release}
 Requires: tetex
 Requires(post): %{_bindir}/texconfig-sys
@@ -70,11 +72,11 @@ Project uses the Texinfo file format for most of its documentation.
 The texinfo-tex package provides tools to format Texinfo documents
 for printing using TeX.
 
-%description tex -l zh_CN.GB18030
-Texinfo ÊÇÒ»¸öÎÄµµÏµÍ³£¬Ëü¿ÉÒÔ´ÓÒ»¸öÀ´Ô´ÎÄ¼şÍ¬Ê±²úÉúÔÚÏßĞÅÏ¢ºÍ¿É´òÓ¡Êä³ö¡£
-GNU ÏîÄ¿´ó²¿·ÖÊ¹ÓÃ Texinfo ¸ñÊ½×öËüÃÇµÄÎÄµµ¡£
+%description tex -l zh_CN.UTF-8
+Texinfo æ˜¯ä¸€ä¸ªæ–‡æ¡£ç³»ç»Ÿï¼Œå®ƒå¯ä»¥ä»ä¸€ä¸ªæ¥æºæ–‡ä»¶åŒæ—¶äº§ç”Ÿåœ¨çº¿ä¿¡æ¯å’Œå¯æ‰“å°è¾“å‡ºã€‚
+GNU é¡¹ç›®å¤§éƒ¨åˆ†ä½¿ç”¨ Texinfo æ ¼å¼åšå®ƒä»¬çš„æ–‡æ¡£ã€‚
 
-texinfo-tex °üÌá¹©ÁËÊ¹ÓÃ Tex ´òÓ¡¸ñÊ½ Texinfo ÎÄµµµÄ¹¤¾ß¡£
+texinfo-tex åŒ…æä¾›äº†ä½¿ç”¨ Tex æ‰“å°æ ¼å¼ Texinfo æ–‡æ¡£çš„å·¥å…·ã€‚
 
 %prep
 %setup -q -n %{name}-4.13
@@ -99,7 +101,8 @@ install -p -m644 doc/texinfo.tex doc/txi-??.tex $RPM_BUILD_ROOT%{tex_texinfo}
 
 install -p -m644 %{SOURCE2} $RPM_BUILD_ROOT%{_mandir}/man1/texi2pdf.1
 install -p -m644 %{SOURCE1} $RPM_BUILD_ROOT%{_infodir}/dir
-mv $RPM_BUILD_ROOT%{_bindir}/install-info $RPM_BUILD_ROOT/sbin
+mkdir -p $RPM_BUILD_ROOT%{_sbindir}
+mv $RPM_BUILD_ROOT%{_bindir}/install-info $RPM_BUILD_ROOT%{_sbindir}
 
 # Convert ChangeLog to UTF-8
 /usr/bin/iconv -f iso-8859-2 -t utf-8 < ChangeLog > ChangeLog_utf8
@@ -163,7 +166,7 @@ fi
 %{_bindir}/infokey
 %{_infodir}/info.info*
 %{_infodir}/info-stnd.info*
-/sbin/install-info
+%{_sbindir}/install-info
 %{_mandir}/man1/info.1*
 %{_mandir}/man1/infokey.1*
 %{_mandir}/man1/install-info.1*
@@ -182,8 +185,9 @@ fi
 %{_mandir}/man1/pdftexi2dvi.1*
 
 %changelog
-* Tue Feb 14 2012 Liu Di <liudidi@gmail.com> - 4.13a-11
+* Mon Apr 16 2012 Liu Di <liudidi@gmail.com> - 4.13a-13
 - ä¸º Magic 3.0 é‡å»º
 
-* Mon Oct 09 2006 Liu Di <liudidi@gmail.com> - 4.8-1mgc
-- rebuild for Magic
+* Mon Apr 16 2012 Liu Di <liudidi@gmail.com> - 4.13a-12
+- ä¸º Magic 3.0 é‡å»º
+
