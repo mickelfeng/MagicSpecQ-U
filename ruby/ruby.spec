@@ -34,7 +34,12 @@
 # Specify custom RubyGems root.
 %global gem_dir %{_datadir}/gems
 # TODO: Should we create arch specific rubygems-filesystem?
+%global multilib_64_archs sparc64 ppc64 s390x x86_64
+%ifarch %{multilib_64_archs}
 %global gem_extdir %{_exec_prefix}/lib{,64}/gems
+%else
+%global gem_extdir %{_exec_prefix}/lib/gems
+%endif
 
 %global rake_version 0.9.2.2
 # TODO: The IRB has strange versioning. Keep the Ruby's versioning ATM.
@@ -51,7 +56,7 @@
 Summary: An interpreter of object-oriented scripting language
 Name: ruby
 Version: %{ruby_version_patch_level}
-Release: 2%{?dist}
+Release: 4%{?dist}
 Group: Development/Languages
 License: Ruby or BSD
 URL: http://ruby-lang.org/
@@ -425,6 +430,9 @@ sed -i '2 a\
 sed -i '2 a\
   s.require_paths = ["lib"]' %{buildroot}/%{gem_dir}/specifications/minitest-%{minitest_version}.gemspec
 
+magic_rpm_clean.sh
+
+%if 0%{?with_check}
 %check
 # Disable make check on ARM until the bug is fixed
 # https://bugzilla.redhat.com/show_bug.cgi?id=789410
@@ -433,6 +441,7 @@ sed -i '2 a\
 # TODO: Investigate the test failures.
 # https://bugs.ruby-lang.org/issues/6036
 make check TESTS="-v -x test_pathname.rb -x test_drbssl.rb -x test_parse.rb -x test_x509cert.rb"
+%endif
 %endif
 
 %post libs -p /sbin/ldconfig
@@ -634,10 +643,17 @@ make check TESTS="-v -x test_pathname.rb -x test_drbssl.rb -x test_parse.rb -x t
 %{rubygems_dir}
 %{gem_dir}
 %exclude %{gem_dir}/gems/*
+%ifarch %{multilib_64_archs}
 %{_exec_prefix}/lib*/gems
 %exclude %{_exec_prefix}/lib*/gems/exts/bigdecimal-%{bigdecimal_version}
 %exclude %{_exec_prefix}/lib*/gems/exts/io-console-%{io_console_version}
 %exclude %{_exec_prefix}/lib*/gems/exts/json-%{json_version}
+%else
+%{_exec_prefix}/lib/gems
+%exclude %{_exec_prefix}/lib/gems/exts/bigdecimal-%{bigdecimal_version}
+%exclude %{_exec_prefix}/lib/gems/exts/io-console-%{io_console_version}
+%exclude %{_exec_prefix}/lib/gems/exts/json-%{json_version}
+%endif
 %exclude %{gem_dir}/gems/rake-%{rake_version}
 %exclude %{gem_dir}/gems/rdoc-%{rdoc_version}
 %exclude %{gem_dir}/specifications/bigdecimal-%{bigdecimal_version}.gemspec
@@ -699,6 +715,12 @@ make check TESTS="-v -x test_pathname.rb -x test_drbssl.rb -x test_parse.rb -x t
 %{ruby_libdir}/tkextlib
 
 %changelog
+* Wed Apr 18 2012 Liu Di <liudidi@gmail.com> - 1.9.3.125-4
+- 为 Magic 3.0 重建
+
+* Wed Apr 18 2012 Liu Di <liudidi@gmail.com>
+- 为 Magic 3.0 重建
+
 * Wed Feb 29 2012 Peter Robinson <pbrobinson@fedoraproject.org> - 1.9.3.125-2
 - Temporarily disable make check on ARM until it's fixed upstream. Tracked in RHBZ 789410
 
