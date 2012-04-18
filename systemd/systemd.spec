@@ -3,7 +3,7 @@
 Name:           systemd
 Url:            http://www.freedesktop.org/wiki/Software/systemd
 Version:        44
-Release:        4%{?gitcommit:.git%{gitcommit}}%{?dist}
+Release:        5%{?gitcommit:.git%{gitcommit}}%{?dist}
 License:        GPLv2+
 Group:          System Environment/Base
 Summary:        A System and Service Manager
@@ -130,12 +130,12 @@ find %{buildroot} \( -name '*.a' -o -name '*.la' \) -exec rm {} \;
 mkdir -p %{buildroot}/%{_sbindir}
 ln -s ../lib/systemd/systemd %{buildroot}%{_sbindir}/init
 ln -s ../lib/systemd/systemd %{buildroot}%{_bindir}/systemd
-ln -s ../usr/bin/systemctl %{buildroot}%{_sbindir}/reboot
-ln -s ../usr/bin/systemctl %{buildroot}%{_sbindir}/halt
-ln -s ../usr/bin/systemctl %{buildroot}%{_sbindir}/poweroff
-ln -s ../usr/bin/systemctl %{buildroot}%{_sbindir}/shutdown
-ln -s ../usr/bin/systemctl %{buildroot}%{_sbindir}/telinit
-ln -s ../usr/bin/systemctl %{buildroot}%{_sbindir}/runlevel
+ln -s ../bin/systemctl %{buildroot}%{_sbindir}/reboot
+ln -s ../bin/systemctl %{buildroot}%{_sbindir}/halt
+ln -s ../bin/systemctl %{buildroot}%{_sbindir}/poweroff
+ln -s ../bin/systemctl %{buildroot}%{_sbindir}/shutdown
+ln -s ../bin/systemctl %{buildroot}%{_sbindir}/telinit
+ln -s ../bin/systemctl %{buildroot}%{_sbindir}/runlevel
 
 # We create all wants links manually at installation time to make sure
 # they are not owned and hence overriden by rpm after the used deleted
@@ -395,6 +395,9 @@ mv /etc/systemd/system/default.target.save /etc/systemd/system/default.target >/
 %{_bindir}/systemd-analyze
 
 %changelog
+* Wed Apr 18 2012 Liu Di <liudidi@gmail.com> - 44-5
+- 为 Magic 3.0 重建
+
 * Wed Mar 28 2012 Michal Schmidt <mschmidt@redhat.com> - 44-4
 - Add triggers from Bill Nottingham to correct the damage done by
   the obsoleted systemd-units's preun scriptlet (#807457).
