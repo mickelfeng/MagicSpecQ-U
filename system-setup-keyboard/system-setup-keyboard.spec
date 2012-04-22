@@ -1,6 +1,6 @@
 Name:		system-setup-keyboard
 Version:	0.8.8
-Release:	2%{?dist}
+Release:	4%{?dist}
 Summary:	xorg.conf keyboard layout callout
 
 Group:		Applications/System
@@ -30,6 +30,7 @@ snippet.
 
 %prep
 %setup -q
+sed -i 's/\/lib\/systemd/\/usr\/lib\/systemd/g' Makefile
 
 %build
 make CFLAGS="%{optflags}" %{?_smp_mflags}
@@ -40,6 +41,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 
 install -d $RPM_BUILD_ROOT/%{_sysconfdir}/X11/xorg.conf.d
 touch $RPM_BUILD_ROOT/%{_sysconfdir}/X11/xorg.conf.d/00-system-setup-keyboard.conf
+magic_rpm_clean.sh
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -47,21 +49,21 @@ rm -rf $RPM_BUILD_ROOT
 %post
 if [ $1 -eq 1 ]; then
     # Package install, not upgrade
-	/bin/systemctl enable system-setup-keyboard.service >/dev/null 2>&1 || :
+	/usr/bin/systemctl enable system-setup-keyboard.service >/dev/null 2>&1 || :
 fi
 
 %preun
 if [ $1 -eq 0 ] ; then
     # Package removal, not upgrade
-    /bin/systemctl disable system-setup-keyboard.service >/dev/null 2>&1 || :
-    /bin/systemctl stop system-setup-keyboard.service > /dev/null 2>&1 || :
+    /usr/bin/systemctl disable system-setup-keyboard.service >/dev/null 2>&1 || :
+    /usr/bin/systemctl stop system-setup-keyboard.service > /dev/null 2>&1 || :
 fi
 
 %postun  
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+/usr/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 if [ $1 -ge 1 ] ; then
     # Package upgrade, not uninstall
-    /bin/systemctl try-restart system-setup-keyboard.service >/dev/null 2>&1 || :
+    /usr/bin/systemctl try-restart system-setup-keyboard.service >/dev/null 2>&1 || :
 fi
 
 %files
@@ -69,7 +71,7 @@ fi
 %{_bindir}/%{name}
 %{_sysconfdir}/init/%{name}.conf
 %{_mandir}/man1/system-setup-keyboard.1*
-/lib/systemd/system/system-setup-keyboard.service
+%{_prefix}/lib/systemd/system/system-setup-keyboard.service
 # Own directories to avoid hard requirement on a upstart
 # can be removed once we decided to stay with systemd
 %dir %{_sysconfdir}/init/
@@ -79,6 +81,12 @@ fi
 %doc COPYING
 
 %changelog
+* Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 0.8.8-4
+- 为 Magic 3.0 重建
+
+* Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 0.8.8-3
+- 为 Magic 3.0 重建
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.8.8-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
