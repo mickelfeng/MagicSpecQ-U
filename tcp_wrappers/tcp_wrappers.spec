@@ -2,7 +2,7 @@ Summary: A security tool which acts as a wrapper for TCP daemons
 Summary(zh_CN.UTF-8): 工作起来如同 TCP 守护进程的安全工具
 Name: tcp_wrappers
 Version: 7.6
-Release: 60%{?dist}
+Release: 61%{?dist}
 
 %define LIB_MAJOR 0
 %define LIB_MINOR 7
@@ -118,7 +118,7 @@ make RPM_OPT_FLAGS="$RPM_OPT_FLAGS -fPIC -DPIC -D_REENTRANT -DHAVE_STRERROR" LDF
 %install
 rm -rf ${RPM_BUILD_ROOT}
 mkdir -p ${RPM_BUILD_ROOT}%{_includedir}
-mkdir -p ${RPM_BUILD_ROOT}/%{_lib}
+mkdir -p ${RPM_BUILD_ROOT}%{_libdir}
 mkdir -p ${RPM_BUILD_ROOT}%{_mandir}/man{3,5,8}
 mkdir -p ${RPM_BUILD_ROOT}%{_sbindir}
 
@@ -128,7 +128,7 @@ install -p -m644 tcpd.8 tcpdchk.8 tcpdmatch.8 safe_finger.8 try-from.8 ${RPM_BUI
 ln -sf hosts_access.5 ${RPM_BUILD_ROOT}%{_mandir}/man5/hosts.allow.5
 ln -sf hosts_access.5 ${RPM_BUILD_ROOT}%{_mandir}/man5/hosts.deny.5
 #cp -a libwrap.a ${RPM_BUILD_ROOT}%{_libdir}
-cp -a libwrap.so* ${RPM_BUILD_ROOT}/%{_lib}
+cp -a libwrap.so* ${RPM_BUILD_ROOT}%{_libdir}
 #install -p -m644 libwrap.so.0.7.6 ${RPM_BUILD_ROOT}/%{_lib}
 install -p -m644 tcpd.h ${RPM_BUILD_ROOT}%{_includedir}
 install -m755 safe_finger ${RPM_BUILD_ROOT}%{_sbindir}
@@ -139,6 +139,8 @@ install -m755 tcpdmatch ${RPM_BUILD_ROOT}%{_sbindir}
 # XXX remove utilities that expect /etc/inetd.conf (#16059).
 #install -m755 tcpdchk ${RPM_BUILD_ROOT}%{_sbindir}
 rm -f ${RPM_BUILD_ROOT}%{_mandir}/man8/tcpdchk.*
+
+magic_rpm_clean.sh
 
 %post libs -p /sbin/ldconfig
 
@@ -156,17 +158,20 @@ rm -rf ${RPM_BUILD_ROOT}
 %files libs
 %defattr(-,root,root,-)
 %doc BLURB README* DISCLAIMER Banners.Makefile
-/%{_lib}/*.so.*
+%{_libdir}/*.so.*
 %{_mandir}/man5/*
 
 %files devel
 %defattr(-,root,root,-)
 %{_includedir}/*
 #%{_libdir}/*.a
-/%{_lib}/*.so
+%{_libdir}/*.so
 %{_mandir}/man3/*
 
 %changelog
+* Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 7.6-61
+- 为 Magic 3.0 重建
+
 * Mon Feb 13 2012 Liu Di <liudidi@gmail.com> - 7.6-60
 - 为 Magic 3.0 重建
 
