@@ -1,9 +1,7 @@
-%define	_bindir	/bin
-
 Summary: An enhanced version of csh, the C shell
 Name: tcsh
 Version: 6.17
-Release: 16%{?dist}
+Release: 17%{?dist}
 License: BSD
 Group: System Environment/Shells
 Source: ftp://ftp.astron.com/pub/tcsh/%{name}-%{version}.00.tar.gz
@@ -44,6 +42,8 @@ Requires(postun): coreutils, grep
 URL: http://www.tcsh.org/
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: autoconf, automake, ncurses-devel, gettext-devel
+
+Provides: /bin/csh, /bin/tcsh
 
 %description
 Tcsh is an enhanced but completely compatible version of csh, the C
@@ -98,6 +98,8 @@ install -p -m 644 tcsh.man ${RPM_BUILD_ROOT}%{_mandir}/man1/tcsh.1
 ln -sf tcsh ${RPM_BUILD_ROOT}%{_bindir}/csh
 ln -sf tcsh.1 ${RPM_BUILD_ROOT}%{_mandir}/man1/csh.1
 
+magic_rpm_clean.sh
+
 while read lang language ; do
 	dest=${RPM_BUILD_ROOT}%{_datadir}/locale/$lang/LC_MESSAGES
 	if test -f tcsh.$language.cat ; then
@@ -106,18 +108,7 @@ while read lang language ; do
 		echo "%lang($lang) %{_datadir}/locale/$lang/LC_MESSAGES/tcsh"
 	fi
 done > tcsh.lang << _EOF
-de german
-el greek
 en C
-es spanish
-et et
-fi finnish
-fr french
-it italian
-ja ja
-pl pl
-ru russian
-uk ukrainian
 _EOF
 
 %clean
@@ -149,6 +140,9 @@ fi
 %{_mandir}/man1/*.1*
 
 %changelog
+* Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 6.17-17
+- 为 Magic 3.0 重建
+
 * Mon Feb 13 2012 Liu Di <liudidi@gmail.com> - 6.17-16
 - 为 Magic 3.0 重建
 
