@@ -23,7 +23,7 @@
 Summary: A widely used Mail Transport Agent (MTA)
 Name: sendmail
 Version: 8.14.5
-Release: 12%{?dist}
+Release: 14%{?dist}
 License: Sendmail
 Group: System Environment/Daemons
 URL: http://www.sendmail.org/
@@ -483,6 +483,8 @@ for m in man8/hoststat.8 man8/purgestat.8; do
 		echo ".so man8/sendmail.8" > %{buildroot}%{_mandir}/$m
 done
 
+magic_rpm_clean.sh
+
 %clean
 rm -rf %{buildroot}
 
@@ -500,10 +502,10 @@ getent passwd smmsp >/dev/null || \
 exit 0
 
 %postun
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+/usr/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 if [ $1 -ge 1 ] ; then
-    /bin/systemctl try-restart sendmail.service >/dev/null 2>&1 || :
-    /bin/systemctl try-restart sm-client.service >/dev/null 2>&1 || :
+    /usr/bin/systemctl try-restart sendmail.service >/dev/null 2>&1 || :
+    /usr/bin/systemctl try-restart sm-client.service >/dev/null 2>&1 || :
 	mta=`readlink %{_sysconfdir}/alternatives/mta`
 	if [ "$mta" == "%{_sbindir}/sendmail.sendmail" ]; then
 		%{_sbindir}/alternatives --set mta %{_sbindir}/sendmail.sendmail
@@ -514,9 +516,9 @@ exit 0
 %post
 if [ $1 -eq 1 ] ; then
 # Initial installation
-	/bin/systemctl enable sendmail.service >/dev/null 2>&1 || :
-	/bin/systemctl enable sm-client.service >/dev/null 2>&1 || :
-	/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+	/usr/bin/systemctl enable sendmail.service >/dev/null 2>&1 || :
+	/usr/bin/systemctl enable sm-client.service >/dev/null 2>&1 || :
+	/usr/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 fi
 
 # Set up the alternatives files for MTAs.
@@ -552,10 +554,10 @@ exit 0
 
 %preun
 if [ $1 = 0 ]; then
-	/bin/systemctl --no-reload disable sendmail.service > /dev/null 2>&1 || :
-	/bin/systemctl stop sendmail.service > /dev/null 2>&1 || :
-	/bin/systemctl --no-reload disable sm-client.service > /dev/null 2>&1 || :
-	/bin/systemctl stop sm-client.service > /dev/null 2>&1 || :
+	/usr/bin/systemctl --no-reload disable sendmail.service > /dev/null 2>&1 || :
+	/usr/bin/systemctl stop sendmail.service > /dev/null 2>&1 || :
+	/usr/bin/systemctl --no-reload disable sm-client.service > /dev/null 2>&1 || :
+	/usr/bin/systemctl stop sm-client.service > /dev/null 2>&1 || :
 	%{_sbindir}/alternatives --remove mta %{_sbindir}/sendmail.sendmail
 fi
 exit 0
@@ -565,12 +567,12 @@ exit 0
 %postun milter -p /sbin/ldconfig
 
 %post sysvinit
-/sbin/chkconfig --add sendmail >/dev/null 2>&1 ||:
+/usr/sbin/chkconfig --add sendmail >/dev/null 2>&1 ||:
 
 %preun sysvinit
 if [ "$1" = 0 ]; then
 	%{_initrddir}/sendmail stop >/dev/null 2>&1 ||:
-	/sbin/chkconfig --del sendmail >/dev/null 2>&1 ||:
+	/usr/sbin/chkconfig --del sendmail >/dev/null 2>&1 ||:
 fi
 
 %postun sysvinit
@@ -578,18 +580,18 @@ fi
 
 %triggerun -- sendmail < %{sysv2systemdnvr}
 %{_bindir}/systemd-sysv-convert --save sendmail >/dev/null 2>&1 ||:
-/bin/systemctl enable sendmail.service >/dev/null 2>&1
-/bin/systemctl enable sm-client.service >/dev/null 2>&1
-/sbin/chkconfig --del sendmail >/dev/null 2>&1 || :
-/bin/systemctl try-restart sendmail.service >/dev/null 2>&1 || :
-/bin/systemctl try-restart sm-client.service >/dev/null 2>&1 || :
+/usr/bin/systemctl enable sendmail.service >/dev/null 2>&1
+/usr/bin/systemctl enable sm-client.service >/dev/null 2>&1
+/usr/sbin/chkconfig --del sendmail >/dev/null 2>&1 || :
+/usr/bin/systemctl try-restart sendmail.service >/dev/null 2>&1 || :
+/usr/bin/systemctl try-restart sm-client.service >/dev/null 2>&1 || :
 # workaround for systemd rhbz#738022
-/bin/systemctl is-active sendmail.service >/dev/null 2>&1 && \
-	! /bin/systemctl is-active sm-client.service >/dev/null 2>&1 && \
-	/bin/systemctl start sm-client.service >/dev/null 2>&1 || :
+/usr/bin/systemctl is-active sendmail.service >/dev/null 2>&1 && \
+	! /usr/bin/systemctl is-active sm-client.service >/dev/null 2>&1 && \
+	/usr/bin/systemctl start sm-client.service >/dev/null 2>&1 || :
 
 %triggerpostun -n sendmail-sysvinit -- sendmail < %{sysv2systemdnvr}
-/sbin/chkconfig --add sendmail >/dev/null 2>&1 || :
+/usr/sbin/chkconfig --add sendmail >/dev/null 2>&1 || :
 
 %files
 %defattr(-,root,root,-)
@@ -719,6 +721,12 @@ fi
 %{_initrddir}/sendmail
 
 %changelog
+* Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 8.14.5-14
+- 为 Magic 3.0 重建
+
+* Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 8.14.5-13
+- 为 Magic 3.0 重建
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 8.14.5-12
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
