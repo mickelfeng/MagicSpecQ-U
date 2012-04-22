@@ -1,12 +1,10 @@
-%global _exec_prefix %{nil}
-%global _libdir %{_exec_prefix}/%{_lib}
 %define rsyslog_statedir %{_sharedstatedir}/rsyslog
 %define rsyslog_pkidir %{_sysconfdir}/pki/rsyslog
 
 Summary: Enhanced system logging and kernel message trapping daemon
 Name: rsyslog
 Version: 5.8.7
-Release: 1%{?dist}
+Release: 4%{?dist}
 License: (GPLv3+ and ASL 2.0)
 Group: System Environment/Daemons
 URL: http://www.rsyslog.com/
@@ -191,6 +189,8 @@ install -p -m 644 %{SOURCE4} $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d/syslog
 #get rid of *.la
 rm $RPM_BUILD_ROOT/%{_libdir}/rsyslog/*.la
 
+magic_rpm_clean.sh
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -203,23 +203,23 @@ done
 if [ $1 -eq 1 ]; then
         # On install (not upgrade), enable (but don't start) the
         # units by default
-        /bin/systemctl enable rsyslog.service >/dev/null 2>&1 || :
+        /usr/bin/systemctl enable rsyslog.service >/dev/null 2>&1 || :
 fi
 
 %preun
 if [ $1 = 0 ]; then
         # On uninstall (not upgrade), disable and stop the units
-        /bin/systemctl --no-reload disable rsyslog.service >/dev/null 2>&1 || :
-        /bin/systemctl stop rsyslog.service >/dev/null 2>&1 || :
+        /usr/bin/systemctl --no-reload disable rsyslog.service >/dev/null 2>&1 || :
+        /usr/bin/systemctl stop rsyslog.service >/dev/null 2>&1 || :
 fi
 
 %postun
 # Reload init system configuration, to make systemd honour changed
 # or deleted unit files
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+/usr/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 if [ $1 -ge 1 ] ; then
         # On upgrade (not uninstall), optionally, restart the daemon
-        /bin/systemctl try-restart rsyslog.service >/dev/null 2>&1 || :
+        /usr/bin/systemctl try-restart rsyslog.service >/dev/null 2>&1 || :
 fi
 
 %triggerun -- rsyslog < 5.7.8-1
@@ -227,18 +227,18 @@ fi
 # User must manually run systemd-sysv-convert --apply rsyslog
 # to migrate them to systemd targets
 %{_bindir}/systemd-sysv-convert --save rsyslog >/dev/null 2>&1 || :
-/bin/systemctl enable rsyslog.service >/dev/null 2>&1 || :
-/sbin/chkconfig --del rsyslog >/dev/null 2>&1 || :
-/bin/systemctl try-restart rsyslog.service >/dev/null 2>&1 || :
+/usr/bin/systemctl enable rsyslog.service >/dev/null 2>&1 || :
+/usr/sbin/chkconfig --del rsyslog >/dev/null 2>&1 || :
+/usr/bin/systemctl try-restart rsyslog.service >/dev/null 2>&1 || :
 
 # previous versions used a different lock file, which would break condrestart
 [ -f /var/lock/subsys/rsyslogd ] || exit 0
 mv /var/lock/subsys/rsyslogd /var/lock/subsys/rsyslog
 [ -f /var/run/rklogd.pid ] || exit 0
-/bin/kill `cat /var/run/rklogd.pid 2> /dev/null` > /dev/null 2>&1 ||:
+/usr/bin/kill `cat /var/run/rklogd.pid 2> /dev/null` > /dev/null 2>&1 ||:
 
 %triggerpostun -n rsyslog-sysvinit -- rsyslog < 5.8.2-3
-/sbin/chkconfig --add rsyslog >/dev/null 2>&1 || :
+/usr/sbin/chkconfig --add rsyslog >/dev/null 2>&1 || :
 
 %files
 %defattr(-,root,root,-)
@@ -316,6 +316,15 @@ mv /var/lock/subsys/rsyslogd /var/lock/subsys/rsyslog
 %{_libdir}/rsyslog/omudpspoof.so
 
 %changelog
+* Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 5.8.7-4
+- 为 Magic 3.0 重建
+
+* Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 5.8.7-3
+- 为 Magic 3.0 重建
+
+* Fri Mar 30 2012 Jon Ciesla <limburgher@gmail.com> 5.8.7-2
+- libnet rebuild.
+
 * Mon Jan 23 2012 Tomas Heinrich <theinric@redhat.com> 5.8.7-1
 - upgrade to new upstream version 5.8.7
 - change license from 'GPLv3+' to '(GPLv3+ and ASL 2.0)'
