@@ -1,14 +1,10 @@
 # -*- coding: utf-8 -*-
-%ifos linux
-%define _bindir /bin
-%endif
-
 %define WITH_SELINUX 0
 
 Summary: A GNU stream text editor
 Name: sed
 Version: 4.2.1
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: GPLv3+
 Group: Applications/Text
 URL: http://sed.sourceforge.net/
@@ -22,8 +18,10 @@ BuildRequires: glibc-devel
 %if %{WITH_SELINUX}
 BuildRequires: libselinux-devel
 %endif
-Requires(post): /sbin/install-info
-Requires(preun): /sbin/install-info
+Requires(post): /usr/sbin/install-info
+Requires(preun): /usr/sbin/install-info
+
+Provides: /bin/sed
 
 %description
 The sed (Stream EDitor) editor is a stream or batch (non-interactive)
@@ -54,15 +52,16 @@ rm -rf ${RPM_BUILD_ROOT}
 make DESTDIR=$RPM_BUILD_ROOT install
 rm -f ${RPM_BUILD_ROOT}/%{_infodir}/dir
 
-%find_lang %{name}
+magic_rpm_clean.sh
+%find_lang %{name} || touch %{name}.lang
 
 %post
-/sbin/install-info %{_infodir}/sed.info.gz %{_infodir}/dir || &> /dev/null
+/usr/sbin/install-info %{_infodir}/sed.info.gz %{_infodir}/dir || &> /dev/null
 :
 
 %preun
 if [ $1 = 0 ]; then
-   /sbin/install-info --delete %{_infodir}/sed.info.gz %{_infodir}/dir || &> /dev/null
+   /usr/sbin/install-info --delete %{_infodir}/sed.info.gz %{_infodir}/dir || &> /dev/null
 fi
 :
 
@@ -77,6 +76,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_mandir}/man*/*
 
 %changelog
+* Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 4.2.1-9
+- 为 Magic 3.0 重建
+
 * Mon Feb 06 2012 Liu Di <liudidi@gmail.com> - 4.2.1-8
 - 为 Magic 3.0 重建
 
