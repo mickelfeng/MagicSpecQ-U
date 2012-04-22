@@ -3,7 +3,7 @@
 
 Name:          speech-dispatcher
 Version:       0.7.1
-Release:       7%{?dist}
+Release:       9%{?dist}
 Summary:       To provide a high-level device independent layer for speech synthesis
 Group:         System Environment/Libraries
 
@@ -67,8 +67,8 @@ Summary:        Documentation for speech-dispatcher
 License:        GPLv2+
 Group:          Documentation
 Requires:       speech-dispatcher = %{version}-%{release}
-Requires(post): /sbin/install-info
-Requires(preun):/sbin/install-info
+Requires(post): /usr/sbin/install-info
+Requires(preun):/usr/sbin/install-info
 
 %description doc
 speechd documentation
@@ -134,30 +134,32 @@ mv %{buildroot}%{_datadir}/speech-dispatcher/conf/modules/* %{buildroot}%{_sysco
 # enable pulseaudio as default with a fallback to alsa
 sed 's/# AudioOutputMethod "pulse,alsa"/AudioOutputMethod "pulse,alsa"/' %{buildroot}%{_sysconfdir}/speech-dispatcher/speechd.conf
 
+magic_rpm_clean.sh
+
 %clean
 rm -rf %{buildroot}
 
 %post 
-/sbin/ldconfig
+/usr/sbin/ldconfig
 if [ $1 -eq 1 ] ; then 
     # Initial installation 
-    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+    /usr/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 fi
 
 %postun
-/sbin/ldconfig
+/usr/sbin/ldconfig
 
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+/usr/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 if [ $1 -ge 1 ] ; then
     # Package upgrade, not uninstall
-    /bin/systemctl try-restart speech-dispatcherd.service >/dev/null 2>&1 || :
+    /usr/bin/systemctl try-restart speech-dispatcherd.service >/dev/null 2>&1 || :
 fi
 
 %preun
 if [ $1 -eq 0 ] ; then
     # Package removal, not upgrade
-    /bin/systemctl --no-reload disable speech-dispatcherd.service > /dev/null 2>&1 || :
-    /bin/systemctl stop speech-dispatcherd.service > /dev/null 2>&1 || :
+    /usr/bin/systemctl --no-reload disable speech-dispatcherd.service > /dev/null 2>&1 || :
+    /usr/bin/systemctl stop speech-dispatcherd.service > /dev/null 2>&1 || :
 fi
 
 %triggerun -- speech-dispatcherd < 0.7.1-6
@@ -167,8 +169,8 @@ fi
 /usr/bin/systemd-sysv-convert --save speech-dispatcherd >/dev/null 2>&1 ||:
 
 # Run these because the SysV package being removed won't do them
-/sbin/chkconfig --del speech-dispatcherd >/dev/null 2>&1 || :
-/bin/systemctl try-restart speech-dispatcherd.service >/dev/null 2>&1 || :
+/usr/sbin/chkconfig --del speech-dispatcherd >/dev/null 2>&1 || :
+/usr/bin/systemctl try-restart speech-dispatcherd.service >/dev/null 2>&1 || :
 
 %files
 %defattr(-,root,root,-)
@@ -203,17 +205,17 @@ fi
 %{_infodir}/*
 
 %post doc
-/sbin/install-info %{_infodir}/%{name}.info %{_infodir}/dir || :
-/sbin/install-info %{_infodir}/spd-say.info %{_infodir}/dir || :
-/sbin/install-info %{_infodir}/ssip.info %{_infodir}/dir || :
-/sbin/install-info %{_infodir}/%{name}-cs.info %{_infodir}/dir || :
+/usr/sbin/install-info %{_infodir}/%{name}.info %{_infodir}/dir || :
+/usr/sbin/install-info %{_infodir}/spd-say.info %{_infodir}/dir || :
+/usr/sbin/install-info %{_infodir}/ssip.info %{_infodir}/dir || :
+/usr/sbin/install-info %{_infodir}/%{name}-cs.info %{_infodir}/dir || :
 
 %preun doc
 if [ $1 = 0 ]; then
- /sbin/install-info --delete %{_infodir}/%{name}.info %{_infodir}/dir || :
- /sbin/install-info --delete %{_infodir}/spd-say.info %{_infodir}/dir || :
- /sbin/install-info --delete %{_infodir}/ssip.info %{_infodir}/dir || :
- /sbin/install-info --delete %{_infodir}/%{name}-cs.info %{_infodir}/dir || :
+ /usr/sbin/install-info --delete %{_infodir}/%{name}.info %{_infodir}/dir || :
+ /usr/sbin/install-info --delete %{_infodir}/spd-say.info %{_infodir}/dir || :
+ /usr/sbin/install-info --delete %{_infodir}/ssip.info %{_infodir}/dir || :
+ /usr/sbin/install-info --delete %{_infodir}/%{name}-cs.info %{_infodir}/dir || :
 fi
 
 %files python
@@ -221,6 +223,12 @@ fi
 %{python_sitearch}/speechd*
 
 %changelog
+* Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 0.7.1-9
+- 为 Magic 3.0 重建
+
+* Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 0.7.1-8
+- 为 Magic 3.0 重建
+
 * Wed Feb 08 2012 Liu Di <liudidi@gmail.com> - 0.7.1-7
 - 为 Magic 3.0 重建
 
@@ -333,7 +341,7 @@ fi
 - fixed install sequence using cleaner for loop and pushd and popd commands
 - added init script for speech-dispatcher daemon
 - added COPYING to doc in base package
-- removed comment after /sbin/ldconfig
+- removed comment after /usr/sbin/ldconfig
 - resolved rpmlint errors for base package [except UTF-8 encoding error for (cs) documentation file]
 - renamed long_message to spd_long_message and run_test to spd_run_test
 - reset mode of _test.py to 0755
@@ -385,4 +393,4 @@ fi
 - Removed doc-cs packages and merged it into doc package
 - Removed packaging of static files, and tested -without static_libs option for configure script
 - Moved symlink .so files from devel package to main package
-- Commented /sbin/ldconfig for devel package.
+- Commented /usr/sbin/ldconfig for devel package.
