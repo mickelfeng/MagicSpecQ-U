@@ -1,7 +1,7 @@
 Summary: A printer administration tool
 Name: system-config-printer
 Version: 1.3.9
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 URL: http://cyberelk.net/tim/software/system-config-printer/
 Group: System Environment/Base
@@ -68,12 +68,13 @@ printers.
 
 %install
 make DESTDIR=%buildroot install \
-	udevrulesdir=/lib/udev/rules.d \
-	udevhelperdir=/lib/udev
+	udevrulesdir=%{_prefix}/lib/udev/rules.d \
+	udevhelperdir=%{_prefix}/lib/udev
 
 %{__mkdir_p} %buildroot%{_localstatedir}/run/udev-configure-printer
 touch %buildroot%{_localstatedir}/run/udev-configure-printer/usb-uris
 
+magic_rpm_clean.sh
 %find_lang system-config-printer
 
 %files libs -f system-config-printer.lang
@@ -128,8 +129,8 @@ touch %buildroot%{_localstatedir}/run/udev-configure-printer/usb-uris
 %{python_sitelib}/*.egg-info
 
 %files udev
-/lib/udev/rules.d/*.rules
-/lib/udev/udev-*-printer
+%{_prefix}/lib/udev/rules.d/*.rules
+%{_prefix}/lib/udev/udev-*-printer
 %ghost %dir %{_localstatedir}/run/udev-configure-printer
 %ghost %verify(not md5 size mtime) %config(noreplace,missingok) %attr(0644,root,root) %{_localstatedir}/run/udev-configure-printer/usb-uris
 %{_unitdir}/udev-configure-printer.service
@@ -158,30 +159,33 @@ touch %buildroot%{_localstatedir}/run/udev-configure-printer/usb-uris
 %{_mandir}/man1/*
 
 %post
-/bin/rm -f /var/cache/foomatic/foomatic.pickle
+/usr/bin/rm -f /var/cache/foomatic/foomatic.pickle
 exit 0
 
 %post udev
 if [ $1 -eq 1 ] ; then
     # Initial installation
-    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+    /usr/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 fi
 
 %preun udev
 if [ $1 -eq 0 ] ; then
     # Package removal, not upgrade
-    /bin/systemctl --no-reload disable udev-configure-printer.service >/dev/null 2>&1 || :
-    /bin/systemctl stop udev-configure-printer.service >/dev/null 2>&1 || :
+    /usr/bin/systemctl --no-reload disable udev-configure-printer.service >/dev/null 2>&1 || :
+    /usr/bin/systemctl stop udev-configure-printer.service >/dev/null 2>&1 || :
 fi
 
 %postun udev
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+/usr/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 if [ $1 -ge 1 ] ; then
     # Package upgrade, not uninstall
-    /bin/systemctl try-restart udev-configure-printer.service >/dev/null 2>&1 || :
+    /usr/bin/systemctl try-restart udev-configure-printer.service >/dev/null 2>&1 || :
 fi
 
 %changelog
+* Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 1.3.9-2
+- 为 Magic 3.0 重建
+
 * Thu Mar  1 2012 Tim Waugh <twaugh@redhat.com> 1.3.9-1
 - 1.3.9:
   - Updated translations.
