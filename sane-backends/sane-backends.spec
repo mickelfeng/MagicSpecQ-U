@@ -1,7 +1,7 @@
 Summary: Scanner access software
 Name: sane-backends
 Version: 1.0.22
-Release: 5%{?dist}
+Release: 6%{?dist}
 # lib/ is LGPLv2+, backends are GPLv2+ with exceptions
 # Tools are GPLv2+, docs are public domain
 # see LICENSE for details
@@ -118,13 +118,14 @@ rm -f %{buildroot}%{_mandir}/man1/gamma4scanimage.1*
 rm -f %{buildroot}%{_libdir}/sane/*.a %{buildroot}%{_libdir}/*.a
 rm -f %{buildroot}%{_libdir}/libsane*.la %{buildroot}%{_libdir}/sane/*.la
 
-mkdir -p %{buildroot}/lib/udev/rules.d
-install -m 0644 tools/udev/libsane.rules %{buildroot}/lib/udev/rules.d/65-libsane.rules
+mkdir -p %{buildroot}%{_prefix}/lib/udev/rules.d
+install -m 0644 tools/udev/libsane.rules %{buildroot}%{_prefix}/lib/udev/rules.d/65-libsane.rules
 
 mkdir -p %{buildroot}%{_libdir}/pkgconfig
 install -m 0644 tools/sane-backends.pc %{buildroot}%{_libdir}/pkgconfig/
 
-%find_lang %name
+magic_rpm_clean.sh
+%find_lang %name || touch %name.lang
 
 
 %clean
@@ -138,7 +139,7 @@ rm -rf %{buildroot}
 %dir /etc/sane.d
 %dir /etc/sane.d/dll.d
 %config(noreplace) /etc/sane.d/*.conf
-/lib/udev/rules.d/65-libsane.rules
+%{_prefix}/lib/udev/rules.d/65-libsane.rules
 %{_datadir}/pixmaps/sane.png
 
 %{_bindir}/sane-find-scanner
@@ -171,6 +172,9 @@ rm -rf %{buildroot}
 %{_libdir}/pkgconfig/sane-backends.pc
 
 %changelog
+* Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 1.0.22-6
+- 为 Magic 3.0 重建
+
 * Wed Mar 28 2012 Liu Di <liudidi@gmail.com> - 1.0.22-5
 - 为 Magic 3.0 重建
 
