@@ -1,7 +1,7 @@
 Summary: A library for editing typed command lines
 Name: readline
 Version: 6.2
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv3+
 Group: System Environment/Libraries
 URL: http://cnswww.cns.cwru.edu/php/chet/readline/rltop.html
@@ -12,8 +12,8 @@ Patch1: ftp://ftp.cwru.edu/pub/bash/readline-6.2-patches/readline62-001
 Patch20: readline-6.2-shlib.patch
 # add TTY input audit support
 Patch21: readline-6.1-audit.patch
-Requires(post): /sbin/install-info
-Requires(preun): /sbin/install-info
+Requires(post): /usr/sbin/install-info
+Requires(preun): /usr/sbin/install-info
 BuildRequires: ncurses-devel
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -30,8 +30,8 @@ Summary: Files needed to develop programs which use the readline library
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
 Requires: ncurses-devel
-Requires(post): /sbin/install-info
-Requires(preun): /sbin/install-info
+Requires(post): /usr/sbin/install-info
+Requires(preun): /usr/sbin/install-info
 
 %description devel
 The Readline library provides a set of functions that allow users to
@@ -71,48 +71,50 @@ rm -rf $RPM_BUILD_ROOT
 
 make DESTDIR=$RPM_BUILD_ROOT install
 
-mkdir $RPM_BUILD_ROOT/%{_lib}
-mv $RPM_BUILD_ROOT%{_libdir}/libreadline.so.* $RPM_BUILD_ROOT/%{_lib}
-for l in $RPM_BUILD_ROOT%{_libdir}/libreadline.so; do
-    ln -sf $(echo %{_libdir} | \
-        sed 's,\(^/\|\)[^/][^/]*,..,g')/%{_lib}/$(readlink $l) $l
-done
+#mkdir $RPM_BUILD_ROOT/%{_lib}
+#mv $RPM_BUILD_ROOT%{_libdir}/libreadline.so.* $RPM_BUILD_ROOT/%{_lib}
+#for l in $RPM_BUILD_ROOT%{_libdir}/libreadline.so; do
+#    ln -sf $(echo %{_libdir} | \
+#        sed 's,\(^/\|\)[^/][^/]*,..,g')/%{_lib}/$(readlink $l) $l
+#done
 
 rm -rf $RPM_BUILD_ROOT%{_datadir}/readline
 rm -f $RPM_BUILD_ROOT%{_infodir}/dir*
+
+magic_rpm_clean.sh
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %post
-/sbin/ldconfig
-/sbin/install-info %{_infodir}/history.info.gz %{_infodir}/dir &> /dev/null
-/sbin/install-info %{_infodir}/rluserman.info.gz %{_infodir}/dir &> /dev/null
+/usr/sbin/ldconfig
+/usr/sbin/install-info %{_infodir}/history.info.gz %{_infodir}/dir &> /dev/null
+/usr/sbin/install-info %{_infodir}/rluserman.info.gz %{_infodir}/dir &> /dev/null
 :
 
-%postun -p /sbin/ldconfig
+%postun -p /usr/sbin/ldconfig
 
 %preun
 if [ $1 = 0 ]; then
-   /sbin/install-info --delete %{_infodir}/history.info.gz %{_infodir}/dir &> /dev/null
-   /sbin/install-info --delete %{_infodir}/rluserman.info.gz %{_infodir}/dir &> /dev/null
+   /usr/sbin/install-info --delete %{_infodir}/history.info.gz %{_infodir}/dir &> /dev/null
+   /usr/sbin/install-info --delete %{_infodir}/rluserman.info.gz %{_infodir}/dir &> /dev/null
 fi
 :
 
 %post devel
-/sbin/install-info %{_infodir}/readline.info.gz %{_infodir}/dir &> /dev/null
+/usr/sbin/install-info %{_infodir}/readline.info.gz %{_infodir}/dir &> /dev/null
 :
 
 %preun devel
 if [ $1 = 0 ]; then
-   /sbin/install-info --delete %{_infodir}/readline.info.gz %{_infodir}/dir &> /dev/null
+   /usr/sbin/install-info --delete %{_infodir}/readline.info.gz %{_infodir}/dir &> /dev/null
 fi
 :
 
 %files
 %defattr(-,root,root,-)
 %doc CHANGES COPYING NEWS README USAGE
-/%{_lib}/libreadline*.so.*
+%{_libdir}/libreadline*.so.*
 %{_libdir}/libhistory*.so.*
 %{_infodir}/history.info*
 %{_infodir}/rluserman.info*
@@ -130,6 +132,9 @@ fi
 %{_libdir}/lib*.a
 
 %changelog
+* Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 6.2-4
+- 为 Magic 3.0 重建
+
 * Thu Feb 02 2012 Liu Di <liudidi@gmail.com> - 6.2-3
 - 为 Magic 3.0 重建
 
