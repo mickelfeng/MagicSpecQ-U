@@ -2,7 +2,7 @@
 Summary: Programs which control basic system processes
 Name: sysvinit
 Version: 2.88
-Release: 5.dsf%{?dist}
+Release: 6.dsf%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: http://download.savannah.gnu.org/releases/sysvinit/sysvinit-%{version}dsf.tar.bz2
@@ -74,14 +74,15 @@ make %{?_smp_mflags} CC="%{__cc}" CFLAGS="$RPM_OPT_FLAGS -D_GNU_SOURCE" LDFLAGS=
 
 %install
 rm -rf $RPM_BUILD_ROOT
-for I in bin sbin usr/{bin,include} %{_mandir}/man{1,3,5,8} etc var/run dev; do
+for I in bin sbin usr/{bin,sbin,include} %{_mandir}/man{1,3,5,8} etc var/run dev; do
 	mkdir -p $RPM_BUILD_ROOT/$I
 done
 make -C src ROOT=$RPM_BUILD_ROOT MANDIR=%{_mandir} STRIP=/bin/true \
 	BIN_OWNER=`id -nu` BIN_GROUP=`id -ng` install
 
 rm -f $RPM_BUILD_ROOT/bin/pidof
-ln -snf killall5 $RPM_BUILD_ROOT/sbin/pidof
+mv $RPM_BUILD_ROOT/sbin/{killall5,sulogin} $RPM_BUILD_ROOT%{_sbindir}/
+ln -snf killall5 $RPM_BUILD_ROOT%{_sbindir}/pidof
 rm -f $RPM_BUILD_ROOT/sbin/bootlogd
 rm -f $RPM_BUILD_ROOT/%{_mandir}/man8/bootlogd*
 chmod 755 $RPM_BUILD_ROOT/usr/bin/utmpdump
@@ -100,6 +101,8 @@ rm -f $RPM_BUILD_ROOT/%{_mandir}/man8/fstab-decode.8
 rm -f $RPM_BUILD_ROOT/bin/mountpoint
 rm -f $RPM_BUILD_ROOT/%{_mandir}/man1/mountpoint.*
 
+magic_rpm_clean.sh
+
 %post
 [ -x /sbin/telinit -a -p /dev/initctl -a -f /proc/1/exe -a -d /proc/1/root ] && /sbin/telinit u
 exit 0
@@ -112,13 +115,13 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 %doc doc/Changelog doc/Install COPYRIGHT
-/sbin/halt
-/sbin/init
-/sbin/poweroff
-/sbin/reboot
-/sbin/runlevel
-/sbin/shutdown
-/sbin/telinit
+#/sbin/halt
+#/sbin/init
+#/sbin/poweroff
+#/sbin/reboot
+#/sbin/runlevel
+#/sbin/shutdown
+#/sbin/telinit
 %{_includedir}/initreq.h
 %{_mandir}/man5/*
 %{_mandir}/man8/halt*
@@ -139,15 +142,18 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/mesg
 %{_bindir}/utmpdump
 %attr(2555,root,tty)  /usr/bin/wall
-/sbin/pidof
-/sbin/killall5
-/sbin/sulogin
+%{_sbindir}/pidof
+%{_sbindir}/killall5
+%{_sbindir}/sulogin
 %{_mandir}/man1/*
 %{_mandir}/man8/killall5*
 %{_mandir}/man8/pidof*
 %{_mandir}/man8/sulogin*
 
 %changelog
+* Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 2.88-6.dsf
+- 为 Magic 3.0 重建
+
 * Tue Aug 02 2011 Petr Lautrbach <plautrba@redhat.com> 2.88-5.dsf
 - disable mountpoint(1) man page
 
