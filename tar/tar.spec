@@ -5,7 +5,7 @@ Summary: A GNU file archiving program
 Name: tar
 Epoch: 2
 Version: 1.26
-Release: 2%{?dist}
+Release: 4%{?dist}
 License: GPLv3+
 Group: Applications/Archiving
 URL: http://www.gnu.org/software/tar/
@@ -64,7 +64,7 @@ autoreconf
 
 %build
 export FORCE_UNSAFE_CONFIGURE=1
-%configure --bindir=/bin --libexecdir=/sbin \
+%configure --bindir=%{_bindir} --libexecdir=%{_sbindir} \
 %if %{WITH_SELINUX}
   --enable-selinux
 %endif
@@ -72,17 +72,18 @@ make
 
 %install
 rm -rf $RPM_BUILD_ROOT
-make DESTDIR=$RPM_BUILD_ROOT bindir=/bin libexecdir=/sbin install
+make DESTDIR=$RPM_BUILD_ROOT bindir=%{_bindir} libexecdir=%{_sbindir} install
 
-ln -s tar ${RPM_BUILD_ROOT}/bin/gtar
+ln -s tar ${RPM_BUILD_ROOT}%{_bindir}/gtar
 rm -f $RPM_BUILD_ROOT/%{_infodir}/dir
 mkdir -p ${RPM_BUILD_ROOT}%{_mandir}/man1
 install -c -p -m 0644 %{SOURCE2} ${RPM_BUILD_ROOT}%{_mandir}/man1
 ln -s tar.1.gz ${RPM_BUILD_ROOT}%{_mandir}/man1/gtar.1
 
 # XXX Nuke unpackaged files.
-rm -f ${RPM_BUILD_ROOT}/sbin/rmt
+rm -f ${RPM_BUILD_ROOT}%{_sbindir}/rmt
 
+magic_rpm_clean.sh
 %find_lang %name
 
 %check
@@ -108,8 +109,8 @@ fi
 %defattr(-,root,root)
 %doc AUTHORS ChangeLog ChangeLog.1 COPYING NEWS README THANKS TODO
 %ifos linux
-/bin/tar
-/bin/gtar
+%{_bindir}/tar
+%{_bindir}/gtar
 %{_mandir}/man1/tar.1*
 %{_mandir}/man1/gtar.1*
 %else
@@ -121,6 +122,12 @@ fi
 %{_infodir}/tar.info*
 
 %changelog
+* Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 2:1.26-4
+- 为 Magic 3.0 重建
+
+* Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 2:1.26-3
+- 为 Magic 3.0 重建
+
 * Mon Feb 13 2012 Liu Di <liudidi@gmail.com> - 2:1.26-2
 - 为 Magic 3.0 重建
 
