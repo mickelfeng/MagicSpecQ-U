@@ -1,7 +1,7 @@
 Summary:        Power Management Service
 Name:           upower
 Version:        0.9.15
-Release:        2%{?dist}
+Release:        3%{?dist}
 License:        GPLv2+
 Group:          System Environment/Libraries
 URL:            http://hal.freedesktop.org/releases/
@@ -57,7 +57,11 @@ make %{?_smp_mflags}
 make install DESTDIR=$RPM_BUILD_ROOT
 rm -f $RPM_BUILD_ROOT%{_libdir}/*.la
 
-%find_lang upower
+mkdir  -p %{buildroot}%{_prefix}/lib/udev/
+mv %{buildroot}/lib/udev/rules.d %{buildroot}%{_prefix}/lib/udev/
+
+magic_rpm_clean.sh
+%find_lang upower || touch upower.lang
 
 %post -p /sbin/ldconfig
 
@@ -69,7 +73,7 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/*.la
 %{_libdir}/libupower-glib.so.*
 %{_sysconfdir}/dbus-1/system.d/*.conf
 %ifnarch s390 s390x
-/lib/udev/rules.d/*.rules
+%{_prefix}/lib/udev/rules.d/*.rules
 %endif
 %dir %{_localstatedir}/lib/upower
 %dir %{_sysconfdir}/UPower
@@ -97,6 +101,9 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/*.la
 %{_includedir}/libupower-glib/upower.h
 
 %changelog
+* Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 0.9.15-3
+- 为 Magic 3.0 重建
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.9.15-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
