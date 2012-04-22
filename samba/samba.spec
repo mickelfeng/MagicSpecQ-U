@@ -1,5 +1,5 @@
-%define main_release 78
-%define samba_version 3.6.3
+%define main_release 82
+%define samba_version 3.6.4
 %define tdb_version 1.2.9
 %define talloc_version 2.0.5
 #%define pre_release rc3
@@ -186,6 +186,25 @@ Requires: libsmbclient = %{epoch}:%{samba_version}-%{release}
 The libsmbclient-devel package contains the header files and libraries needed to
 develop programs that link against the SMB client library in the Samba suite.
 
+%package -n libwbclient
+Summary: The Winbind client library
+Group: Applications/System
+
+%description -n libwbclient
+The libwbclient contains the Winbind client library from the Samba suite.
+
+%package -n libwbclient-devel
+Summary: Developer tools for the Winbind client library
+Group: Development
+Requires: libwbclient = %{epoch}:%{samba_version}-%{release}
+
+Obsoletes: samba-winbind-devel
+Provides: samba-winbind-devel = %{epoch}:%{samba_version}-%{release}
+
+%description -n libwbclient-devel
+The libwbclient-devel package contains the header files and libraries needed to
+develop programs that link against the Winbind client library in the Samba suite.
+
 %prep
 # TAG: change for non-pre
 %setup -q -n %{name}-%{samba_version}%{pre_release}
@@ -259,7 +278,7 @@ CFLAGS="$RPM_OPT_FLAGS -D_GNU_SOURCE -DLDAP_DEPRECATED" %configure \
     --with-libdir=%{_libdir} \
     --with-modulesdir=%{_libdir}/samba \
     --with-configdir=%{_sysconfdir}/samba \
-    --with-pammodulesdir=%{_lib}/security \
+    --with-pammodulesdir=%{_prefix}/%{_lib}/security \
     --with-swatdir=%{_datadir}/swat \
     --with-shared-modules=idmap_ad,idmap_rid,idmap_adex,idmap_hash,idmap_tdb2 \
     --with-cluster-support=auto \
@@ -291,7 +310,7 @@ mkdir -p $RPM_BUILD_ROOT/sbin
 mkdir -p $RPM_BUILD_ROOT/usr/{sbin,bin}
 mkdir -p $RPM_BUILD_ROOT/%{_unitdir}
 mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/{pam.d,logrotate.d,security}
-mkdir -p $RPM_BUILD_ROOT/%{_lib}/security
+mkdir -p $RPM_BUILD_ROOT%{_prefix}/%{_lib}/security
 mkdir -p $RPM_BUILD_ROOT/var/lib/samba
 mkdir -p $RPM_BUILD_ROOT/var/lib/samba/private
 mkdir -p $RPM_BUILD_ROOT/var/lib/samba/winbindd_privileged
@@ -316,7 +335,7 @@ cd %samba_source
     LIBDIR=$RPM_BUILD_ROOT%{_libdir}/ \
     MODULESDIR=$RPM_BUILD_ROOT%{_libdir}/samba \
     CONFIGDIR=$RPM_BUILD_ROOT%{_sysconfdir}/samba \
-    PAMMODULESDIR=$RPM_BUILD_ROOT/%{_lib}/security \
+    PAMMODULESDIR=$RPM_BUILD_ROOT%{_prefix}/%{_lib}/security \
     MANDIR=$RPM_BUILD_ROOT%{_mandir} \
     VARDIR=$RPM_BUILD_ROOT/var/log/samba \
     CODEPAGEDIR=$RPM_BUILD_ROOT%{_libdir}/samba \
@@ -345,10 +364,10 @@ install -m644 examples/LDAP/samba.schema $RPM_BUILD_ROOT%{_sysconfdir}/openldap/
 
 # winbind
 mkdir -p $RPM_BUILD_ROOT%{_libdir}
-install -m 755 nsswitch/libnss_winbind.so $RPM_BUILD_ROOT/%{_lib}/libnss_winbind.so.2
-ln -sf /%{_lib}/libnss_winbind.so.2  $RPM_BUILD_ROOT%{_libdir}/libnss_winbind.so
-install -m 755 nsswitch/libnss_wins.so $RPM_BUILD_ROOT/%{_lib}/libnss_wins.so.2
-ln -sf /%{_lib}/libnss_wins.so.2  $RPM_BUILD_ROOT%{_libdir}/libnss_wins.so
+install -m 755 nsswitch/libnss_winbind.so $RPM_BUILD_ROOT%{_libdir}/libnss_winbind.so.2
+ln -sf libnss_winbind.so.2  $RPM_BUILD_ROOT%{_libdir}/libnss_winbind.so
+install -m 755 nsswitch/libnss_wins.so $RPM_BUILD_ROOT%{_libdir}/libnss_wins.so.2
+ln -sf libnss_wins.so.2  $RPM_BUILD_ROOT%{_libdir}/libnss_wins.so
 
 # winbind krb5 locator
 #mkdir -p $RPM_BUILD_ROOT%{_libdir}/krb5/plugins/libkrb5
@@ -368,7 +387,7 @@ for i in $list; do
 done
 
 
-/sbin/ldconfig -n $RPM_BUILD_ROOT%{_libdir}/
+/usr/sbin/ldconfig -n $RPM_BUILD_ROOT%{_libdir}/
 
 # }
 
@@ -424,27 +443,29 @@ rm -f $RPM_BUILD_ROOT%{_mandir}/man1/ldbmodify.1*
 rm -f $RPM_BUILD_ROOT%{_mandir}/man1/ldbsearch.1*
 rm -f $RPM_BUILD_ROOT%{_mandir}/man1/ldbrename.1*
 
+magic_rpm_clean.sh
+
 %post
 if [ $1 -eq 1 ] ; then 
     # Initial installation 
-    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+    /usr/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 fi
 
 %preun
 if [ $1 -eq 0 ] ; then
     # Package removal, not upgrade
-    /bin/systemctl --no-reload disable smb.service > /dev/null 2>&1 || :
-    /bin/systemctl --no-reload disable nmb.service > /dev/null 2>&1 || :
-    /bin/systemctl stop smb.service > /dev/null 2>&1 || :
-    /bin/systemctl stop nmb.service > /dev/null 2>&1 || :
+    /usr/bin/systemctl --no-reload disable smb.service > /dev/null 2>&1 || :
+    /usr/bin/systemctl --no-reload disable nmb.service > /dev/null 2>&1 || :
+    /usr/bin/systemctl stop smb.service > /dev/null 2>&1 || :
+    /usr/bin/systemctl stop nmb.service > /dev/null 2>&1 || :
 fi
 
 %postun
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+/usr/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 if [ $1 -ge 1 ] ; then
     # Package upgrade, not uninstall
-    /bin/systemctl try-restart smb.service >/dev/null 2>&1 || :
-    /bin/systemctl try-restart nmb.service >/dev/null 2>&1 || :
+    /usr/bin/systemctl try-restart smb.service >/dev/null 2>&1 || :
+    /usr/bin/systemctl try-restart nmb.service >/dev/null 2>&1 || :
 fi
 
 %triggerun -- samba < 1:3.6.0-72
@@ -457,10 +478,10 @@ fi
 /usr/bin/systemd-sysv-convert --save nmb >/dev/null 2>&1 ||:
 
 # Run these because the SysV package being removed won't do them
-/sbin/chkconfig --del smb >/dev/null 2>&1 || :
-/sbin/chkconfig --del nmb >/dev/null 2>&1 || :
-/bin/systemctl try-restart smb.service >/dev/null 2>&1 || :
-/bin/systemctl try-restart nmb.service >/dev/null 2>&1 || :
+/usr/sbin/chkconfig --del smb >/dev/null 2>&1 || :
+/usr/sbin/chkconfig --del nmb >/dev/null 2>&1 || :
+/usr/bin/systemctl try-restart smb.service >/dev/null 2>&1 || :
+/usr/bin/systemctl try-restart nmb.service >/dev/null 2>&1 || :
 
 %pre winbind
 /usr/sbin/groupadd -g 88 wbpriv >/dev/null 2>&1 || :
@@ -468,21 +489,21 @@ fi
 %post winbind
 if [ $1 -eq 1 ] ; then 
     # Initial installation 
-    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+    /usr/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 fi
 
 %preun winbind
 if [ $1 -eq 0 ] ; then
     # Package removal, not upgrade
-    /bin/systemctl --no-reload disable winbind.service > /dev/null 2>&1 || :
-    /bin/systemctl stop winbind.service > /dev/null 2>&1 || :
+    /usr/bin/systemctl --no-reload disable winbind.service > /dev/null 2>&1 || :
+    /usr/bin/systemctl stop winbind.service > /dev/null 2>&1 || :
 fi
 
 %postun winbind
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+/usr/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 if [ $1 -ge 1 ] ; then
     # Package upgrade, not uninstall
-    /bin/systemctl try-restart winbind.service >/dev/null 2>&1 || :
+    /usr/bin/systemctl try-restart winbind.service >/dev/null 2>&1 || :
 fi
 
 %triggerun winbind -- samba-winbind < 1:3.6.0-72
@@ -493,16 +514,16 @@ fi
 /usr/bin/systemd-sysv-convert --save winbind >/dev/null 2>&1 ||:
 
 # Run these because the SysV package being removed won't do them
-/sbin/chkconfig --del winbind >/dev/null 2>&1 || :
-/bin/systemctl try-restart winbind.service >/dev/null 2>&1 || :
+/usr/sbin/chkconfig --del winbind >/dev/null 2>&1 || :
+/usr/bin/systemctl try-restart winbind.service >/dev/null 2>&1 || :
 
-%post common -p	/sbin/ldconfig
+%post common -p	/usr/sbin/ldconfig
 
-%postun common -p /sbin/ldconfig
+%postun common -p /usr/sbin/ldconfig
 
-%post -n libsmbclient -p /sbin/ldconfig
+%post -n libsmbclient -p /usr/sbin/ldconfig
 
-%postun -n libsmbclient -p /sbin/ldconfig
+%postun -n libsmbclient -p /usr/sbin/ldconfig
 
 %files
 %{_sbindir}/smbd
@@ -564,7 +585,7 @@ fi
 %{_mandir}/man8/smbta-util.8*
 
 %files common
-%attr(755,root,root) /%{_lib}/security/pam_smbpass.so
+%attr(755,root,root) %{_prefix}/%{_lib}/security/pam_smbpass.so
 %dir %{_libdir}/samba
 %{_libdir}/samba/lowcase.dat
 %{_libdir}/samba/upcase.dat
@@ -601,7 +622,6 @@ fi
 %{_mandir}/man8/smbpasswd.8*
 %{_mandir}/man8/pdbedit.8*
 %{_mandir}/man8/net.8*
-%{_datadir}/locale/*/LC_MESSAGES/net.mo
 
 %doc README COPYING Manifest
 %doc WHATSNEW.txt Roadmap
@@ -622,7 +642,7 @@ fi
 %{_mandir}/man8/pam_winbind.8*
 %{_mandir}/man8/winbindd.8*
 %{_mandir}/man8/idmap_*.8*
-%{_datadir}/locale/*/LC_MESSAGES/pam_winbind.mo
+%{_datadir}/locale/zh_*/LC_MESSAGES/pam_winbind.mo
 
 %files winbind-krb5-locator
 %{_mandir}/man7/winbind_krb5_locator.7*
@@ -630,16 +650,10 @@ fi
 
 %files winbind-clients
 %{_libdir}/libnss_winbind.so
-/%{_lib}/libnss_winbind.so.2
+%{_libdir}/libnss_winbind.so.2
 %{_libdir}/libnss_wins.so
-/%{_lib}/libnss_wins.so.2
-/%{_lib}/security/pam_winbind.so
-%attr(755,root,root) %{_libdir}/libwbclient.so.*
-
-%files winbind-devel
-%{_includedir}/wbclient.h
-%{_libdir}/libwbclient.so
-%{_libdir}/pkgconfig/wbclient.pc
+%{_libdir}/libnss_wins.so.2
+%{_libdir}/security/pam_winbind.so
 
 %files doc
 %doc docs/Samba3-Developers-Guide.pdf docs/Samba3-ByExample.pdf
@@ -659,6 +673,14 @@ fi
 %{_libdir}/pkgconfig/smbsharemodes.pc
 %{_mandir}/man7/libsmbclient.7*
 
+%files -n libwbclient
+%attr(755,root,root) %{_libdir}/libwbclient.so.*
+
+%files -n libwbclient-devel
+%{_includedir}/wbclient.h
+%{_libdir}/libwbclient.so
+%{_libdir}/pkgconfig/wbclient.pc
+
 %files domainjoin-gui
 %{_sbindir}/netdomjoin-gui
 %dir %{_datadir}/pixmaps/samba
@@ -667,6 +689,20 @@ fi
 %{_datadir}/pixmaps/samba/logo-small.png
 
 %changelog
+* Thu Apr 12 2012 Jon Ciesla <limburgher@gmail.com> - 1:3.6.4-82
+- Update to 3.6.4
+- Fixes CVE-2012-1182
+
+* Mon Mar 19 2012 Andreas Schneider <asn@redhat.com> - 1:3.6.3-81
+- Fix provides for of libwclient-devel for samba-winbind-devel.
+
+* Thu Feb 23 2012 Andreas Schneider <asn@redhat.com> - 1:3.6.3-80
+- Add commented out 'max protocol' to the default config.
+
+* Mon Feb 13 2012 Andreas Schneider <asn@redhat.com> - 1:3.6.3-79
+- Create a libwbclient package.
+- Replace winbind-devel with libwbclient-devel package.
+
 * Mon Jan 30 2012 Andreas Schneider <asn@redhat.com> - 1:3.6.3-78
 - Update to 3.6.3
 - Fixes CVE-2012-0817
@@ -1456,7 +1492,7 @@ fi
 - Upgrade to 2.2.8
 - removed commented out patches.
 - removed old patches and .md5 files from the repository.
-- remove duplicate /sbin/chkconfig --del winbind which causes
+- remove duplicate /usr/sbin/chkconfig --del winbind which causes
   warnings when removing samba.
 - Fixed minor bug in smbprint that causes it to fail when called with
   more than 10 parameters: the accounting file (and spool directory
