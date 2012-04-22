@@ -3,7 +3,7 @@
 
 Name:           system-config-keyboard
 Version:        1.3.1
-Release:        5%{?dist}
+Release:        8%{?dist}
 Summary:        A graphical interface for modifying the keyboard
 
 Group:          System Environment/Base
@@ -16,23 +16,35 @@ BuildRequires:  desktop-file-utils
 BuildRequires:  gettext
 BuildRequires:  intltool
 
-Requires:       python
+Requires:       system-config-keyboard-base = %{version}-%{release}
 Requires:       usermode >= 1.36
-%ifnarch s390 s390x
-Requires:       pyxf86config
-%endif
 
 Obsoletes:      kbdconfig
 Obsoletes:      redhat-config-keyboard
+Patch0:         s-c-keyboard-do_not_remove_the_OK_button.patch
+Patch1:		sck-1.3.1-no-pyxf86config.patch
+
 
 %description
 system-config-keyboard is a graphical user interface that allows 
 the user to change the default keyboard of the system.
 
 
+%package base
+Summary:        system-config-keyboard base components
+Group:          System Environment/Base
+License:        GPLv2+
+Requires:       python
+Requires:       dbus-python
+
+%description base
+Base components of system-config-keyboard.
+
+
 %prep
 %setup -q
-
+%patch0 -p1
+%patch1 -p1
 
 %build
 make
@@ -44,7 +56,7 @@ make INSTROOT=$RPM_BUILD_ROOT install
 desktop-file-install --vendor system --delete-original      \
   --dir $RPM_BUILD_ROOT%{_datadir}/applications             \
    $RPM_BUILD_ROOT%{_datadir}/applications/system-config-keyboard.desktop
-
+magic_rpm_clean.sh
 %find_lang %{name}
 
 
@@ -66,9 +78,8 @@ if [ -x /usr/bin/gtk-update-icon-cache ]; then
 fi
 
 
-%files -f %{name}.lang
+%files
 %defattr(-,root,root)
-%doc COPYING
 %{_sbindir}/system-config-keyboard
 %{_bindir}/system-config-keyboard
 %{_datadir}/system-config-keyboard
@@ -78,12 +89,28 @@ fi
 %attr(0644,root,root) %config %{_sysconfdir}/security/console.apps/system-config-keyboard
 %attr(0644,root,root) %config %{_sysconfdir}/pam.d/system-config-keyboard
 %attr(0644,root,root) %{_datadir}/icons/hicolor/48x48/apps/system-config-keyboard.png
+
+
+%files base -f %{name}.lang
+%defattr(-,root,root)
+%doc COPYING
 %{python_sitelib}/system_config_keyboard
 
 
 %changelog
-* Sat Feb 11 2012 Liu Di <liudidi@gmail.com> - 1.3.1-5
-- 为 Magic 3.0 重建
+* Wed Feb 22 2012 Thomas Woerner <twoerner@redhat.com> 1.3.1-8
+- split out base components into base sub package (rhbz#791332)
+
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.3.1-7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
+* Thu Dec 01 2011 Adam Jackson <ajax@redhat.com> 1.3.1-6
+- Drop keyboard_backend.py and un-Require pyxf86config (#758709)
+
+* Thu Jun 16 2011 Toshio Kuratomi <toshio@fedoraproject.org> - 1.3.1-5
+- Apply patches from itamarjp, landgraf, mschwendt to fix:
+  - Needs pyhon-dbus: https://bugzilla.redhat.com/show_bug.cgi?id=708631
+  - Missing OK button: https://bugzilla.redhat.com/show_bug.cgi?id=646041
 
 * Wed Feb 09 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.3.1-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
