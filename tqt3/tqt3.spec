@@ -1,5 +1,5 @@
 %define git 1
-%define gitdate 20120411
+%define gitdate 20120423
 
 %define qt_dirname tqt-3.4
 %define qtdir %{_libdir}/%{qt_dirname}
@@ -562,9 +562,9 @@ for i in findtr qt20fix qtrename140 lrelease lupdate ; do
 done
 
 # create/fix symlinks, lib64 fixes
-/sbin/ldconfig -n $RPM_BUILD_ROOT%{qtdir}/%{_lib}
+/usr/sbin/ldconfig -n $RPM_BUILD_ROOT%{qtdir}/%{_lib}
 for link in tqt.so tqt.so.3 ; do
-  ln -sf libtqt-mt.so.%{version} $RPM_BUILD_ROOT%{qtdir}/%{_lib}/lib${link}
+  ln -sf libtqt-mt.so.3.3.8 $RPM_BUILD_ROOT%{qtdir}/%{_lib}/lib${link}
 done
 pushd mkspecs
 rm -rf default
@@ -721,6 +721,7 @@ rm -f %{buildroot}%{qtdir}/mkspecs/default/linux-g++*
 mkdir -p %{buildroot}/etc/ld.so.conf.d
 echo "%{qtdir}/lib" > %{buildroot}/etc/ld.so.conf.d/tqt.conf
 
+magic_rpm_clean.sh
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -734,10 +735,10 @@ exit 0
 
 
 %post
-/sbin/ldconfig
+/usr/sbin/ldconfig
 
 %postun
-/sbin/ldconfig
+/usr/sbin/ldconfig
 
 
 %files
@@ -832,8 +833,8 @@ exit 0
 %doc tutorial
 
 %if %{motif_extention}
-%post Xt -p /sbin/ldconfig
-%postun Xt -p /sbin/ldconfig
+%post Xt -p /usr/sbin/ldconfig
+%postun Xt -p /usr/sbin/ldconfig
 
 %files Xt
 %defattr(-,root,root,-)
