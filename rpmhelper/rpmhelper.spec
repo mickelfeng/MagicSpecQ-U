@@ -4,9 +4,9 @@ Summary: Helper scripts for rpm.
 Summary(zh_CN.UTF-8): 与 rpm 有关的一些脚本
 Name: rpmhelper
 URL: http://www.linuxfans.org
-Version: 0.02
-Release: 5%{?dist}
-Source0: %{name}-%{version}.tar.gz
+Version: 0.03
+Release: 1%{?dist}
+Source0: %{name}.tar.xz
 License: GPL
 Group: Application/Tools
 Group(zh_CN.UTF-8): 应用程序/工具
@@ -22,7 +22,7 @@ rpm files.
 rpmhelper 是一组脚本和库，它的目的是为了更容易的管理 rpm 文件。
 
 %prep
-%setup -q
+%setup -q -n %{name}
 
 %build
 make
@@ -41,9 +41,9 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root,-)
 %doc README ChangeLog COPYING
-%dir %{python_sitearch}/rpmhelper
-%{python_sitearch}/rpmhelper
-%{python_sitearch}/rpmhelper-0.02-py2.*.egg-info
+%dir %{python_sitearch}/mgcrpmhelper
+%{python_sitearch}/mgcrpmhelper
+%{python_sitearch}/mgcrpmhelper-0.03-py2.*.egg-info
 %{_bindir}/rpm-diff
 %{_bindir}/rpm-findold
 %{_bindir}/rpm-findnewest
