@@ -1,8 +1,6 @@
-%{!?_initddir:%define _initddir /etc/rc.d/init.d}
-
 Name:           rpcbind
 Version:        0.2.0
-Release:	12%{?dist}
+Release:        16%{?dist}
 Summary:        Universal Addresses to RPC Program Number Mapper
 Group:          System Environment/Daemons
 License:        BSD
@@ -10,19 +8,19 @@ URL:            http://nfsv4.bullopensource.org
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-root-%(%{__id_u} -n)
 Source0:        http://downloads.sourceforge.net/rpcbind/%{name}-%{version}.tar.bz2
-Source1: rpcbind.init
+Source1: rpcbind.service
+Source2: rpcbind.socket
 
 Patch001: rpcbind-0_2_1-rc3.patch
 
 Requires: glibc-common setup
 Conflicts: man-pages < 2.43-12
-BuildRequires: automake, autoconf, libtool
+BuildRequires: automake, autoconf, libtool, systemd-units
 BuildRequires: libtirpc-devel, quota-devel, tcp_wrappers-devel
-Requires(pre): /usr/sbin/groupadd  /usr/sbin/groupdel
-Requires(pre): /usr/sbin/useradd  /usr/sbin/userdel
-Requires(pre): coreutils
-Requires(post): /sbin/chkconfig
-Requires(post): /sbin/chkconfig
+Requires(pre): coreutils shadow-utils
+Requires(post): chkconfig systemd-units systemd-sysv
+Requires(preun): systemd-units
+Requires(postun): systemd-units coreutils
 
 Provides: portmap = %{version}-%{release}
 Obsoletes: portmap <= 4.0-65.3
@@ -60,16 +58,18 @@ make all
 
 %install
 rm -rf %{buildroot}
-mkdir -p %{buildroot}/sbin
 mkdir -p %{buildroot}/usr/sbin
-mkdir -p %{buildroot}%{_sysconfdir}/rc.d/init.d
+mkdir -p %{buildroot}%{_unitdir}
 mkdir -p %{buildroot}%{_mandir}/man8
 mkdir -p %{buildroot}/var/lib/rpcbind
 make DESTDIR=$RPM_BUILD_ROOT install
 
-mv -f ${RPM_BUILD_ROOT}%{_bindir}/rpcbind ${RPM_BUILD_ROOT}/sbin
+mv -f ${RPM_BUILD_ROOT}%{_bindir}/rpcbind ${RPM_BUILD_ROOT}%{_sbindir}
 mv -f ${RPM_BUILD_ROOT}%{_bindir}/rpcinfo ${RPM_BUILD_ROOT}%{_sbindir}
-install -m 755 ${RPM_SOURCE_DIR}/rpcbind.init ${RPM_BUILD_ROOT}%{_initddir}/rpcbind
+install -m644 %{SOURCE1} %{buildroot}%{_unitdir}
+install -m644 %{SOURCE2} %{buildroot}%{_unitdir}
+
+magic_rpm_clean.sh
 
 %clean
 rm -rf %{buildroot}
@@ -91,35 +91,61 @@ if [ -z "$rpcid" -o "$rpcid" != "32" ]; then
 	/usr/sbin/useradd -o -l -c "Rpcbind Daemon" -d /var/lib/rpcbind -g 32 \
     	-M -s /sbin/nologin -u 32 rpc > /dev/null 2>&1
 fi
-%post 
-/sbin/chkconfig --add %{name}
+%post
+if [ $1 -eq 1 ] ; then 
+    # Initial installation
+    /usr/bin/systemctl enable rpcbind.service >/dev/null 2>&1 || :
+fi
 
 %preun
 if [ $1 -eq 0 ]; then
-    service rpcbind stop > /dev/null 2>&1
-    /sbin/chkconfig --del %{name}
+	# Package removal, not upgrade
+	/usr/bin/systemctl --no-reload disable rpcbind.service >/dev/null 2>&1 || :
+	/usr/bin/systemctl stop rpcbind.service >/dev/null 2>&1 || :
 	/usr/sbin/userdel  rpc 2>/dev/null || :
 	/usr/sbin/groupdel rpc 2>/dev/null || :
 	rm -rf /var/lib/rpcbind
 fi
+
 %postun
-if [ "$1" -ge "1" ]; then
-    service rpcbind condrestart > /dev/null 2>&1
+/usr/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+if [ $1 -ge 1 ]; then
+	# Package upgrade, not uninstall
+	/usr/bin/systemctl try-restart rpcbind.service >/dev/null 2>&1 || :
 fi
+
+%triggerun -- rpcbind < 0.2.0-15
+%{_bindir}/systemd-sysv-convert --save rpcbind >/dev/null 2>&1 ||:
+/usr/bin/systemctl --no-reload enable rpcbind.service >/dev/null 2>&1
+/usr/sbin/chkconfig --del rpcbind >/dev/null 2>&1 || :
+/usr/bin/systemctl try-restart rpcbind.service >/dev/null 2>&1 || :
 
 %files
 %defattr(-,root,root)
 %doc AUTHORS ChangeLog README
-/sbin/rpcbind
+%{_sbindir}/rpcbind
 %{_sbindir}/rpcinfo
 %{_mandir}/man8/*
-%config %{_initddir}/rpcbind
+%{_unitdir}/rpcbind.service
+%{_unitdir}/rpcbind.socket
 
 %dir %attr(700,rpc,rpc) /var/lib/rpcbind
 
 %changelog
-* Sat Feb 04 2012 Liu Di <liudidi@gmail.com> - 0.2.0-12
-- 为 Magic 3.0 重建
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.2.0-16
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
+* Mon Sep 12 2011 Steve Dickson <steved@redhat.com> - 0.2.0-15
+- Bumped up the tigger version to this version, 0.2.0-15 (bz 713574)
+
+* Fri Sep  9 2011 Tom Callaway <spot@fedoraproject.org> - 0.2.0-14
+- fix scriptlets to enable service by default
+
+* Fri Jul  8 2011 Steve Dickson <steved@redhat.com> - 0.2.0-13
+- Spec file clean up
+
+* Thu Jul  7 2011 Steve Dickson <steved@redhat.com> - 0.2.0-12
+- Migrated SysV initscripts to systemd (bz 713574)
 
 * Thu Mar 17 2011 Steve Dickson <steved@redhat.com> - 0.2.0-11
 - Updated to the latest upstream release: rpcbind-0_2_1-rc3
