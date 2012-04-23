@@ -1,8 +1,8 @@
 ### Header
 Summary: A collection of basic system utilities
 Name: util-linux
-Version: 2.21
-Release: 2%{?dist}
+Version: 2.21.1
+Release: 1%{?dist}
 License: GPLv2 and GPLv2+ and GPLv3+ and LGPLv2+ and BSD with advertising and Public Domain
 Group: System Environment/Base
 URL: http://kernel.org/~kzak/util-linux/
@@ -357,6 +357,9 @@ ln -s /proc/mounts %{buildroot}/etc/mtab
 # remove static libs
 rm -f $RPM_BUILD_ROOT%{_libdir}/lib{uuid,blkid,mount}.a
 
+#会引入太多依赖，奇怪的是fedora的包竟然没有这个
+rm %{buildroot}%{_bindir}/floppygtk
+magic_rpm_clean.sh
 # find MO files
 %find_lang %name
 
@@ -393,7 +396,7 @@ rm -f /etc/mtab
 ln -s /proc/mounts /etc/mtab
 
 %post -n libblkid
-/sbin/ldconfig
+/usr/sbin/ldconfig
 
 ### Move blkid cache to /run
 [ -d /run/blkid ] || mkdir -p /run/blkid
@@ -405,13 +408,13 @@ for I in /etc/blkid.tab /etc/blkid.tab.old \
 	fi
 done
 
-%postun -n libblkid -p /sbin/ldconfig
+%postun -n libblkid -p /usr/sbin/ldconfig
 
-%post -n libuuid -p /sbin/ldconfig
-%postun -n libuuid -p /sbin/ldconfig
+%post -n libuuid -p /usr/sbin/ldconfig
+%postun -n libuuid -p /usr/sbin/ldconfig
 
-%post -n libmount -p /sbin/ldconfig
-%postun -n libmount -p /sbin/ldconfig
+%post -n libmount -p /usr/sbin/ldconfig
+%postun -n libmount -p /usr/sbin/ldconfig
 
 %pre -n uuidd
 getent group uuidd >/dev/null || groupadd -r uuidd
@@ -421,12 +424,12 @@ useradd -r -g uuidd -d /var/lib/libuuid -s /sbin/nologin \
 exit 0
 
 %post -n uuidd
-/sbin/chkconfig --add uuidd
+/usr/sbin/chkconfig --add uuidd
 
 %preun -n uuidd
 if [ "$1" = 0 ]; then
 	/sbin/service uuidd stop > /dev/null 2>&1 || :
-	/sbin/chkconfig --del uuidd
+	/usr/sbin/chkconfig --del uuidd
 fi
 
 
@@ -494,7 +497,6 @@ fi
 %{_bindir}/column
 %{_bindir}/fallocate
 %{_bindir}/flock
-%{_bindir}/floppygtk
 %{_bindir}/getopt
 %{_bindir}/hexdump
 %{_bindir}/ionice
@@ -705,8 +707,8 @@ fi
 
 
 %changelog
-* Thu Mar 08 2012 Liu Di <liudidi@gmail.com> - 2.21-2
-- 为 Magic 3.0 重建
+* Fri Mar 30 2012 Karel Zak <kzak@redhat.com> 2.21.1-1
+- upgrade to bugfix release 2.21.1
 
 * Fri Feb 24 2012 Karel Zak <kzak@redhat.com> 2.21-1
 - upgrade to release 2.21
