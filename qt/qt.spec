@@ -43,7 +43,7 @@ Summary: The shared library for the Qt GUI toolkit.
 Summary(zh_CN.UTF-8): Qt GUI 工具包的共享库。
 Name: 	 qt
 Version: %{ver}
-Release: 3%{?dist}
+Release: 4%{?dist}
 %if %{cvs}
 Source0: ftp://ftp.troll.no/qt/source/qt-copy-%{cvsdate}.tar.gz
 %else
@@ -116,11 +116,13 @@ Patch10007: qt-x11-free-3.3.8-xim_fix.patch
 Patch10008: qt-x11-free-3.3.6-fakebold.patch
 Patch10009: qt3-gcc46.patch
 
+Patch20000: qt-3.3.8.d-libpng15-1.patch
+
 #3.3.8c
 Patch99999: http://www.trinitydesktop.org/wiki/pub/Developers/Qt3/qt3_3.3.8c.diff
 
 %define theme %{name}
-Prereq: /sbin/ldconfig
+Prereq: /usr/sbin/ldconfig
 Prereq: fileutils
 # Wierd, but true. (-: -- Rex
 #BuildConflicts: qt < %{version}
@@ -375,6 +377,8 @@ find . -type d -name CVS | xargs rm -rf
 %patch10008 -p1
 #%patch10009 -p1
 
+%patch20000 -p1
+
 #%patch99999 -p0
 
 # for qt-copy in KDE CVS
@@ -570,14 +574,14 @@ mkdir -p $RPM_BUILD_ROOT%{qtdir}/{bin,include,lib}
 
 make install INSTALL_ROOT=$RPM_BUILD_ROOT/
 
-for i in findtr qt20fix qtrename140 lrelease lupdate ; do
+for i in conv2ui findtr qt20fix qtrename140 lrelease lupdate ; do
    install bin/$i %{buildroot}%{qtdir}/bin/
 done
 
 # create/fix symlinks, lib64 fixes
-/sbin/ldconfig -n $RPM_BUILD_ROOT%{qtdir}/%{_lib}
+/usr/sbin/ldconfig -n $RPM_BUILD_ROOT%{qtdir}/%{_lib}
 for link in qt.so qt.so.3 ; do
-  ln -sf libqt-mt.so.%{version} $RPM_BUILD_ROOT%{qtdir}/%{_lib}/lib${link}
+  ln -sf libqt-mt.so.3.3.8 $RPM_BUILD_ROOT%{qtdir}/%{_lib}/lib${link}
 done
 pushd mkspecs
 rm -rf default
@@ -731,7 +735,7 @@ rm -f %{buildroot}%{qtdir}/mkspecs/default/linux-g++*
 # for newer ld.so's
 mkdir -p %{buildroot}/etc/ld.so.conf.d
 echo "%{qtdir}/lib" > %{buildroot}/etc/ld.so.conf.d/qt.conf
-
+magic_rpm_clean.sh
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -745,10 +749,10 @@ exit 0
 
 
 %post
-/sbin/ldconfig
+/usr/sbin/ldconfig
 
 %postun
-/sbin/ldconfig
+/usr/sbin/ldconfig
 
 
 %files
@@ -789,6 +793,7 @@ exit 0
 %defattr(-,root,root,-)
 %{qtdir}/bin/moc
 %{qtdir}/bin/uic
+%{qtdir}/bin/conv2ui
 %{qtdir}/bin/findtr
 %{qtdir}/bin/qt20fix
 %{qtdir}/bin/qtrename140
@@ -842,8 +847,8 @@ exit 0
 %doc tutorial
 
 %if %{motif_extention}
-%post Xt -p /sbin/ldconfig
-%postun Xt -p /sbin/ldconfig
+%post Xt -p /usr/sbin/ldconfig
+%postun Xt -p /usr/sbin/ldconfig
 
 %files Xt
 %defattr(-,root,root,-)
@@ -899,6 +904,9 @@ exit 0
 
 
 %changelog
+* Mon Apr 23 2012 Liu Di <liudidi@gmail.com> - 3.3.8d-4
+- 为 Magic 3.0 重建
+
 * Mon Oct 30 2006 KanKer <kanker@163.com> -3.3.7-1mgc
 - update 3.3.7
 
