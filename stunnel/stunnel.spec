@@ -1,7 +1,7 @@
 Summary: An SSL-encrypting socket wrapper
 Name: stunnel
-Version: 4.50
-Release: 2%{?dist}
+Version: 4.52
+Release: 1%{?dist}
 License: GPLv2
 Group: Applications/Internet
 URL: http://stunnel.mirt.net/
@@ -57,6 +57,8 @@ done
 mkdir srpm-docs
 cp %{SOURCE2} %{SOURCE3} %{SOURCE4} %{SOURCE5} %{SOURCE6} srpm-docs
 
+magic_rpm_clean.sh
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -66,19 +68,20 @@ rm -rf $RPM_BUILD_ROOT
 %doc tools/stunnel.conf-sample
 %doc srpm-docs/*
 %lang(en) %doc doc/en/*
-%lang(po) %doc doc/pl/*
 %{_bindir}/stunnel
 %exclude %{_bindir}/stunnel3
 %exclude %{_datadir}/doc/stunnel
 %{_libdir}/stunnel
 %exclude %{_libdir}/stunnel/libstunnel.la
 %{_mandir}/man8/stunnel.8*
-%lang(fr) %{_mandir}/fr/man8/stunnel.8*
-%lang(pl) %{_mandir}/pl/man8/stunnel.8*
 %dir %{_sysconfdir}/%{name}
 %exclude %{_sysconfdir}/stunnel/*
 
 %changelog
+* Tue Mar 6 2012 Avesh Agarwal <avagarwa@redhat.com> - 4.52-1
+- New upstream realease 4.52
+- Updated local patches
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.50-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
