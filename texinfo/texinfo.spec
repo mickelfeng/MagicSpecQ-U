@@ -4,7 +4,7 @@ Summary: Tools needed to create Texinfo format documentation files
 Summary(zh_CN.UTF-8): 建立 Texinfo 格式文档文件所需要的工具
 Name: texinfo
 Version: 4.13a
-Release: 13%{?dist}
+Release: 14%{?dist}
 License: GPLv3+
 Group: Applications/Publishing
 Group(zh_CN.UTF-8): 应用程序/出版
@@ -24,8 +24,6 @@ Requires(preun): /sbin/install-info
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: zlib-devel, ncurses-devel
 
-Provides: /sbin/install-info
-
 %description
 Texinfo is a documentation system that can produce both online
 information and printed output from a single source file. The GNU
@@ -44,6 +42,8 @@ Summary: A stand-alone TTY-based reader for GNU texinfo documentation
 Summary(zh_CN.UTF-8): 一个独立的用于 GNU texinfo 文档的基于 TTY 的阅读器
 Group: System Environment/Base
 Group(zh_CN.UTF-8): 系统环境/基本
+
+Provides: /sbin/install-info 
 
 %description -n info
 The GNU project uses the texinfo file format for much of its
@@ -185,6 +185,9 @@ fi
 %{_mandir}/man1/pdftexi2dvi.1*
 
 %changelog
+* Tue Apr 24 2012 Liu Di <liudidi@gmail.com> - 4.13a-14
+- 为 Magic 3.0 重建
+
 * Mon Apr 16 2012 Liu Di <liudidi@gmail.com> - 4.13a-13
 - 为 Magic 3.0 重建
 
