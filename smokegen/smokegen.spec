@@ -50,7 +50,7 @@ make %{?_smp_mflags} -C %{_target_platform}
 
 %install
 make install/fast DESTDIR=%{buildroot} -C %{_target_platform}
-
+magic_rpm_clean.sh
 
 %post -p /sbin/ldconfig
 
