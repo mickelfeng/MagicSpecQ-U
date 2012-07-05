@@ -1,7 +1,7 @@
-%define tp_glib_ver 0.16.0
+%define tp_glib_ver 0.17.5
 
 Name:           telepathy-mission-control
-Version:        5.10.1
+Version:        5.12.0
 Release:        1%{?dist}
 Epoch:          1
 Summary:        Central control for Telepathy connection manager
@@ -16,7 +16,7 @@ BuildRequires:  libxslt-devel
 BuildRequires:  libgnome-keyring-devel
 BuildRequires:  NetworkManager-glib-devel
 BuildRequires:  telepathy-glib-devel >= %{tp_glib_ver}
-BuildRequires:  upower-devel >= 0.9.14
+BuildRequires:  upower-devel
 BuildRequires:  gtk-doc
 
 
@@ -55,12 +55,12 @@ make %{?_smp_mflags}
 %install
 make install DESTDIR=%{buildroot}
 find %{buildroot} -name '*.la' -exec rm -f {} ';'
+magic_rpm_clean.sh
 
-
-%post -p /sbin/ldconfig
+%post -p /usr/sbin/ldconfig
 
 %postun
-/sbin/ldconfig
+/usr/sbin/ldconfig
 if [ $1 -eq 0 ] ; then
     /usr/bin/glib-compile-schemas %{_datadir}/glib-2.0/schemas &> /dev/null || :
 fi
@@ -90,6 +90,16 @@ fi
 
 
 %changelog
+* Mon Apr  2 2012 Brian Pepple <bpepple@fedoraproject.org> - 1:5.12.0-1
+- Update to 5.12.0.
+
+* Wed Feb 22 2012 Brian Pepple <bpepple@fedoraproject.org> - 1:5.11.0-1
+- Update to 5.11.0
+- Bump minimum version of tp-glib.
+
+* Mon Jan 09 2012 Brian Pepple <bpepple@fedoraproject.org> - 1:5.10.1-2
+- Rebuild for new gcc.
+
 * Tue Nov  8 2011 Peter Robinson <pbrobinson@fedoraproject.org> - 1:5.10.1-1
 - Update to the 5.10.1 stable release
 
