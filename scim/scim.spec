@@ -1,5 +1,5 @@
 Name:      scim
-Version:   1.4.11
+Version:   1.4.14
 Release:   2%{?dist}
 Summary:   Smart Common Input Method platform
 
@@ -13,11 +13,13 @@ Source3:   scim-system-config
 Source4:   scim-system-global
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildRequires: gtk2-devel, libXt-devel
+BuildRequires: gtk2-devel, libXt-devel, gtk3-devel
 # for autoreconf
-Buildrequires: autoconf automake gettext libtool
+Buildrequires: autoconf automake gettext libtool intltool
 # for system ltdl
 Buildrequires: libtool-ltdl-devel
+# for autogen.sh
+Buildrequires: gnome-common
 Requires:  %{name}-libs = %{version}-%{release}
 Requires:  imsettings, im-chooser
 Requires(post): %{_sbindir}/alternatives
@@ -120,11 +122,12 @@ cp -p %{SOURCE4} configs/global
 %patch7 -p1 -b .7-emacs-ccmode~
 
 # patch17 touches configure.ac and Makefile.am
-./bootstrap
+#./bootstrap
+gnome-autogen.sh
 
 
 %build
-%configure --disable-static --enable-ld-version-script
+%configure --disable-static --enable-ld-version-script --with-gtk-version=2
 make %{?_smp_mflags}
 
 
@@ -146,7 +149,7 @@ rm -f docs/html/FreeSans.ttf
 # install xinput config file
 mkdir -pm 755 ${RPM_BUILD_ROOT}/%{_sysconfdir}/X11/xinit/xinput.d
 install -pm 644 %{SOURCE1} ${RPM_BUILD_ROOT}/%{_xinputconf}
-
+magic_rpm_clean.sh
 %find_lang %{name}
 
 
@@ -211,6 +214,9 @@ fi
 %{_datadir}/scim
 %{_datadir}/pixmaps/*
 %config(noreplace) %{_xinputconf}
+#预备分包出来
+   /usr/lib/qt-3.3/lib/qt3/plugins/inputmethods/im-scim.so
+   /usr/lib/qt4/lib/qt4/plugins/inputmethods/im-scim.so
 
 %files devel
 %defattr(-,root,root,-)
@@ -221,7 +227,8 @@ fi
 
 %files gtk
 %defattr(-,root,root,-)
-%{_libdir}/gtk-2.0/immodules/im-scim.so
+%{_libdir}/gtk-2.0/*/immodules/im-scim.so
+%{_libdir}/gtk-3.0/*/immodules/im-scim.so
 
 
 %files libs
@@ -240,6 +247,18 @@ fi
 
 
 %changelog
+* Fri Jun 29 2012  Peng Wu <pwu@redhat.com> - 1.4.14-2
+- Use gtk2 for setup ui
+
+* Mon Jun 25 2012  Peng Wu <pwu@redhat.com> - 1.4.14-1
+- Update to 1.4.14
+
+* Mon May 07 2012  Peng Wu <pwu@redhat.com> - 1.4.13-1
+- Update to 1.4.13
+
+* Tue Feb 28 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.4.11-3
+- Rebuilt for c++ ABI breakage
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.4.11-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
