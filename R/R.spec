@@ -1,3 +1,4 @@
+%define WITH_JAVA 0
 %ifarch x86_64
 %define java_arch amd64
 %else
@@ -5,15 +6,13 @@
 %endif
 
 Name: R
-Version: 2.14.1
+Version: 2.15.0
 Release: 3%{?dist}
 Summary: A language for data analysis and graphics
 URL: http://www.r-project.org
 Source0: ftp://cran.r-project.org/pub/R/src/base/R-2/R-%{version}.tar.gz
 Source1: macros.R
 Source2: R-make-search-index.sh
-# Submitted to upstream as bug #14813
-Patch0: R-2.14.1-Adapt-to-PCRE-8.30.patch
 License: GPLv2+
 Group: Applications/Engineering
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -22,7 +21,10 @@ BuildRequires: gcc-c++, tetex-latex, texinfo-tex
 BuildRequires: libpng-devel, libjpeg-devel, readline-devel
 BuildRequires: tcl-devel, tk-devel, ncurses-devel
 BuildRequires: blas >= 3.0, pcre-devel, zlib-devel
-BuildRequires: java-1.5.0-gcj, lapack-devel
+%if %{WITH_JAVA}
+BuildRequires: java-1.5.0-gcj
+%endif
+BuildRequires: lapack-devel
 BuildRequires: libSM-devel, libX11-devel, libICE-devel, libXt-devel
 BuildRequires: bzip2-devel, libXmu-devel, cairo-devel, libtiff-devel
 BuildRequires: gcc-objc, pango-devel, libicu-devel
@@ -59,31 +61,31 @@ Requires: perl, sed, gawk, texlive-latex, texlive-dvips, less, vi
 # depend on one of these submodules rather than just R. These are provided for 
 # packager convenience.
 Provides: R-base = %{version}
-Provides: R-boot = 1.3.3
+Provides: R-boot = 1.3.4
 Provides: R-class = 7.3.3
-Provides: R-cluster = 1.14.1
+Provides: R-cluster = 1.14.2
 Provides: R-codetools = 0.2.8
 Provides: R-datasets = %{version}
-Provides: R-foreign = 0.8.46
+Provides: R-foreign = 0.8.49
 Provides: R-graphics = %{version}
 Provides: R-grDevices = %{version}
 Provides: R-grid = %{version}
-Provides: R-KernSmooth = 2.23.6
-Provides: R-lattice = 0.20.0
-Provides: R-MASS = 7.3.16
-Provides: R-Matrix = 1.0.1
+Provides: R-KernSmooth = 2.23.7
+Provides: R-lattice = 0.20.6
+Provides: R-MASS = 7.3.17
+Provides: R-Matrix = 1.0.6
 Obsoletes: R-Matrix < 0.999375-7
 Provides: R-methods = %{version}
-Provides: R-mgcv = 1.7.9
-Provides: R-nlme = 3.1.102
+Provides: R-mgcv = 1.7.13
+Provides: R-nlme = 3.1.103
 Provides: R-nnet = 7.3.1
 Provides: R-parallel = %{version}
-Provides: R-rpart = 3.1.50
+Provides: R-rpart = 3.1.52
 Provides: R-spatial = 7.3.3
 Provides: R-splines = %{version}
 Provides: R-stats = %{version}
 Provides: R-stats4 = %{version}
-Provides: R-survival = 2.36.10
+Provides: R-survival = 2.36.12
 Provides: R-tcltk = %{version}
 Provides: R-tools = %{version}
 Provides: R-utils = %{version}
@@ -110,7 +112,7 @@ Requires: R-core = %{version}-%{release}
 Requires: gcc-c++, gcc-gfortran, tetex-latex, texinfo-tex
 Requires: bzip2-devel, libX11-devel, pcre-devel, zlib-devel
 Requires: tcl-devel, tk-devel, pkgconfig
-Provides: R-Matrix-devel = 1.0.1
+Provides: R-Matrix-devel = 1.0.6
 Obsoletes: R-Matrix-devel < 0.999375-7
 
 %description devel
@@ -177,7 +179,6 @@ from the R project.  This package provides the static libRmath library.
 
 %prep
 %setup -q
-%patch0 -p1 -b .pcre830
 
 # Filter false positive provides.
 cat <<EOF > %{name}-prov
@@ -312,6 +313,8 @@ pushd $RPM_BUILD_ROOT%{_datadir}/texmf/tex/latex
 ln -s ../../../R/texmf/tex/latex R
 popd
 
+magic_rpm_clean.sh
+
 %files
 # Metapackage
 
@@ -325,6 +328,7 @@ popd
 %{_datadir}/R/library/
 %{_datadir}/R/licenses/
 %dir %{_datadir}/R/locale/
+%lang(da) %{_datadir}/R/locale/da/
 %lang(de) %{_datadir}/R/locale/de/
 %lang(en) %{_datadir}/R/locale/en*/
 %lang(es) %{_datadir}/R/locale/es*/
@@ -358,6 +362,7 @@ popd
 %{_libdir}/R/library/base/INDEX
 %{_libdir}/R/library/base/Meta/
 %dir %{_libdir}/R/library/base/po/
+%lang(da) %{_libdir}/R/library/base/po/da/
 %lang(de) %{_libdir}/R/library/base/po/de/
 %lang(en) %{_libdir}/R/library/base/po/en*/
 %lang(fr) %{_libdir}/R/library/base/po/fr/
@@ -436,12 +441,14 @@ popd
 %{_libdir}/R/library/compiler/NAMESPACE
 %{_libdir}/R/library/compiler/R/
 %dir %{_libdir}/R/library/compiler/po/
+%lang(da) %{_libdir}/R/library/compiler/po/da/
 %lang(de) %{_libdir}/R/library/compiler/po/de/
 %lang(en) %{_libdir}/R/library/compiler/po/en*/
 %lang(fr) %{_libdir}/R/library/compiler/po/fr/
 %lang(ja) %{_libdir}/R/library/compiler/po/ja/
 %lang(pt) %{_libdir}/R/library/compiler/po/pt*/
 %lang(ru) %{_libdir}/R/library/compiler/po/ru/
+%lang(zh) %{_libdir}/R/library/compiler/po/zh*/
 # datasets
 %dir %{_libdir}/R/library/datasets/
 %{_libdir}/R/library/datasets/data/
@@ -477,6 +484,7 @@ popd
 %{_libdir}/R/library/graphics/Meta/
 %{_libdir}/R/library/graphics/NAMESPACE
 %dir %{_libdir}/R/library/graphics/po/
+%lang(da) %{_libdir}/R/library/graphics/po/da/
 %lang(de) %{_libdir}/R/library/graphics/po/de/
 %lang(en) %{_libdir}/R/library/graphics/po/en*/
 %lang(fr) %{_libdir}/R/library/graphics/po/fr/
@@ -500,6 +508,7 @@ popd
 %{_libdir}/R/library/grDevices/Meta/
 %{_libdir}/R/library/grDevices/NAMESPACE
 %dir %{_libdir}/R/library/grDevices/po/
+%lang(da) %{_libdir}/R/library/grDevices/po/da/
 %lang(de) %{_libdir}/R/library/grDevices/po/de/
 %lang(en) %{_libdir}/R/library/grDevices/po/en*/
 %lang(fr) %{_libdir}/R/library/grDevices/po/fr/
@@ -521,6 +530,7 @@ popd
 %{_libdir}/R/library/grid/Meta/
 %{_libdir}/R/library/grid/NAMESPACE
 %dir %{_libdir}/R/library/grid/po/
+%lang(da) %{_libdir}/R/library/grid/po/da/
 %lang(de) %{_libdir}/R/library/grid/po/de/
 %lang(en) %{_libdir}/R/library/grid/po/en*/
 %lang(fr) %{_libdir}/R/library/grid/po/fr*/
@@ -615,6 +625,7 @@ popd
 %{_libdir}/R/library/methods/Meta/
 %{_libdir}/R/library/methods/NAMESPACE
 %dir %{_libdir}/R/library/methods/po/
+%lang(da) %{_libdir}/R/library/methods/po/da/
 %lang(de) %{_libdir}/R/library/methods/po/de/
 %lang(en) %{_libdir}/R/library/methods/po/en*/
 %lang(fr) %{_libdir}/R/library/methods/po/fr/
@@ -683,10 +694,12 @@ popd
 %{_libdir}/R/library/parallel/Meta/
 %{_libdir}/R/library/parallel/NAMESPACE
 %dir %{_libdir}/R/library/parallel/po
+%lang(da) %{_libdir}/R/library/parallel/po/da/
 %lang(de) %{_libdir}/R/library/parallel/po/de/
 %lang(en) %{_libdir}/R/library/parallel/po/en*/
 %lang(fr) %{_libdir}/R/library/parallel/po/fr/
 %lang(ru) %{_libdir}/R/library/parallel/po/ru/
+%lang(zh) %{_libdir}/R/library/parallel/po/zh*/
 %{_libdir}/R/library/parallel/R/
 # rpart
 %dir %{_libdir}/R/library/rpart/
@@ -733,6 +746,7 @@ popd
 %{_libdir}/R/library/splines/Meta/
 %{_libdir}/R/library/splines/NAMESPACE
 %dir %{_libdir}/R/library/splines/po
+%lang(da) %{_libdir}/R/library/splines/po/da/
 %lang(de) %{_libdir}/R/library/splines/po/de/
 %lang(en) %{_libdir}/R/library/splines/po/en*/
 %lang(fr) %{_libdir}/R/library/splines/po/fr/
@@ -754,6 +768,7 @@ popd
 %{_libdir}/R/library/stats/Meta/
 %{_libdir}/R/library/stats/NAMESPACE
 %dir %{_libdir}/R/library/stats/po
+%lang(da) %{_libdir}/R/library/stats/po/da/
 %lang(de) %{_libdir}/R/library/stats/po/de/
 %lang(en) %{_libdir}/R/library/stats/po/en*/
 %lang(fr) %{_libdir}/R/library/stats/po/fr/
@@ -775,6 +790,7 @@ popd
 %{_libdir}/R/library/stats4/Meta/
 %{_libdir}/R/library/stats4/NAMESPACE
 %dir %{_libdir}/R/library/stats4/po
+%lang(da) %{_libdir}/R/library/stats4/po/da/
 %lang(de) %{_libdir}/R/library/stats4/po/de/
 %lang(en) %{_libdir}/R/library/stats4/po/en*/
 %lang(fr) %{_libdir}/R/library/stats4/po/fr/
@@ -789,6 +805,7 @@ popd
 # survival
 %dir %{_libdir}/R/library/survival/
 %{_libdir}/R/library/survival/data/
+%{_libdir}/R/library/survival/CITATION
 %{_libdir}/R/library/survival/DESCRIPTION
 %{_libdir}/R/library/survival/doc/
 %{_libdir}/R/library/survival/help/
@@ -811,6 +828,7 @@ popd
 %{_libdir}/R/library/tcltk/Meta/
 %{_libdir}/R/library/tcltk/NAMESPACE
 %dir %{_libdir}/R/library/tcltk/po/
+%lang(da) %{_libdir}/R/library/tcltk/po/da/
 %lang(de) %{_libdir}/R/library/tcltk/po/de/
 %lang(en) %{_libdir}/R/library/tcltk/po/en*/
 %lang(fr) %{_libdir}/R/library/tcltk/po/fr/
@@ -831,6 +849,7 @@ popd
 %{_libdir}/R/library/tools/Meta/
 %{_libdir}/R/library/tools/NAMESPACE
 %dir %{_libdir}/R/library/tools/po
+%lang(da) %{_libdir}/R/library/tools/po/da/
 %lang(de) %{_libdir}/R/library/tools/po/de/
 %lang(en) %{_libdir}/R/library/tools/po/en*/
 %lang(fr) %{_libdir}/R/library/tools/po/fr/
@@ -854,6 +873,7 @@ popd
 %{_libdir}/R/library/utils/misc/
 %{_libdir}/R/library/utils/NAMESPACE
 %dir %{_libdir}/R/library/utils/po
+%lang(da) %{_libdir}/R/library/utils/po/da/
 %lang(de) %{_libdir}/R/library/utils/po/de/
 %lang(en) %{_libdir}/R/library/utils/po/en*/
 %lang(fr) %{_libdir}/R/library/utils/po/fr/
@@ -884,11 +904,13 @@ popd
 # Symlink to %{_includedir}/R/
 %{_libdir}/R/include
 
+%if %{WITH_JAVA}
 %files java
 # Nothing, all files provided by R-core
 
 %files java-devel
 # Nothing, all files provided by R-devel
+%endif
 
 %files -n libRmath
 %defattr(-, root, root, -)
@@ -916,7 +938,7 @@ for doc in admin exts FAQ intro lang; do
       /sbin/install-info ${file} %{_infodir}/dir 2>/dev/null || :
    fi
 done
-/sbin/ldconfig
+/usr/sbin/ldconfig
 R CMD javareconf \
     JAVA_HOME=%{_jvmdir}/jre \
     JAVA_CPPFLAGS='-I%{_jvmdir}/java/include\ -I%{_jvmdir}/java/include/linux' \
@@ -951,7 +973,7 @@ if [ $1 = 0 ]; then
 fi
 
 %postun core
-/sbin/ldconfig
+/usr/sbin/ldconfig
 if [ $1 -eq 0 ] ; then
     /usr/bin/mktexlsr %{_datadir}/texmf &>/dev/null || :
 fi
@@ -959,6 +981,7 @@ fi
 %posttrans core
 /usr/bin/mktexlsr %{_datadir}/texmf &>/dev/null || :
 
+%if %{WITH_JAVA}
 %post java
 R CMD javareconf \
     JAVA_HOME=%{_jvmdir}/jre \
@@ -978,12 +1001,22 @@ R CMD javareconf \
     -L/usr/java/packages/lib/%{java_arch}\ -L/lib\ -L/usr/lib\ -ljvm' \
     JAVA_LD_LIBRARY_PATH=%{_jvmdir}/jre/lib/%{java_arch}/server:%{_jvmdir}/jre/lib/%{java_arch}:%{_jvmdir}/java/lib/%{java_arch}:/usr/java/packages/lib/%{java_arch}:/lib:/usr/lib \
     > /dev/null 2>&1 || exit 0
+%endif
 
-%post -n libRmath -p /sbin/ldconfig
+%post -n libRmath -p /usr/sbin/ldconfig
 
-%postun -n libRmath -p /sbin/ldconfig
+%postun -n libRmath -p /usr/sbin/ldconfig
 
 %changelog
+* Mon May  7 2012 Tom Callaway <spot@fedoraproject.org> - 2.15.0-3
+- rebuild for new libtiff
+
+* Tue Apr 24 2012 Tom Callaway <spot@fedoraproject.org> - 2.15.0-2
+- rebuild for new icu
+
+* Fri Mar 30 2012 Tom Callaway <spot@fedoraproject.org> - 2.15.0-1
+- Update to 2.15.0
+
 * Fri Feb 10 2012 Petr Pisar <ppisar@redhat.com> - 2.14.1-3
 - Rebuild against PCRE 8.30
 
