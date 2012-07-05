@@ -68,6 +68,7 @@ rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
 rm %{buildroot}%{_libdir}/libspandsp.la
 mkdir -p %{buildroot}%{_datadir}/spandsp
+magic_rpm_clean.sh
 
 %clean
 rm -rf %{buildroot}
