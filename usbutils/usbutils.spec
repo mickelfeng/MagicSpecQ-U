@@ -1,7 +1,7 @@
 Name: usbutils
-Version: 004
-Release: 3%{?dist}
-Source:	http://www.kernel.org/pub/linux/utils/usb/usbutils/%{name}-%{version}.tar.gz
+Version: 005
+Release: 1%{?dist}
+Source:	%{name}-%{version}.tar.gz
 URL: http://www.linux-usb.org/
 License: GPLv2+
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -14,6 +14,7 @@ Conflicts: hotplug < 3:2002_01_14-2
 Patch0: usbutils-003-hwdata.patch
 #Path to usb.ids should be with /hwdata/
 Patch1: usbutils-make-hwdata.patch
+Patch2: usbutils-005-readlink.patch
 
 %description
 This package contains utilities for inspecting devices connected to a
@@ -23,7 +24,8 @@ USB bus.
 %setup -q
 %patch0 -p1
 %patch1 -p1
-autoreconf
+%patch2 -p1
+./autogen.sh
 
 %build
 %configure --sbindir=%{_sbindir}
@@ -32,6 +34,7 @@ make %{?_smp_mflags}
 %install
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT INSTALL="install -p"
+magic_rpm_clean.sh
 
 %files
 %defattr(-,root,root,-)
@@ -44,6 +47,12 @@ make install DESTDIR=$RPM_BUILD_ROOT INSTALL="install -p"
 rm -rf $RPM_BUILD_ROOT
 
 %changelog
+* Thu Apr 19 2012 Lukas Nykryn <lnykryn@redhat.com> 005-1
+- new upstream release
+
+* Thu Apr 19 2012 Lukas Nykryn <lnykryn@redhat.com> 004-4
+- Ignore missing driver symlink (#808934)
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 004-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
