@@ -6,7 +6,7 @@
 
 Name:    qt-mobility
 Version: 1.2.2
-Release: 0.1.%{snap}%{?dist}
+Release: 0.2.%{snap}%{?dist}
 Summary: Qt Mobility Framework
 Group:   System Environment/Libraries
 License: LGPLv2 with exceptions
@@ -145,7 +145,7 @@ chrpath --delete %{buildroot}%{_qt4_libdir}/libQt*.so ||:
 chrpath --delete %{buildroot}%{_qt4_plugindir}/*/*.so ||:
 chrpath --delete %{buildroot}%{_qt4_importdir}/*/*.so ||:
 chrpath --delete %{buildroot}%{_qt4_importdir}/*/*/*.so ||:
-
+magic_rpm_clean.sh
 
 %clean
 rm -rf %{buildroot}
@@ -246,6 +246,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Fri Jul 06 2012 Liu Di <liudidi@gmail.com> - 1.2.2-0.2.20120224git
+- 为 Magic 3.0 重建
+
 * Fri Feb 24 2012 Rex Dieter <rdieter@fedoraproject.org> 1.2.2-0.1.20120224git
 - 1.2.2 20120224git snapshot
 
