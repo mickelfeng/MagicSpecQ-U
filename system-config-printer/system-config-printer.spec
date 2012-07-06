@@ -1,17 +1,18 @@
 Summary: A printer administration tool
 Name: system-config-printer
 Version: 1.3.9
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 URL: http://cyberelk.net/tim/software/system-config-printer/
 Group: System Environment/Base
 Source0: http://cyberelk.net/tim/data/system-config-printer/1.3/%{name}-%{version}.tar.xz
 Patch1: system-config-printer-no-applet-in-gnome.patch
+Patch2: system-config-printer-udev-sys-path.patch
 BuildRequires: cups-devel >= 1.2
 BuildRequires: desktop-file-utils >= 0.2.92
 BuildRequires: gettext-devel
 BuildRequires: intltool
-BuildRequires: libusb-devel, libudev-devel, glib2-devel
+BuildRequires: libusb-devel, systemd-devel, glib2-devel
 BuildRequires: xmlto
 BuildRequires: systemd-units
 
@@ -62,6 +63,7 @@ printers.
 
 # Don't start the applet in GNOME.
 %patch1 -p1 -b .no-applet-in-gnome
+%patch2 -p1
 
 %build
 %configure --with-udev-rules
@@ -183,6 +185,9 @@ if [ $1 -ge 1 ] ; then
 fi
 
 %changelog
+* Fri Jul 06 2012 Liu Di <liudidi@gmail.com> - 1.3.9-3
+- 为 Magic 3.0 重建
+
 * Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 1.3.9-2
 - 为 Magic 3.0 重建
 
