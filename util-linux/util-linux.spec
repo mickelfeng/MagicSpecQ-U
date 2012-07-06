@@ -1,7 +1,7 @@
 ### Header
 Summary: A collection of basic system utilities
 Name: util-linux
-Version: 2.21.1
+Version: 2.21.2
 Release: 2%{?dist}
 License: GPLv2 and GPLv2+ and GPLv3+ and LGPLv2+ and BSD with advertising and Public Domain
 Group: System Environment/Base
@@ -20,7 +20,7 @@ BuildRequires: pam-devel
 BuildRequires: zlib-devel
 BuildRequires: popt-devel
 BuildRequires: libutempter-devel
-BuildRequires: libudev-devel
+Buildrequires: systemd-devel
 
 ### Sources
 Source0: ftp://ftp.kernel.org/pub/linux/utils/util-linux/v2.21/util-linux-%{upstream_version}.tar.xz
@@ -56,7 +56,7 @@ Requires: pam >= 1.1.3-7, /etc/pam.d/system-auth
 Requires: libuuid = %{version}-%{release}
 Requires: libblkid = %{version}-%{release}
 Requires: libmount = %{version}-%{release}
-Requires: udev >= 176
+Requires: systemd >= 185
 
 ### Floppy patches (Fedora/RHEL specific)
 ###
@@ -357,10 +357,8 @@ ln -s /proc/mounts %{buildroot}/etc/mtab
 # remove static libs
 rm -f $RPM_BUILD_ROOT%{_libdir}/lib{uuid,blkid,mount}.a
 
-#会引入太多依赖，奇怪的是fedora的包竟然没有这个
-rm %{buildroot}%{_bindir}/floppygtk
-magic_rpm_clean.sh
 # find MO files
+magic_rpm_clean.sh
 %find_lang %name
 
 # the files section supports only one -f option...
@@ -460,6 +458,7 @@ fi
 %{_bindir}/more
 %{_bindir}/mountpoint
 %{_bindir}/taskset
+%{_bindir}/floppygtk
 
 %{_sbindir}/addpart
 %{_sbindir}/agetty
@@ -707,8 +706,15 @@ fi
 
 
 %changelog
-* Tue Apr 24 2012 Liu Di <liudidi@gmail.com> - 2.21.1-2
-- 为 Magic 3.0 重建
+* Wed Jun 13 2012 Karel Zak <kzak@redhat.com> 2.21.2-2
+- replace udev dependenceis with systemd
+
+* Fri May 25 2012 Karel Zak <kzak@redhat.com> 2.21.2-1
+- upgrade to bugfix release 2.21.2
+- fix #814699 - namei(1) incorrectly resolves relative symlinks
+- fix #820707 - Impossible to unmount nfsv4/krb5 mounts after network disconnect
+- fix #816877 - libmount does not close device fd before mount(2)
+- fix #822705 - unable to login after installing
 
 * Fri Mar 30 2012 Karel Zak <kzak@redhat.com> 2.21.1-1
 - upgrade to bugfix release 2.21.1
