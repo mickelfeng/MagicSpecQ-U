@@ -1,7 +1,7 @@
 #define pre_tag rc1
 #define pre -%{pre_tag}
 
-%define real_version 4.8.1
+%define real_version 4.8.2
 %define release_number 1
 
 # switches: whether to build it or not
@@ -47,7 +47,8 @@ Version: %{real_version}
 Release: %{release_number}%{?dist}
 %define ver %version
 
-Source0: http://get.qt.nokia.com/qt/source/qt-everywhere-opensource-src-%{version}.tar.gz
+Source0: http://releases.qt-project.org/qt4/source/qt-everywhere-opensource-src-%{version}.tar.gz
+#Source0: http://get.qt.nokia.com/qt/source/qt-everywhere-opensource-src-%{version}.tar.gz
 #Source1: Trolltech.conf
 #Source2: Designer.conf
 
@@ -1357,6 +1358,8 @@ mkdir -p %{buildroot}/etc/profile.d
 cp %SOURCE11 %{buildroot}/etc/profile.d
 cp %SOURCE12 %{buildroot}/etc/profile.d
 
+magic_rpm_clean.sh
+
 # FIXME do we really need to remove the following files? --- nihui
 %if 0
 # 删除其它平台编译器的 qmake 配置文件
@@ -1572,8 +1575,6 @@ rm -rf %{buildroot} %{_builddir}/%{buildsubdir}
 %_qtdir/imports/Qt/labs/gestures/qmldir
 %_qtdir/imports/Qt/labs/particles/libqmlparticlesplugin.so
 %_qtdir/imports/Qt/labs/particles/qmldir
-%_qtdir/imports/QtWebKit/libqmlwebkitplugin.so
-%_qtdir/imports/QtWebKit/qmldir
 %_qtdir/imports/Qt/labs/shaders/libqmlshadersplugin.so
 %_qtdir/imports/Qt/labs/shaders/qmldir
 %_qtdir/plugins/bearer/libqconnmanbearer.so
@@ -1988,6 +1989,8 @@ rm -rf %{buildroot} %{_builddir}/%{buildsubdir}
 %_qtdir/lib/libQtWebKit.so.*
 %_libdir/libQtWebKit.so.*
 %_qtdir/plugins/designer/libqwebview.so
+%_qtdir/imports/QtWebKit/libqmlwebkitplugin.so
+%_qtdir/imports/QtWebKit/qmldir
 
 %files webkit-devel
 %defattr(-,root,root,-)
