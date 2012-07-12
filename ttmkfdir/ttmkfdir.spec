@@ -1,8 +1,10 @@
 Summary: Utility to create fonts.scale files for truetype fonts
-Summary(zh_CN.UTF-8): 为 truetype 字体创建 fonts.scale 文件的工具。
 Name: ttmkfdir
 Version: 3.0.9
-Release: 27%{?dist}
+Release: 35%{?dist}
+# This is a Red Hat maintained package which is specific to
+# our distribution.  Thus the source is only available from
+# within this srpm.
 Source0: %{name}-%{version}.tar.bz2
 Patch: ttmkfdir-3.0.9-cpp.patch
 Patch1: ttmkfdir-3.0.9-zlib.patch
@@ -13,11 +15,11 @@ Patch5: ttmkfdir-3.0.9-warnings.patch
 Patch6: ttmkfdir-3.0.9-segfaults.patch
 Patch7: ttmkfdir-3.0.9-encoding-dir.patch
 Patch8: ttmkfdir-3.0.9-font-scale.patch
-Patch9:	ttmkfdir-3.0.9-gcc44.patch
-License: GPL
+Patch9: ttmkfdir-3.0.9-bug434301.patch
+# Only licensing attribution is in README, no version.
+License: LGPLv2+
 Group: Applications/System
-Group(zh_CN.UTF-8): 应用程序/系统
-BuildRoot: %{_tmppath}/%{name}-root
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: freetype-devel >= 2.0
 BuildRequires: zlib-devel flex
 BuildRequires: libtool
@@ -30,10 +32,6 @@ Conflicts: freetype < 2.0.6-3
 ttmkfdir is a utility used to create fonts.scale files in
 TrueType font directories in order to prepare them for use
 by the font server.
-
-%description -l zh_CN.UTF-8
-ttmkfdir 是一个用来在全是 TrueType 字体的目录中创建 fonts.scale 
-文件以便为字体服务器做准备的工具。
 
 %prep
 %setup -q
@@ -53,23 +51,49 @@ make OPTFLAGS="$RPM_OPT_FLAGS"
 
 %install
 rm -rf $RPM_BUILD_ROOT
-%makeinstall DESTDIR=$RPM_BUILD_ROOT
+make DESTDIR=$RPM_BUILD_ROOT install
 magic_rpm_clean.sh
-
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
-%defattr(-,root,root)
+%defattr(-,root,root,-)
 %doc README
 %{_bindir}/ttmkfdir
 
 %changelog
-* Fri Feb 17 2012 Liu Di <liudidi@gmail.com> - 3.0.9-27
-- 为 Magic 3.0 重建
+* Tue Feb 28 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.0.9-35
+- Rebuilt for c++ ABI breakage
 
-* Wed Jan 10 2007 Liu Di <liudidi@gmail.com> - 3.0.9-24mgc
-- rebuild for magic
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.0.9-34
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
+* Wed Feb 09 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.0.9-33
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
+
+* Sun Jul 26 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.0.9-32
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
+
+* Wed Jun 24 2009 Jens Petersen <petersen@redhat.com> - 3.0.9-31
+- simplify ttmkfdir-3.0.9-encoding-dir.patch to drop X11R6/ check (#173705)
+
+* Tue Mar 03 2009 Caolán McNamara <caolanm@redhat.com> - 3.0.9-30
+- fix ttmkfdir-3.0.9-segfaults.patch to include stdio.h for added printf
+
+* Wed Feb 25 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.0.9-29
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_11_Mass_Rebuild
+
+* Mon Dec 15 2008 Pravin Satpute <psatpute@redhat.com> - 3.0.9-28
+- modified spec file as per merge review suggestions bug 226506
+
+* Mon Sep  8 2008 Tom "spot" Callaway <tcallawa@redhat.com> - 3.0.9-27
+- fix license tag
+
+* Wed Feb 27 2008 Lingning Zhang <lizhang@redhat.com> - 3.0.9-26
+- fix bug434301.
+
+* Tue Feb 19 2008 Fedora Release Engineering <rel-eng@fedoraproject.org> - 3.0.9-25
+- Autorebuild for GCC 4.3
 
 * Thu Nov 30 2006 Lingning Zhang <lizhang@redhat.com> - 3.0.9-24.fc7
 - add ttmkfdir-3.0.9-font-scale.patch to fix bug #209102.
@@ -79,16 +103,16 @@ rm -rf $RPM_BUILD_ROOT
 - rebuild
 
 * Fri Sep 29 2006 Lingning Zhang <lizhang@redhat.com> - 3.0.9-22
-- delete "%post" and "Requires(post)" in ttmkfdir.spec
+- delete "%%post" and "Requires(post)" in ttmkfdir.spec
 
 * Thu Sep 28 2006 Lingning Zhang <lizhang@redhat.com> - 3.0.9-21
 - modify release
 
 * Wed Sep 27 2006 Lingning Zhang <lizhang@redhat.com> - 3.0.9-20.4
-- modify "%post" and add "Requires(post)" in ttmkfdir.spec for fixing bug173591, bug207279, bug208122
+- modify "%%post" and add "Requires(post)" in ttmkfdir.spec for fixing bug173591, bug207279, bug208122
 
 * Wed Sep 06 2006 Lingning Zhang <lizhang@redhat.com> - 3.0.9-20.3
-- add "%post" in ttmkfdir.spec for fixing bug173591
+- add "%%post" in ttmkfdir.spec for fixing bug173591
 
 * Wed Jul 12 2006 Jesse Keating <jkeating@redhat.com> - 3.0.9-20.2.1
 - rebuild
