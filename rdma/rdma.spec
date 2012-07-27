@@ -6,15 +6,14 @@
 Summary: Infiniband/iWARP Kernel Module Initializer
 Name: rdma
 Version: 1.0
-Release: 10%{?dist}
+Release: 12%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source0: rdma.conf
 Source1: rdma.init
 Source2: rdma.fixup-mtrr.awk
-Source3: rdma.90-rdma.rules
 Source4: rdma.ifup-ib
-Source5: rdma.nfs-rdma.init
+Source5: rdma.ifdown-ib
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 Requires(post): chkconfig
@@ -31,15 +30,14 @@ User space initialization scripts for the kernel InfiniBand/iWARP drivers
 rm -rf ${RPM_BUILD_ROOT}
 install -d ${RPM_BUILD_ROOT}%{_initrddir}
 install -d ${RPM_BUILD_ROOT}%{_sysconfdir}/%{name}
-install -d ${RPM_BUILD_ROOT}%{_sysconfdir}/udev/rules.d
 install -d ${RPM_BUILD_ROOT}%{_sysconfdir}/sysconfig/network-scripts
 
 install -m 0644 %{SOURCE0} ${RPM_BUILD_ROOT}%{_sysconfdir}/%{name}/%{name}.conf
 install -m 0755 %{SOURCE1} ${RPM_BUILD_ROOT}%{_initrddir}/%{name}
 install -m 0644 %{SOURCE2} ${RPM_BUILD_ROOT}%{_sysconfdir}/%{name}/fixup-mtrr.awk
-install -m 0644 %{SOURCE3} ${RPM_BUILD_ROOT}%{_sysconfdir}/udev/rules.d/90-%{name}.rules
 install -m 0755 %{SOURCE4} %{buildroot}%{_sysconfdir}/sysconfig/network-scripts/ifup-ib
-install -m 0755 %{SOURCE5} %{buildroot}%{_initrddir}/nfs-rdma
+install -m 0755 %{SOURCE5} %{buildroot}%{_sysconfdir}/sysconfig/network-scripts/ifdown-ib
+magic_rpm_clean.sh
 
 %clean
 rm -rf ${RPM_BUILD_ROOT}
@@ -60,13 +58,25 @@ fi
 %config(noreplace) %{_sysconfdir}/%{name}/%{name}.conf
 %{_sysconfdir}/%{name}/fixup-mtrr.awk
 %{_initrddir}/%{name}
-%{_initrddir}/nfs-rdma
-%{_sysconfdir}/udev/rules.d/90-%{name}.rules
-%{_sysconfdir}/sysconfig/network-scripts/ifup-ib
+%{_sysconfdir}/sysconfig/network-scripts/*
 
 %changelog
-* Thu Feb 02 2012 Liu Di <liudidi@gmail.com> - 1.0-10
-- 为 Magic 3.0 重建
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.0-12
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Tue Feb 28 2012 Doug Ledford <dledford@redhat.com> - 1.0-11
+- Remove udev rules file, recent kernels create the proper devices without
+  need of the file
+- Remove the nfs-rdma init script so it can be taken over by the nfs-utils
+  package
+- Fix up some LSB header bogons in the init script (will convert to
+  systemd after this is tested and working and move sysv init script
+  to a sub-package)
+- Add ifdown-ib and update ifup-ib so we have more of the same capabilities
+  on IPoIB interfaces that RHEL has
+
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.0-10
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
 * Wed Feb 09 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.0-9
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild

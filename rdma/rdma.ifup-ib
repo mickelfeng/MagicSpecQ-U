@@ -34,11 +34,12 @@ is_available ${REALDEVICE}
 # remap, if the device is bound with a MAC address and not the right device num
 # bail out, if the MAC does not fit
 if [ -n "${HWADDR}" ]; then
-    FOUNDMACADDR=`get_hwaddr ${REALDEVICE}`
+    HWADDR=$(echo $HWADDR | tail -c 24)
+    FOUNDMACADDR=`get_hwaddr ${REALDEVICE} | tail -c 24`
     if [ "${FOUNDMACADDR}" != "${HWADDR}" ]; then
         curdev=`get_device_by_hwaddr ${HWADDR}`
         if [ -n "$curdev" ]; then
-	  rename_device "${REALDEVICE}" "${HWADDR}" "${curdev}" || {
+	    ip link set dev "$curdev" name "${REALDEVICE}" || {
 	    echo $"Device ${DEVICE} has different MAC address than expected, ignoring."
 	    exit 1
 	  }
@@ -206,7 +207,7 @@ else
     fi
   
     expand_config
-    
+
     [ -n "${ARP}" ] && \
 	ip link set dev ${REALDEVICE} $(toggle_value arp $ARP)
    
@@ -233,25 +234,27 @@ else
        SRC=
     fi
     
-    if ! LC_ALL=C ip addr ls ${REALDEVICE} | LC_ALL=C grep -q "${IPADDR}/${PREFIX}" ; then
-	 if ! arping -q -c 2 -w 3 -D -I ${REALDEVICE} ${IPADDR} ; then
-	    echo $"Error, some other host already uses address ${IPADDR}."
-	    exit 1
-	 fi
-	 if ! ip addr add ${IPADDR}/${PREFIX} \
-	    brd ${BROADCAST:-+} dev ${REALDEVICE} ${SCOPE} label ${DEVICE}; then
-	    echo $"Error adding address ${IPADDR} for ${DEVICE}."
-	 fi
-    fi
+    i=0
+    while [ -n "${ipaddr[$i]}" ]; do
+        if ! LC_ALL=C ip addr ls ${REALDEVICE} | LC_ALL=C grep -q "${ipaddr[$i]}/${prefix[$i]}" ; then
+	    if ! arping -q -c 2 -w 3 -D -I ${REALDEVICE} ${ipaddr[$i]} ; then
+	        echo $"Error, some other host already uses address ${ipaddr[$i]}."
+	    elif ! ip addr add ${ipaddr[$i]}/${prefix[$i]} \
+		    brd ${broadcast[$i]} dev ${REALDEVICE} ${SCOPE} \
+		    label ${DEVICE}; then
+	        echo $"Error adding address ${ipaddr[$i]} for ${DEVICE}."
+	    else
+    	        # update ARP cache of neighboring computers
+                arping -q -A -c 1 -I ${REALDEVICE} ${ipaddr[$i]}
+    	        ( sleep 2; arping -q -U -c 1 -I ${REALDEVICE} ${ipaddr[$]} ) >/dev/null 2>&1 </dev/null &
+	    fi
+	fi
+	let i++
+    done
     
     if [ -n "$SRCADDR" ]; then
            sysctl -w "net.ipv4.conf.${REALDEVICE}.arp_filter=1" >/dev/null 2>&1
     fi
-
-    # update ARP cache of neighboring computers
-    arping -q -A -c 1 -I ${REALDEVICE} ${IPADDR}
-    ( sleep 2;
-      arping -q -U -c 1 -I ${REALDEVICE} ${IPADDR} ) > /dev/null 2>&1 < /dev/null &
 
     # Set a default route.
     if [ -z "${GATEWAYDEV}" -o "${GATEWAYDEV}" = "${REALDEVICE}" ]; then
