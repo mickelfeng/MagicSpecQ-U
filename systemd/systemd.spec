@@ -2,8 +2,8 @@
 
 Name:           systemd
 Url:            http://www.freedesktop.org/wiki/Software/systemd
-Version:        186
-Release:        2%{?gitcommit:.git%{gitcommit}}%{?dist}
+Version:        187
+Release:        1%{?gitcommit:.git%{gitcommit}}%{?dist}
 # For a breakdown of the licensing, see README
 License:        LGPLv2+ and MIT and GPLv2+
 Group:          System Environment/Base
@@ -66,7 +66,7 @@ Obsoletes:      upstart-sysvinit < 1.2-3
 Conflicts:      upstart-sysvinit
 Obsoletes:      readahead < 1:1.5.7-3
 Provides:       readahead = 1:1.5.7-3
-Provides:       /usr/bin/systemctl
+Provides:       /bin/systemctl
 Provides:       /sbin/shutdown
 Obsoletes:      systemd-units < 38-5
 Provides:       systemd-units = %{version}-%{release}
@@ -284,7 +284,7 @@ if [ $1 -eq 1 ] ; then
         /bin/ln -sf "$target" /etc/systemd/system/default.target >/dev/null 2>&1 || :
 
         # Enable the services we install by default.
-        /usr/bin/systemctl enable \
+        /bin/systemctl enable \
                 getty@.service \
                 remote-fs.target \
                 systemd-readahead-replay.service \
@@ -298,13 +298,13 @@ fi
 %postun
 /usr/sbin/ldconfig
 if [ $1 -ge 1 ] ; then
-        /usr/bin/systemctl daemon-reload > /dev/null 2>&1 || :
-        /usr/bin/systemctl try-restart systemd-logind.service >/dev/null 2>&1 || :
+        /bin/systemctl daemon-reload > /dev/null 2>&1 || :
+        /bin/systemctl try-restart systemd-logind.service >/dev/null 2>&1 || :
 fi
 
 %preun
 if [ $1 -eq 0 ] ; then
-        /usr/bin/systemctl disable \
+        /bin/systemctl disable \
                 getty@.service \
                 remote-fs.target \
                 systemd-readahead-replay.service \
@@ -324,8 +324,8 @@ mv /etc/systemd/system/default.target.save /etc/systemd/system/default.target >/
         systemd-readahead-replay.service \
         systemd-readahead-collect.service
 
-%post -n libgudev1 -p /usr/sbin/ldconfig
-%postun -n libgudev1 -p /usr/sbin/ldconfig
+%post -n libgudev1 -p /sbin/ldconfig
+%postun -n libgudev1 -p /sbin/ldconfig
 
 %files
 %doc %{_docdir}/systemd
@@ -466,7 +466,6 @@ mv /etc/systemd/system/default.target.save /etc/systemd/system/default.target >/
 %{_includedir}/systemd/sd-journal.h
 %{_includedir}/systemd/sd-id128.h
 %{_includedir}/systemd/sd-messages.h
-%{_includedir}/systemd/sd-readahead.h
 %{_includedir}/systemd/sd-shutdown.h
 %{_includedir}/libudev.h
 %{_libdir}/pkgconfig/libsystemd-daemon.pc
@@ -499,6 +498,9 @@ mv /etc/systemd/system/default.target.save /etc/systemd/system/default.target >/
 %attr(0644,root,root) %{_libdir}/pkgconfig/gudev-1.0*
 
 %changelog
+* Thu Jul 19 2012 Lennart Poettering <lpoetter@redhat.com> - 187-1
+- New upstream release
+
 * Mon Jul 09 2012 Harald Hoyer <harald@redhat.com> 186-2
 - fixed dracut conflict version
 
