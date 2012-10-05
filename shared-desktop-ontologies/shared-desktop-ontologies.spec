@@ -1,6 +1,6 @@
 Name:           shared-desktop-ontologies
-Version:        0.8.1
-Release:        2%{?dist}
+Version:        0.10.0
+Release:        3%{?dist}
 Summary:        Shared ontologies needed for semantic environments
 
 Group:          User Interface/Desktops
@@ -64,7 +64,7 @@ make %{?_smp_mflags} -C %{_target_platform}
 %install
 rm -rf %{buildroot}
 make install/fast DESTDIR=%{buildroot} -C %{_target_platform}
-
+magic_rpm_clean.sh
 
 %check
 # verify pkg-config version (notoriously wrong in recent releases)
@@ -90,6 +90,15 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.10.0-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Wed Jun 13 2012 Rex Dieter <rdieter@fedoraproject.org> 0.10.0-2
+- 0.10.0
+
+* Fri Feb 10 2012 Rex Dieter <rdieter@fedoraproject.org> 0.9.0-1
+- 0.9.0
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.8.1-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
