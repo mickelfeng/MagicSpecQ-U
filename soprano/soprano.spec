@@ -7,7 +7,7 @@
 
 Summary: Qt wrapper API to different RDF storage solutions
 Name:    soprano
-Version: 2.7.5
+Version: 2.8.0
 Release: 1%{?dist}
 
 Group:   System Environment/Libraries
@@ -114,7 +114,7 @@ format for easy browsing.
 %prep
 %setup -q -n soprano-%{version}
 
-%patch50 -p1 -b .rpath
+#%patch50 -p1 -b .rpath
 
 
 %build
@@ -150,7 +150,7 @@ cp -a %{_target_platform}/docs/html %{buildroot}%{_kde4_docdir}/HTML/en/soprano-
 # spurious executables, pull in perl dep(s)
 find %{buildroot}%{_kde4_docdir}/HTML/en/ -name 'installdox' -exec rm -fv {} ';'
 %endif
-
+magic_rpm_clean.sh
 
 %check
 # verify pkg-config version (notoriously wrong in recent soprano releases)
