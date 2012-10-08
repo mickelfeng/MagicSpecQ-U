@@ -2,7 +2,7 @@
 
 Name:       qca-ossl
 Version:    2.0.0
-Release:    0.12.beta%{beta}%{?dist}
+Release:    0.16.beta%{beta}%{?dist}
 
 Summary:    OpenSSL plugin for the Qt Cryptographic Architecture v2
 License:    LGPLv2+
@@ -43,7 +43,7 @@ rm -rf $RPM_BUILD_ROOT
 export INSTALL_ROOT=$RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT%{_qt4_plugindir}/crypto
 make install
-
+magic_rpm_clean.sh
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -55,8 +55,20 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
-* Sun Jan 29 2012 Liu Di <liudidi@gmail.com> - 2.0.0-0.12.beta3
-- 为 Magic 3.0 重建
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.0.0-0.16.beta3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Wed Mar 14  2012 Alexey Kurov <nucleo@fedoraproject.org> - 2.0.0-0.15.beta3
+- yet one rebuilt for openssl-1.0.1 (f18), openssl-1.0.0 (f17)
+
+* Tue Feb 28 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.0.0-0.14.beta3
+- Rebuilt for c++ ABI breakage
+
+* Wed Feb 15  2012 Alexey Kurov <nucleo@fedoraproject.org> - 2.0.0-0.13.beta3
+- Rebuilt for openssl-1.0.1
+
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.0.0-0.12.beta3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
 * Tue Feb 08 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.0.0-0.11.beta3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
