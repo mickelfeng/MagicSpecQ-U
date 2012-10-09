@@ -69,7 +69,7 @@ magic_rpm_clean.sh
 %{_libdir}/libsmoke*.so
 %{_includedir}/smoke/*
 %{_datadir}/smokegen/*
-
+%{_datadir}/smoke/*
 
 %changelog
 * Sun Jan 22 2012 Rex Dieter <rdieter@fedoraproject.org> - 4.8.0-1
