@@ -1,16 +1,14 @@
 
 Summary: RDF Parser Toolkit for Redland
 Name:    raptor2
-Version: 2.0.4
-Release: 4%{?dist}
+Version: 2.0.7
+Release: 2%{?dist}
 
 License: GPLv2+ or LGPLv2+ or ASL 2.0
 Source:  http://download.librdf.org/source/raptor2-%{version}.tar.gz
 URL:     http://librdf.org/raptor/
 
 ## upstreamable patches
-# make docs not conflict with raptor(1), DOC_MODULE=raptor2
-Patch50: raptor2-2.0.3-raptor2_doc.patch
 
 BuildRequires: curl-devel
 BuildRequires: gtk-doc
@@ -35,8 +33,6 @@ Requires: %{name}%{?_isa} = %{version}-%{release}
 %prep
 %setup -q
 
-%patch50 -p1 -b .raptor2_doc
-
 # hack to nuke rpaths
 %if "%{_libdir}" != "/usr/lib"
 sed -i -e 's|"/lib /usr/lib|"/%{_lib} %{_libdir}|' configure
@@ -55,7 +51,7 @@ make DESTDIR=%{buildroot} install
 
 ## unpackaged files
 rm -fv %{buildroot}%{_libdir}/lib*.la
-
+magic_rpm_clean.sh
 
 %check
 make check 
@@ -87,8 +83,17 @@ rm -rf %{buildroot}
 
 
 %changelog
-* Tue Jan 31 2012 Liu Di <liudidi@gmail.com> - 2.0.4-4
-- 为 Magic 3.0 重建
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.0.7-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Fri Mar 23 2012 Rex Dieter <rdieter@fedoraproject.org> 2.0.7-1
+- 2.0.7
+
+* Mon Mar 05 2012 Rex Dieter <rdieter@fedoraproject.org> 2.0.6-1
+- 2.0.6
+
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.0.4-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
 * Thu Nov 10 2011 Rex Dieter <rdieter@fedoraproject.org> 2.0.4-3
 - rebuild (yajl)
