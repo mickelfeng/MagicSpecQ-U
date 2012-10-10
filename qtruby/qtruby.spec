@@ -13,7 +13,7 @@ Version: %{rversion}
 Release: 1%{?dist}
 License: LGPL
 URL: http://extragear.kde.org/apps/kipi
-Source0: http://mirrors.ustc.edu.cn/kde/stable/%{version}/src/%{real_name}-%{version}.tar.bz2
+Source0: http://mirrors.ustc.edu.cn/kde/stable/%{version}/src/%{real_name}-%{version}.tar.xz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: gettext
 BuildRequires: cmake >= 2.6.2
@@ -45,7 +45,7 @@ Contains the development files.
 %build
 mkdir build
 cd build
-%cmake ..
+%cmake -DCUSTOM_RUBY_SITE_ARCH_DIR=%{ruby_sitearchdir} -DCUSTOM_RUBY_SITE_LIB_DIR=%{ruby_sitelibdir} ..
 
 make %{?_smp_mflags}
 
@@ -66,8 +66,8 @@ rm -rf %{buildroot} %{_builddir}/%{buildsubdir}
 %defattr(-,root,root,-)
 %{_bindir}/*
 %{_libdir}/*.so.*
-%{_libdir}/ruby/vendor_ruby/*
-%{_datadir}/ruby/vendor_ruby/*
+%{_libdir}/ruby/site_ruby/*
+%{_datadir}/ruby/site_ruby/*
 
 %files devel
 %defattr(-,root,root,-)
