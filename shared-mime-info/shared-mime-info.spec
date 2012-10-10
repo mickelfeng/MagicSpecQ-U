@@ -1,7 +1,7 @@
 Summary: Shared MIME information database
 Name: shared-mime-info
 Version: 1.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 URL: http://freedesktop.org/Software/shared-mime-info
@@ -62,12 +62,12 @@ cat %SOURCE4 >> $RPM_BUILD_ROOT/%{_datadir}/applications/defaults.list
 ## translations are already in the xml file installed
 rm -rf $RPM_BUILD_ROOT%{_datadir}/locale/*
 
-%if 0%{?fedora} > 16
-# f17+ mozilla-firefox.desktop renamed to firefox.desktop (#736558)
-sed -i -e 's|mozilla-firefox.desktop|firefox.desktop|'\
-  $RPM_BUILD_ROOT%{_datadir}/applications/defaults.list
-%endif
 
+# f17+ mozilla-firefox.desktop renamed to firefox.desktop (#736558)
+# sed -i -e 's|mozilla-firefox.desktop|firefox.desktop|'\
+#  $RPM_BUILD_ROOT%{_datadir}/applications/defaults.list
+
+magic_rpm_clean.sh
 
 %post
 # Should fail, as it would mean a problem in the mime database
@@ -87,6 +87,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man*/*
 
 %changelog
+* Wed Oct 10 2012 Liu Di <liudidi@gmail.com> - 1.0-2
+- 为 Magic 3.0 重建
+
 * Tue Jan 17 2012 Bastien Nocera <bnocera@redhat.com> 1.0-1
 - Update to 1.0
 
