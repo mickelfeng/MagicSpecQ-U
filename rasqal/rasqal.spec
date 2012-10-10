@@ -1,6 +1,6 @@
 Name:           rasqal
-Version:        0.9.27
-Release:        3%{?dist}
+Version:        0.9.29
+Release:        2%{?dist}
 Summary:        RDF Query Library
 
 Group:          System Environment/Libraries
@@ -54,7 +54,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 
 # unpackaged files
 rm -f $RPM_BUILD_ROOT%{_libdir}/lib*.la
-
+magic_rpm_clean.sh
 
 %check
 if [ -x %{_bindir}/rapper ]; then
@@ -73,9 +73,7 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %post -p /sbin/ldconfig
-
 %postun -p /sbin/ldconfig
-
 
 %files
 %defattr(-,root,root,-)
@@ -99,8 +97,14 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
-* Thu Feb 02 2012 Liu Di <liudidi@gmail.com> - 0.9.27-3
-- 为 Magic 3.0 重建
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.9.29-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Wed May 23 2012 Rex Dieter <rdieter@fedoraproject.org> 0.9.29-1
+- rasqal-0.9.29
+
+* Mon Mar 05 2012 Rex Dieter <rdieter@fedoraproject.org> 0.9.28-1
+- 0.9.28
 
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.9.27-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
