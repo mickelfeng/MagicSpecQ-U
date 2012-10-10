@@ -1,13 +1,9 @@
 
-%if 0%{?fedora} && 0%{?fedora} < 16
-%define dt_vendor fedora
-# include clucene support
-%global clucene 1
-%endif
+%define snap 20120626
 
 Name:		strigi
 Version:	0.7.7
-Release:	2%{?dist}
+Release:	7.20120626%{?dist}
 Summary:	A desktop search program
 Group:		Applications/Productivity
 License:	LGPLv2+
@@ -19,20 +15,25 @@ Source1:	strigiclient.desktop
 Source2:	strigi-daemon.desktop
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-## upstreamable patches
-Patch50: strigi-0.7.7-gcc47.patch
-
 ## upstream patches
-# https://projects.kde.org/projects/kdesupport/strigi/libstreamanalyzer/repository/revisions/35cf4a4818a0d1bc7cda07e29f271360e06443a0
-Patch100: strigi-0.7.7-xpmfix.patch
+# strigidaemon
+Patch101: 0001-Minor.-Fix-grammar-typo-in-cmake-output.patch
+Patch102: 0002-gcc47-fix-unistd.h-header-required-unconditionally-f.patch
+Patch103: 0003-Fix-return-value-wrong-type.patch
+# libstreamanalizer
+Patch201: 0001-Fix-xpm-and-xbm-index.patch
+Patch202: 0002-Extract-tracknumber-and-track-count-from-a-value-lik.patch
+Patch203: 0003-Fixed-indexing-of-m3u-files.patch
+Patch204: 0004-Fix-FLAC-Files-Remove-addtional-db-in-replaygain.patch
+Patch205: 0005-Fix-flac-analizer-was-importing-only-one-artist-tag.patch
+Patch206: 0006-Fix-non-numeric-genres-in-id3-v2-mp3-are-ignored.patch
+Patch207: 0007-Opps-Rmoving-a-wrong-commited-file-id3endanalyzer.cp.patch
+Patch208: 0008-fix-parsing-of-genre-field-in-id3v2-tags-and-clean-c.patch
 
 BuildRequires:  bison
 BuildRequires:  boost-devel
 BuildRequires:  bzip2-devel
 BuildRequires:	cmake >= 2.4.5
-%if 0%{?clucene:1}
-BuildRequires:	clucene-core-devel
-%endif
 BuildRequires:  desktop-file-utils
 BuildRequires:  expat-devel
 BuildRequires:  pkgconfig(cppunit)
@@ -75,9 +76,20 @@ Strigi search engine libraries
 %prep
 %setup -q -n %{name}-%{version}%{?pre:-%{pre}}
 
-%patch50 -p1 -b .gcc47
+pushd strigidaemon
+%patch101 -p1
+%patch102 -p1
+%patch103 -p1
+popd
 pushd libstreamanalyzer
-%patch100 -p1 -b .xpmfix
+%patch201 -p1
+%patch202 -p1
+%patch203 -p1
+%patch204 -p1
+%patch205 -p1
+%patch206 -p1
+%patch207 -p1
+%patch208 -p1
 popd
 
 
@@ -85,10 +97,8 @@ popd
 mkdir -p %{_target_platform}
 pushd %{_target_platform}
 %{cmake} \
-%if ! 0%{?clucene:1}
   -DENABLE_CLUCENE:BOOL=OFF \
   -DENABLE_CLUCENE_NG:BOOL=OFF \
-%endif
   -DENABLE_DBUS:BOOL=ON \
   -DENABLE_FAM:BOOL=ON \
   -DENABLE_FFMPEG:BOOL=OFF \
@@ -104,13 +114,12 @@ rm -rf %{buildroot}
 make install/fast -C %{_target_platform}  DESTDIR=%{buildroot}
 
 desktop-file-install \
-  --vendor="%{?dt_vendor}" \
   --dir=%{buildroot}%{_datadir}/applications \
   %{SOURCE1}
 
 # Add an autostart desktop file for the strigi daemon
 install -p -m644 -D %{SOURCE2} %{buildroot}%{_sysconfdir}/xdg/autostart/strigi-daemon.desktop
-
+magic_rpm_clean.sh
 
 %clean
 rm -rf %{buildroot}
@@ -158,6 +167,21 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Jul 30 2012 Rex Dieter <rdieter@fedoraproject.org> 0.7.7-7.20120626
+- rebuild (boost)
+
+* Fri Jul 27 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.7.7-6.20120626
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Tue Jun 26 2012 Rex Dieter <rdieter@fedoraproject.org> 0.7.7-5.20120626
+- backport upstream patches (as of 20120626)
+
+* Wed May 02 2012 Rex Dieter <rdieter@fedoraproject.org> 0.7.7-4
+- rebuild (exiv2)
+
+* Tue Feb 28 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.7.7-3
+- Rebuilt for c++ ABI breakage
+
 * Mon Jan 09 2012 Rex Dieter <rdieter@fedoraproject.org> 0.7.7-2
 - gcc47 patch
 
