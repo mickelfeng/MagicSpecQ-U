@@ -2,23 +2,35 @@
 %define make_check 0
 
 %define with_java 0
-%define with_kwallet 0
+%define with_kwallet 1
 
 # set JDK path to build javahl; default for JPackage
 %define jdk_path /usr/lib/jvm/java
 
 %define perl_vendorarch %(eval "`%{__perl} -V:installvendorarch`"; echo $installvendorarch)
 
+%if 0%{?fedora} < 18
+%define dbdevel db4-devel
+%else
+%define dbdevel libdb-devel
+%endif
+
 %{!?python_sitearch: %define python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
+
+%{!?_httpd_apxs: %{expand: %%global _httpd_apxs %%{_sbindir}/apxs}}
+%{!?_httpd_mmn: %{expand: %%global _httpd_mmn %%(cat %{_includedir}/httpd/.mmn || echo missing-httpd-devel)}}
+%{!?_httpd_confdir:    %{expand: %%global _httpd_confdir    %%{_sysconfdir}/httpd/conf.d}}
+# /etc/httpd/conf.d with httpd < 2.4 and defined as /etc/httpd/conf.modules.d with httpd >= 2.4
+%{!?_httpd_modconfdir: %{expand: %%global _httpd_modconfdir %%{_sysconfdir}/httpd/conf.d}}
 
 Summary: A Modern Concurrent Version Control System
 Name: subversion
-Version: 1.7.3
-Release: 7%{?dist}
+Version: 1.7.7
+Release: 1%{?dist}
 License: ASL 2.0
 Group: Development/Tools
 URL: http://subversion.apache.org/
-Source0: http://subversion.tigris.org/downloads/subversion-%{version}.tar.bz2
+Source0: http://www.apache.org/dist/subversion/subversion-%{version}.tar.bz2
 Source1: subversion.conf
 Source3: filter-requires.sh
 Source4: http://www.xsteve.at/prg/emacs/psvn.el
@@ -30,16 +42,18 @@ Patch1: subversion-1.7.0-rpath.patch
 Patch2: subversion-1.7.0-pie.patch
 Patch3: subversion-1.7.0-kwallet.patch
 Patch4: subversion-1.7.2-ruby19.patch
-Patch5: subversion-1.7.3-hashorder.patch
+Patch7: subversion-1.7.4-kwallet2.patch
+Patch8: subversion-1.7.4-sqlitever.patch
+Patch9: subversion-1.7.5-kwallet-gcc47.patch
 BuildRequires: autoconf, libtool, python, python-devel, texinfo, which
-BuildRequires: libdb-devel >= 4.1.25, swig >= 1.3.24, gettext
+BuildRequires: %{dbdevel} >= 4.1.25, swig >= 1.3.24, gettext
 BuildRequires: apr-devel >= 1.3.0, apr-util-devel >= 1.3.0
 BuildRequires: neon-devel >= 0:0.24.7-1, cyrus-sasl-devel
 BuildRequires: sqlite-devel >= 3.4.0, file-devel, systemd-units
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Provides: svn = %{version}-%{release}
 Requires: subversion-libs%{?_isa} = %{version}-%{release}
-Requires(post): systemd-sysv, /sbin/chkconfig
+Requires(post): systemd-sysv, /usr/sbin/chkconfig
 
 %define __perl_requires %{SOURCE3}
 
@@ -97,7 +111,7 @@ passwords in the GNOME Keyring.
 Group: Development/Tools
 Summary: KDE Wallet support for Subversion
 Requires: subversion%{?_isa} = %{version}-%{release}
-BuildRequires: libkdelibs4-devel >= 4.0.0
+BuildRequires: kdelibs4-devel >= 4.0.0
 
 %description kde
 The subversion-kde package adds support for storing Subversion
@@ -107,7 +121,7 @@ passwords in the KDE Wallet.
 %package -n mod_dav_svn
 Group: System Environment/Daemons
 Summary: Apache httpd module for Subversion server
-Requires: httpd-mmn = %(cat %{_includedir}/httpd/.mmn || echo missing)
+Requires: httpd-mmn = %{_httpd_mmn}
 Requires: subversion-libs%{?_isa} = %{version}-%{release}
 BuildRequires: httpd-devel >= 2.0.45
 
@@ -167,7 +181,9 @@ This package includes supplementary tools for use with Subversion.
 %patch2 -p1 -b .pie
 %patch3 -p1 -b .kwallet
 %patch4 -p1 -b .ruby
-%patch5 -p1 -b .hashorder
+%patch7 -p1 -b .kwallet2
+%patch8 -p1 -b .sqlitever
+%patch9 -p2 -b .kwallet-gcc47
 
 %build
 # Regenerate the buildsystem, so that:
@@ -175,9 +191,8 @@ This package includes supplementary tools for use with Subversion.
 #  2) the swig bindings are regenerated using the system swig
 # (2) is not ideal since typically upstream test with a different
 # swig version
-sed -i 's/share\/ac/usr\/share\/ac/g' autogen.sh
-sed -i 's/share\/li/usr\/share\/li/g' autogen.sh
-./autogen.sh --release
+# This PATH order makes the fugly test for libtoolize work...
+PATH=/usr/bin:$PATH ./autogen.sh --release
 
 # fix shebang lines, #111498
 perl -pi -e 's|/usr/bin/env perl -w|/usr/bin/perl -w|' tools/hook-scripts/*.pl.in
@@ -195,7 +210,7 @@ export CC=gcc CXX=g++ JAVA_HOME=%{jdk_path} CFLAGS="$RPM_OPT_FLAGS"
 %configure --with-apr=%{_prefix} --with-apr-util=%{_prefix} \
         --with-swig --with-neon=%{_prefix} \
         --with-ruby-sitedir=%{ruby_vendorarchdir} \
-        --with-apxs=%{_sbindir}/apxs --disable-mod-activation \
+        --with-apxs=%{_httpd_apxs} --disable-mod-activation \
         --disable-static --with-sasl=%{_prefix} \
         --disable-neon-version-check \
         --with-gnome-keyring \
@@ -228,9 +243,17 @@ make pure_vendor_install -C subversion/bindings/swig/perl/native \
         PERL_INSTALL_ROOT=$RPM_BUILD_ROOT
 install -m 755 -d ${RPM_BUILD_ROOT}%{_sysconfdir}/subversion
 
-# Add subversion.conf configuration file into httpd/conf.d directory.
-install -m 755 -d ${RPM_BUILD_ROOT}%{_sysconfdir}/httpd/conf.d
-install -m 644 $RPM_SOURCE_DIR/subversion.conf ${RPM_BUILD_ROOT}%{_sysconfdir}/httpd/conf.d
+mkdir -p ${RPM_BUILD_ROOT}{%{_httpd_modconfdir},%{_httpd_confdir}}
+
+%if "%{_httpd_modconfdir}" == "%{_httpd_confdir}"
+# httpd <= 2.2.x
+install -p -m 644 %{SOURCE1} ${RPM_BUILD_ROOT}%{_httpd_confdir}
+%else
+sed -n /^LoadModule/p %{SOURCE1} > 10-subversion.conf
+sed    /^LoadModule/d %{SOURCE1} > example.conf
+touch -r %{SOURCE1} 10-subversion.conf example.conf
+install -p -m 644 10-subversion.conf ${RPM_BUILD_ROOT}%{_httpd_modconfdir}
+%endif
 
 # Remove unpackaged files
 rm -rf ${RPM_BUILD_ROOT}%{_includedir}/subversion-*/*.txt \
@@ -286,14 +309,14 @@ install -Dpm 644 tools/client-side/bash_completion \
 
 # Install svnserve bits
 mkdir -p %{buildroot}%{_unitdir} \
-      %{buildroot}%{_localstatedir}/run/svnserve \
-      %{buildroot}%{_sysconfdir}/tmpfiles.d \
+      %{buildroot}/run/svnserve \
+      %{buildroot}%{_prefix}/lib/tmpfiles.d \
       %{buildroot}%{_sysconfdir}/sysconfig
 
 install -p -m 644 $RPM_SOURCE_DIR/svnserve.service \
         %{buildroot}%{_unitdir}/svnserve.service
 install -p -m 644 $RPM_SOURCE_DIR/svnserve.tmpfiles \
-        %{buildroot}%{_sysconfdir}/tmpfiles.d/svnserve.conf
+        %{buildroot}%{_prefix}/lib/tmpfiles.d/svnserve.conf
 install -p -m 644 $RPM_SOURCE_DIR/svnserve.sysconf \
         %{buildroot}%{_sysconfdir}/sysconfig/svnserve
 
@@ -304,7 +327,7 @@ rm -f $RPM_BUILD_ROOT%{_bindir}/diff*
 for f in svn-populate-node-origins-index svn-rep-sharing-stats svnauthz-validate svnmucc svnraisetreeconflict; do
     echo %{_bindir}/$f
 done | tee tools.files | sed 's/^/%%exclude /' > exclude.tools.files
-
+magic_rpm_clean.sh
 %find_lang %{name}
 
 cat %{name}.lang exclude.tools.files >> %{name}.files
@@ -313,8 +336,8 @@ cat %{name}.lang exclude.tools.files >> %{name}.files
 %check
 export LANG=C LC_ALL=C
 export LD_LIBRARY_PATH=$RPM_BUILD_ROOT%{_libdir}
-export MALLOC_PERTURB_=171 MALLOC_CHECK_=3
-export LIBC_FATAL_STDERR_=1
+#export MALLOC_PERTURB_=171 MALLOC_CHECK_=3
+#export LIBC_FATAL_STDERR_=1
 if ! make check check-swig-pl check-swig-py CLEANUP=yes; then
    : Test suite failure.
    cat fails.log
@@ -332,27 +355,27 @@ rm -rf ${RPM_BUILD_ROOT}
 %post
 if [ $1 -eq 1 ] ; then 
     # Initial installation 
-    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+    /usr/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 fi
 
 %preun
 if [ $1 = 0 ]; then
     # Package removal, not upgrade
-    /bin/systemctl --no-reload disable svnserve.service > /dev/null 2>&1 || :
-    /bin/systemctl stop svnserve.service > /dev/null 2>&1 || :
+    /usr/bin/systemctl --no-reload disable svnserve.service > /dev/null 2>&1 || :
+    /usr/bin/systemctl stop svnserve.service > /dev/null 2>&1 || :
 fi
 
 %postun
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+/usr/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 if [ $1 -ge 1 ] ; then
     # Package upgrade, not uninstall
-    /bin/systemctl try-restart svnserve.service >/dev/null 2>&1 || :
+    /usr/bin/systemctl try-restart svnserve.service >/dev/null 2>&1 || :
 fi
 
 %triggerun -- subversion < 1.7.3-2
 /usr/bin/systemd-sysv-convert --save svnserve >/dev/null 2>&1 ||:
-/sbin/chkconfig --del svnserve >/dev/null 2>&1 || :
-/bin/systemctl try-restart svnserve.service >/dev/null 2>&1 || :
+/usr/sbin/chkconfig --del svnserve >/dev/null 2>&1 || :
+/usr/bin/systemctl try-restart svnserve.service >/dev/null 2>&1 || :
 
 %post libs -p /sbin/ldconfig
 
@@ -386,8 +409,8 @@ fi
 %dir %{_sysconfdir}/subversion
 %exclude %{_mandir}/man*/*::*
 %{_unitdir}/*.service
-%{_localstatedir}/run/svnserve
-%{_sysconfdir}/tmpfiles.d/svnserve.conf
+%dir /run/svnserve
+%{_prefix}/lib/tmpfiles.d/svnserve.conf
 
 %files tools -f tools.files
 %defattr(-,root,root)
@@ -430,8 +453,11 @@ fi
 
 %files -n mod_dav_svn
 %defattr(-,root,root)
-%config(noreplace) %{_sysconfdir}/httpd/conf.d/subversion.conf
+%config(noreplace) %{_httpd_modconfdir}/*.conf
 %{_libdir}/httpd/modules/mod_*.so
+%if "%{_httpd_modconfdir}" != "%{_httpd_confdir}"
+%doc example.conf
+%endif
 
 %files perl
 %defattr(-,root,root,-)
@@ -453,6 +479,50 @@ fi
 %endif
 
 %changelog
+* Thu Oct 11 2012 Joe Orton <jorton@redhat.com> - 1.7.7-1
+- update to 1.7.7
+
+* Fri Aug 17 2012 Joe Orton <jorton@redhat.com> - 1.7.6-1
+- update to 1.7.6
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.7.5-6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Mon Jul 16 2012 Joe Orton <jorton@redhat.com> - 1.7.5-5
+- switch svnserve pidfile to use /run, use /usr/lib/tmpfiles.d (#840195)
+
+* Thu Jun 28 2012 Petr Pisar <ppisar@redhat.com> - 1.7.5-4
+- Perl 5.16 rebuild
+
+* Mon Jun 18 2012 Dan Horák <dan[at]danny.cz - 1.7.5-3
+- fix build with recent gcc 4.7 (svn rev 1345740)
+
+* Fri Jun 08 2012 Petr Pisar <ppisar@redhat.com> - 1.7.5-2
+- Perl 5.16 rebuild
+
+* Tue May 22 2012 Joe Orton <jorton@redhat.com> - 1.7.5-1
+- update to 1.7.5
+
+* Tue Apr 24 2012 Joe Orton <jorton@redhat.com> - 1.7.4-6
+- drop strict sqlite version requirement (#815396)
+
+* Mon Apr 23 2012 Joe Orton <jorton@redhat.com> - 1.7.4-5
+- switch to libdb-devel (#814090)
+
+* Thu Apr 19 2012 Joe Orton <jorton@redhat.com> - 1.7.4-4
+- adapt for conf.modules.d with httpd 2.4
+- add possible workaround for kwallet crasher (#810861)
+
+* Fri Mar 30 2012 Joe Orton <jorton@redhat.com> - 1.7.4-3
+- re-enable test suite
+
+* Fri Mar 30 2012 Joe Orton <jorton@redhat.com> - 1.7.4-2
+- fix build with httpd 2.4
+
+* Mon Mar 12 2012 Joe Orton <jorton@redhat.com> - 1.7.4-1
+- update to 1.7.4
+- fix build with httpd 2.4
+
 * Thu Mar  1 2012 Joe Orton <jorton@redhat.com> - 1.7.3-7
 - re-enable kwallet (#791031)
 
