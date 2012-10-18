@@ -1,6 +1,6 @@
 Name:           redland
 Version:        1.0.15
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        RDF Application Framework
 
 Group:          System Environment/Libraries
@@ -83,7 +83,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 
 #unpackaged files
 find $RPM_BUILD_ROOT -name \*.la -exec rm {} \;
-
+magic_rpm_clean.sh
 
 %check
 make check
@@ -140,6 +140,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu Oct 18 2012 Liu Di <liudidi@gmail.com> - 1.0.15-2
+- 为 Magic 3.0 重建
+
 * Mon Mar 05 2012 Rex Dieter <rdieter@fedoraproject.org> 1.0.15-1
 - 1.0.15
 
