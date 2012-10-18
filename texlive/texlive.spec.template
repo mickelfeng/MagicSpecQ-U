@@ -1,0 +1,499 @@
+%global source_date 20120926_r27815
+%global tl_version 2012
+%global tl_release 3.%{source_date}
+%global tl_noarch_release %{tl_release}
+%global source_name texlive-%{source_date}-source
+
+%{!?_texdir: %global _texdir %{_datadir}/%{name}}
+%{!?_texmf_var: %global _texmf_var %{_var}/lib/texmf}
+%{!?_texmf_local: %global _texmf_local %{_texdir}/texmf-local}
+
+# don't figure any perl requires
+%global __perl_requires %{nil}
+%global __find_provides %{nil}
+%global __os_install_post /usr/lib/rpm/brp-compress %{nil}
+
+Name: texlive
+Version: %{tl_version}
+Release: %{tl_release}%{?dist}
+Epoch: 1
+Summary: TeX formatting system
+Group: Applications/Publishing
+License: Artistic 2.0 and GPLv2 and GPLv2+ and LGPLv2+ and LPPL and MIT and Public Domain and UCD and Utopia
+URL: http://tug.org/texlive/
+BuildRequires: xz libXaw-devel ncurses-devel bison flex file perl-MD5
+BuildRequires: gd-devel teckit-devel freetype-devel t1lib-devel libpng-devel zlib-devel poppler-devel t1utils
+BuildRequires: zziplib-devel libicu-devel
+Requires: %{name}-base
+Obsoletes: texlive < %{tl_version}, texlive-texmf < %{tl_version}
+Obsoletes: texlive-afm < %{tl_version}
+Obsoletes: texlive-doc < %{tl_version}
+Obsoletes: texlive-east-asian < %{tl_version}
+Obsoletes: texlive-texmf-afm < %{tl_version}, texlive-texmf-context < %{tl_version}
+Obsoletes: texlive-texmf-doc < %{tl_version}, texlive-texmf-dvips < %{tl_version}
+Obsoletes: texlive-texmf-east-asian < %{tl_version}, texlive-texmf-fonts < %{tl_version}
+Obsoletes: texlive-texmf-latex < %{tl_version}, texlive-texmf-xetex < %{tl_version}
+Obsoletes: texlive-texmf-errata < %{tl_version}
+Obsoletes: texlive-texmf-errata-afm < %{tl_version}, texlive-texmf-errata-context < %{tl_version}
+Obsoletes: texlive-texmf-errata-doc < %{tl_version}, texlive-texmf-errata-dvips < %{tl_version}
+Obsoletes: texlive-texmf-errata-east-asian < %{tl_version}, texlive-texmf-errata-fonts < %{tl_version}
+Obsoletes: texlive-texmf-errata-latex < %{tl_version}, texlive-texmf-errata-xetex < %{tl_version}
+Conflicts: texlive-dvips = 2007
+Patch1: tl-kpfix.patch
+Patch2: texlive-badtest.patch
+Source0: %{source_name}.tar.xz
+Source1: tl2rpm.c
+Source2: texlive.tlpdb
+Source3: texlive-licenses.tar.xz
+Source4: tlpdb.patch
+Source5: texlive-fedora-licenses.h
+Source6: texlive.spec.template
+%include _sources.spec
+
+%description
+The TeX Live software distribution offers a complete TeX system for a
+variety of Unix, Macintosh, Windows and other platforms. It
+encompasses programs for editing, typesetting, previewing and printing
+of TeX documents in many different languages, and a large collection
+of TeX macros and font libraries.
+
+The distribution includes extensive general documentation about TeX,
+as well as the documentation for the included software packages.
+
+%include _packages.spec
+
+%package base
+Summary: TeX Live licenses shipped in text form
+BuildArch: noarch
+Version: %{tl_version}
+Obsoletes: %{name}-base < %{tl_version}
+Requires: %{name}
+Requires: %{name}-scheme-basic
+Requires: %{name}-collection-latexrecommended
+Requires: tex-kpathsea, tex-tetex
+
+%description base
+TeX Live licenses shipped in text form.
+
+%package kpathsea-lib
+Summary: Path searching library for TeX-related files
+%include _obsoletes.spec
+
+%description kpathsea-lib
+The library is at the centre of pretty much all Unix-based TeX
+executable. It is no longer distributed separately, but rather
+consititutes a central part of the sources of the TeX-live
+distribution.
+
+%package kpathsea-lib-devel
+Summary: Path searching library for TeX-related files
+Requires: %{name}-kpathsea-lib%{?_isa}
+Provides: kpathsea-devel = %{version}
+Obsoletes: kpathsea-devel < %{version}
+
+%description kpathsea-lib-devel
+The library is at the centre of pretty much all Unix-based TeX
+executable. It is no longer distributed separately, but rather
+consititutes a central part of the sources of the TeX-live
+distribution.
+
+%prep
+%setup -q -c -T
+xz -dc %{SOURCE0} | tar x
+[ -e %{source_name} ] && mv %{source_name} source
+%patch1 -p0
+%patch2 -p0
+for l in `unxz -c %{SOURCE3} | tar t`; do
+	ln -s %{_texdir}/licenses/$l $l
+done
+
+%build
+export CFLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing"
+export CXXFLAGS="$RPM_OPT_FLAGS"
+cd source
+PREF=`pwd`/inst
+mkdir -p work
+cd work
+../configure \
+--prefix=$PREF \
+--datadir=$PREF \
+--libdir=$PREF/lib \
+--with-system-zlib \
+--with-system-libpng \
+--with-system-xpdf \
+--with-system-gd \
+--with-system-t1lib \
+--with-system-teckit \
+--with-teckit-includes=/usr/include/teckit \
+--with-system-freetype2 \
+--with-system-poppler \
+--with-system-zziplib \
+--with-system-icu \
+--with-pic \
+--with-xdvi-x-toolkit=xaw \
+--disable-xindy --disable-xindy-docs --disable-xindy-make-rules \
+--enable-shared \
+--enable-compiler-warnings=max \
+--without-cxx-runtime-hack \
+--disable-native-texlive-build \
+--disable-t1utils \
+--disable-psutils \
+--disable-biber \
+--disable-ptexenc
+
+make world %{?_smp_mflags} STRIPPROG=/bin/true STRIP=/bin/true
+
+%install
+rm -rf %{buildroot}
+
+# create directory tree
+mkdir -p %{buildroot}%{_texdir}/../texmf
+mkdir -p %{buildroot}%{_texdir}/texmf-config/web2c
+mkdir -p %{buildroot}%{_texmf_var}
+mkdir -p %{buildroot}%{_texmf_local}
+mkdir -p %{buildroot}%{_texdir}/texmf-dist
+%include _mkdirs.spec
+%include _unpack.spec
+# nuke useless tlmgr packaging stuff and doc droppings
+rm -rf %{buildroot}%{_texdir}/tlpkg/tlpobj/
+rm -rf %{buildroot}%{_texdir}/texmf-dist/tlpkg/tlpobj/
+rm -rf %{buildroot}%{_texdir}/texmf/doc/man/man*/*.pdf
+rm -rf %{buildroot}%{_texdir}/texmf/doc/man/Makefile
+rm -rf %{buildroot}%{_texdir}/texmf/doc/man/man*/Makefile
+rm -rf %{buildroot}%{_texdir}/texmf/doc/info/dir
+
+mkdir -p %{buildroot}%{_bindir}
+mv %{buildroot}/bin/i386-linux/* %{buildroot}%{_bindir}
+for i in `find %{buildroot}%{_bindir} -type f`; do
+       [ "`file $i | grep ELF | wc -l`" == "1" ] && rm -f $i
+done
+rm -rf %{buildroot}/tlpkg
+
+# install texlive.tlpdb
+cp %{SOURCE2} %{buildroot}%{_texdir}
+
+# install licenses
+mkdir -p %{buildroot}%{_texdir}/licenses
+pushd %{buildroot}%{_texdir}/licenses
+xz -dc %{SOURCE3} | tar x
+popd
+
+# install binaries
+rm -rf %{buildroot}%{_texdir}/bin/
+mkdir -p %{buildroot}%{_bindir}
+rm -f source/inst/bin/man
+mv source/inst/bin/* %{buildroot}%{_bindir}
+
+# install kpathsea shared libs, nuke static ones
+rm -rf %{buildroot}%{_libdir}
+mkdir -p %{buildroot}%{_libdir}
+cp -d source/inst/lib/* %{buildroot}%{_libdir}
+rm -f %{buildroot}%{_libdir}/*.a
+rm -f %{buildroot}%{_libdir}/*.la
+
+# install includes
+rm -rf %{buildroot}%{_includedir}
+mkdir -p %{buildroot}%{_includedir}
+cp -r source/inst/include/* %{buildroot}%{_includedir}
+
+# relocate binaries to %%{_bindir} and fix relative symlinks
+pushd %{buildroot}%{_bindir}
+for i in `find . -type l`; do
+	if [ "`readlink $i | grep '\.\.' | wc -l`" == "1" ]; then
+		l=`readlink $i | sed s,.*texmf,/usr/share/texlive/texmf,`
+		rm -f $i
+		ln -s $l $i
+	fi
+done
+popd
+
+# sync built/distro binaries
+pushd %{buildroot}%{_bindir}
+rm -f man
+[ ! -e mfplain ] && ln -s mpost mfplain
+[ ! -e texlua ] && ln -s luatex texlua
+[ ! -e texluac ] && ln -s luatex texluac
+for i in physe phyzzx installfont-tl pdfthumb ppower4 tcdialog dosepsbin mkjobtexmf texdiff texdirflatten; do
+	rm -f %{buildroot}%{_bindir}/$i
+done
+rm -rf %{buildroot}%{_includedir}/ptexenc
+popd
+
+# remove all unshipped stuff
+%include _remove.spec
+mkdir -p %{buildroot}/%{_datadir}/
+mkdir -p %{buildroot}/%{_infodir}/
+cp -R %{buildroot}/%{_texdir}/texmf/doc/man %{buildroot}/%{_datadir}/
+find %{buildroot}/%{_texdir}/texmf/doc/man -type f | xargs rm -f
+mv %{buildroot}/%{_texdir}/texmf/doc/info/* %{buildroot}/%{_infodir}/
+
+# nuke useless tlmgr packaging stuff
+rm -rf %{buildroot}%{_texdir}/tlpkg/tlpobj/
+rm -rf %{buildroot}%{_texdir}/texmf-dist/tlpkg/tlpobj/
+
+# link config dir to the main tree and var dir to root
+pushd %{buildroot}%{_texdir}
+[ ! -h texmf-var ] && ln -s %{_texmf_var} texmf-var
+popd
+pushd %{buildroot}%{_texdir}/texmf-config/web2c
+ln -s ../../texmf/web2c/updmap.cfg updmap.cfg
+popd
+
+# touch ghosts
+touch %{buildroot}%{_texdir}/texmf/ls-R
+touch %{buildroot}%{_texdir}/texmf-dist/ls-R
+touch %{buildroot}%{_texdir}/../texmf/ls-R
+
+# configure ConTeXt
+for i in ctxtools luatools texexec texmfstart; do
+  sed -i -e 's|mtxrun|export TEXMF=/usr/share/texlive/texmf-dist; export TEXMFCNF=/usr/share/texlive/texmf/web2c; export TEXMFCACHE=/var/lib/texmf; mtxrun|' %{buildroot}%{_bindir}/$i
+done
+
+%clean
+rm -rf %{buildroot}
+
+%pre base
+rm -rf %{_texdir}/texmf-var
+rm -rf %{_texmf_var}/*
+:
+
+%posttrans base
+%{_bindir}/texhash 2> /dev/null
+%{_bindir}/updmap-sys &> /dev/null
+%{_bindir}/fmtutil-sys --all &> /dev/null
+rm -rf %{_texmf_var}/web2c/*
+if [ -x /usr/sbin/selinuxenabled ] && /usr/sbin/selinuxenabled; then
+  [ -x /sbin/restorecon ] && /sbin/restorecon -R %{_texmf_var}/
+fi
+:
+
+%files
+%defattr(-,root,root)
+
+%files base
+%defattr(-,root,root)
+%dir %{_texmf_var}
+%dir %{_texdir}/texmf-var
+%dir %{_texdir}/../texmf
+%dir %{_texdir}/licenses
+%dir %{_texmf_local}
+%include _dirs.spec
+%{_texdir}/licenses/*
+%attr(0644, root, root) %verify(not md5 size mtime) %ghost %{_texdir}/texmf/ls-R
+%attr(0644, root, root) %verify(not md5 size mtime) %ghost %{_texdir}/texmf-dist/ls-R
+%attr(0644, root, root) %verify(not md5 size mtime) %ghost %{_texdir}/../texmf/ls-R
+%{_texdir}/texlive.tlpdb
+%include _files.spec
+
+%files kpathsea-lib
+%defattr(-,root,root)
+%{_libdir}/*.so.*
+%dir %{_texdir}/texmf-config
+%dir %{_texdir}/texmf-config/web2c
+%{_texdir}/texmf-config/web2c/updmap.cfg
+%attr(0644, root, root) %verify(not md5 size mtime) %ghost %{_texdir}/texmf-config/ls-R
+
+%files kpathsea-lib-devel
+%defattr(-,root,root)
+%dir %{_includedir}/kpathsea
+%{_includedir}/kpathsea/*
+%{_libdir}/*.so
+
+%changelog
+* Tue Oct  9 2012 Jindrich Novy <jnovy@redhat.com> 2012-3-20120926
+- obsolete chktex (#864211)
+- make config.ps a config file (#441171)
+
+* Sat Oct  6 2012 Jindrich Novy <jnovy@redhat.com> 2012-2-20120926
+- drop relase subpackage (no more needed as TL is now in Fedora)
+- fix -doc dependencies
+- remove (not-built) asymtote from source tarball
+- undefined catalogue version defaults to 0
+- perform automatic license audit
+- include also packages not part of any scheme
+- don't strip binaries so that we can generate debuginfo (#863635)
+- clean up depsolver
+
+* Wed Oct  3 2012 Jindrich Novy <jnovy@redhat.com> 2012-1-20120926
+- introduce TeX Live 2012 to Fedora (#488651)
+- fixes: #619481, #759534, #814880, #819157
+
+* Thu Jun 14 2012 Jindrich Novy <jnovy@redhat.com> 2012-1-20120613
+- update to 2012 final
+- obsolete system latexmk
+- include dvisvgm back
+
+* Mon Apr  9 2012 Jindrich Novy <jnovy@redhat.com> 2012-0.1.20120408
+- temporarily disable dvisvgm due to gcc-4.7 compilation problems
+
+* Tue Jul 26 2011 Jindrich Novy <jnovy@redhat.com> 2011-1.20110726
+- update to the official TeX Live 2011 release
+
+* Sun Mar 13 2011 Jindrich Novy <jnovy@redhat.com> 2011-0.2.20110313
+- bump version to fix koma-skript versioning problem
+
+* Mon Feb 28 2011 Jindrich Novy <jnovy@redhat.com> 2011-0.1.20110227
+- fix upgrade path with old TL2007 xetex, context or dvips installed
+- fix package generation bug that caused some package might be missing
+  from the repository
+  (http://www.linux.cz/pipermail/texlive/2011-February/000086.html)
+- fix upstream source URLs
+
+* Tue Jan 25 2011 Jindrich Novy <jnovy@redhat.com> 2011-0.1.20110120
+- bump release to 2011 (we are using the 2011/dev SVN version)
+- add more file virtual provides (TFM, TTF, TTC, PFA, PFB, PCF, OTF,
+  TEX, CNF, CFG, DEF, DAT, LDF, FD, ENC, MAP, VF, VPL, CLO, BUG, BUG2)
+
+* Thu Dec 23 2010 Jindrich Novy <jnovy@redhat.com> 2010-14.20110105
+- sync with upstream
+- install texlive.tlpdb for autodep finder
+
+* Thu Dec 15 2010 Jindrich Novy <jnovy@redhat.com> 2010-13.20101215
+- sync with upstream as of 15th Dec
+- fix dangling symlink (thanks to Michel Alexandre Salim)
+
+* Fri Nov 12 2010 Jindrich Novy <jnovy@redhat.com> 2010-13.20101112
+- temporarily disable dvi2tty because of failing test suite
+- package /etc/texmf and point texmf-config there
+
+* Fri Nov  5 2010 Jindrich Novy <jnovy@redhat.com> 2010-13.20101102
+- make release package part of the main build
+
+* Mon Oct 18 2010 Jindrich Novy <jnovy@redhat.com> 2010-12.20101016
+- texlive-jadetex-bin obsoletes jadetex
+
+* Fri Oct  8 2010 Jindrich Novy <jnovy@redhat.com> 2010-12.20101007
+- fix symlinks in /usr/bin so that they are not pointing to wrong location
+
+* Thu Oct  7 2010 Jindrich Novy <jnovy@redhat.com> 2010-11.20101007
+- sync with the latest TL2010 sources
+- don't make redundant copies of binaries, symlink them
+- fix symlinks to perl utilities
+
+* Mon Aug 25 2010 Jindrich Novy <jnovy@redhat.com> 2010-10.20100814
+- add obsolete of dvisvgm to allow smooth updates
+
+* Mon Aug 23 2010 Jindrich Novy <jnovy@redhat.com> 2010-9.20100814
+- fix file attributes and rpmlint warnings
+- define libdir when calling configure
+- rebuild against new poppler
+
+* Thu Jul 15 2010 Jindrich Novy <jnovy@redhat.com> 2010-8.20100715
+- move all the licenses and base directory hierarchy to texlive-base
+  noarch subpackage
+- add automatic licensing code
+
+* Fri Jun  4 2010 Jindrich Novy <jnovy@redhat.com> 2010-7.20100604
+- sync with upstream (introducing mptopdf)
+- compile C source with -fno-strict-aliasing
+
+* Mon May 31 2010 Jindrich Novy <jnovy@redhat.com> 2010-7.20100531
+- switch to "tlpretest" source tree
+- add lua and ruby dependencies to packages requiring them
+- generate global package database "texlive.tlpdb" directly from
+  tlpobj files shipped with each package
+
+* Wed May 19 2010 Jindrich Novy <jnovy@redhat.com> 2010-6.20100521
+- disable chktex so that build passes
+- fix dist tags in releases in binary packages
+
+* Fri Apr 30 2010 Jindrich Novy <jnovy@redhat.com> 2010-5.20100430
+- add dependencies resolution among biblatex files
+- another %%postun scriptlets fix
+
+* Wed Apr 21 2010 Jindrich Novy <jnovy@redhat.com> 2010-4.20100421
+- add Requires(posttrans) to the main package
+
+* Mon Apr 19 2010 Jindrich Novy <jnovy@redhat.com> 2010-3.20100419
+- bump version of binaries because of the kpathsea soname increase
+
+* Fri Apr 16 2010 Jindrich Novy <jnovy@redhat.com> 2010-0.1.20100416
+- sync with upstream, remove ptex stuff for now
+
+* Fri Apr 09 2010 Jindrich Novy <jnovy@redhat.com> 2010-0.1.20100329
+- use 2010 prefix
+- do not ship/build asymptote (#548761)
+
+* Fri Mar 26 2010 Jindrich Novy <jnovy@redhat.com> 2009-3.20100326
+- declare fmutil.cnf, updmap.cfg, context.cnf and texmf.cnf as config files
+  so that they don't get overwritten with texlive-kpathsea update
+- move man and info pages to the main packages, not -doc
+
+* Fri Feb 19 2010 Jindrich Novy <jnovy@redhat.com> 2009-3.20100219
+- blacklist a4wide.sty because of bad (noinfo) license
+
+* Tue Nov 10 2009 Jindrich Novy <jnovy@redhat.com> 2009-2
+- install man and info pages into proper locations visible
+  by man and info
+- update scriptlets
+- remove xindy bits
+
+* Mon Nov 09 2009 Jindrich Novy <jnovy@redhat.com> 2009-1
+- update to oficcially released TeX Live 2009
+- enable large file support
+
+* Sun Nov 01 2009 Jindrich Novy <jnovy@redhat.com> 2009-0.13
+- remove postun scriptlet to avoid accidential removal of texmf bits
+  when not removing the package
+
+* Fri Oct 23 2009 Jindrich Novy <jnovy@redhat.com> 2009-0.12
+- tighten kpathsea devel dependency
+
+* Tue Oct 20 2009 Jindrich Novy <jnovy@redhat.com> 2009-0.11
+- fix generation of packages that ships only documentation
+- fix versioning of packages without version but with revision
+- fix heuristics for gathering .sty files dependencies
+- include packages under GFSL license
+- make files in old texmf tree from previous installs visible
+- do not obsolete old kpathsea, try to coexist
+- remove dvipdfm, dvipdfmx,depend of Fedora ones
+
+* Sun Oct 18 2009 Jindrich Novy <jnovy@redhat.com> 2009-0.10
+- TL2007 compatibility fixes:
+  - create /usr/share/texmf symlink
+  - clean all in post scriptlets
+
+* Fri Oct 02 2009 Jindrich Novy <jnovy@redhat.com> 2009-0.9
+- fix kpathsea Provides/Obsoletes
+
+* Tue Sep 29 2009 Jindrich Novy <jnovy@redhat.com> 2009-0.8
+- sync with latest upstream
+
+* Sat Sep 12 2009 Jindrich Novy <jnovy@redhat.com> 2009-0.7
+- make kpathsea independent on the main texlive package
+
+* Thu Sep 10 2009 Jindrich Novy <jnovy@redhat.com> 2009-0.6
+- remove packages under GFSL non-free license (tex-gyre)
+
+* Thu Sep  3 2009 Jindrich Novy <jnovy@redhat.com> 2009-0.5
+- fix dependencies to hyphenation packages
+- fix provides/obsoletes
+
+* Mon Aug 31 2009 Jindrich Novy <jnovy@redhat.com> 2009-0.4
+- require recommended LaTeX bits, the installation of pure
+  scheme-basic is too minimalistic
+
+* Tue Aug 25 2009 Jindrich Novy <jnovy@redhat.com> 2009-0.3
+- require system psutils and t1utils and don't build the TL ones
+- correctly obsolete old kpathsea
+- binaries now have -bin postfix
+- support for Fedora fonts
+
+* Thu Aug 20 2009 Jindrich Novy <jnovy@redhat.com> 2009-0.2
+- add tetex-* virtual provides
+- fix unversioned requires
+- filter out unwanted libs and utilities from source
+
+* Wed Aug 12 2009 Jindrich Novy <jnovy@redhat.com> 2009-0.1
+- update to TeX Live 2009 - pretest
+
+* Mon Jun 29 2009 Jindrich Novy <jnovy@redhat.com> 2008-0.2
+- update to today's svn sources of binaries from upstream
+- fix directory -> symlink conversion 
+- add ly1 (#488651)
+
+* Thu Aug 14 2008 Jindrich Novy <jnovy@redhat.com> 2008-0.1
+- initial packaging for TeX Live 2008
+- wrote tl2rpm.c to autogenerate packages and post scriptlets
+  from TeX Live metadata
+- fix kpathsea default search path

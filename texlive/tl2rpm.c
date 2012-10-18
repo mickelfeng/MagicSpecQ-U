@@ -1,7 +1,7 @@
 /*
  * tl2rpm 0.0.1, TeX Live to RPM converter.
  * 
- * Copyright (C) 2009-2011 Jindrich Novy (jnovy@users.sf.net)
+ * Copyright (C) 2009-2012 Jindrich Novy (jnovy@users.sf.net)
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,10 +23,12 @@
 //#define PACKAGE_SOURCE
 #define PACKAGE_DOCS
 //#define MERGE_DOCS
-#define SRPMS
+//#define SRPMS
 //#define SHORTEN_FILELISTS
+//#define FEDORA_FONTS
 #define UNPACK "xz"
 #define REQ_POSTTRANS "Requires: "
+#define REQ_POST_POSTUN "Requires: "
 #ifndef TL2010
 #  define CTAN_URL "ftp://ftp.ctex.org/mirrors/CTAN/systems/texlive/tlnet/archive/"
 #else
@@ -89,7 +91,7 @@ enum {
 	LIC_LPPL13	= 1<<24,
 };
 #define LIC_PROBLEMATIC (LIC_NOINFO | LIC_UNKNOWN | LIC_ARTISTIC | LIC_NOSOURCE | LIC_NOSELL | LIC_NOCOMMERCIAL | LIC_OTHER)
-#define LIC_NOTALLOWED 0
+#define LIC_NOTALLOWED LIC_PROBLEMATIC
 
 match license[] = {
 	{"gpl3", LIC_GPL3},
@@ -128,6 +130,8 @@ match spec_license[] = {
 	{"GPLv2+", LIC_GPL2},
 	{"GPLv3+", LIC_GPL3},
 	{"LPPL", LIC_LPPL},
+	{"LPPL 1.2", LIC_LPPL12},
+	{"LPPL 1.3", LIC_LPPL13},
 	{"Freely redistributable without restriction", LIC_OTHER_FREE},
 	{"Public Domain", LIC_PD},
 	{"No Info", LIC_NOINFO},
@@ -168,6 +172,7 @@ typedef struct pk {
 	char *revision;
 	char *catalogue_ctan;
 	int catalogue_license;
+	char *fedora_license;
 	char *catalogue_date;
 	char *catalogue_version;
 	char **dep;
@@ -200,25 +205,19 @@ int p = 0;
 
 /* Packages to be ignored and not included */
 char *pkg_blacklist[] = {
-//	"dvipdfm",
-//	"dvipdfmx",
 	"getafm",
-//	"lcdftypetools",
 	"psutils",
 	"t1utils",
-//	"xdvi",
-//	"dvipng",
 	"texworks",
-	"xindy",
-	"asymptote",	// not shipped in sources
+	"xindy",	// dependency on clisp
+	"asymptote",	// special build procedure
 	"asymptote.i386-linux",
 	"asymptote-by-example-zh-cn",
 	"asymptote-faq-zh-cn",
 	"asymptote-manual-zh-cn",
-//	"dvisvgm",
 	"latex-tds",	// only source
-	"dvi2tty",
-	"biber",	// no binary
+	"biber",	// no sources
+	"euro-ce",	// nonfree license
 	NULL,
 };
 
@@ -227,6 +226,11 @@ char *rem[] = {		/* any file beginning with this will be removed */
 	"texmf/doc/info/kpathsea.info",
 	"tlpkg/installer",
 	NULL,
+};
+
+char *fedora_license[] = {
+#include "texlive-fedora-licenses.h"
+	NULL, NULL
 };
 
 char *get_line() {
@@ -246,7 +250,7 @@ char *get_line() {
 
 int get_token( char *s, match *m ) {
 	int i, found = -1;
-	char *r;
+//	char *r;
 
 	for ( i=0; m[i].token; i++ ) {
 		if ( !strncmp(s, m[i].token, m[i].s?m[i].s:(m[i].s=strlen(m[i].token))) ) {
@@ -262,15 +266,15 @@ int get_token( char *s, match *m ) {
 		return m[found].num;
 	}
 
-	r = strchr(s,'\n');
-	*r = '\0';
-	fprintf(stderr,"No match: '%s'\nin '", s);
-	*r = '\n';
-	for ( i=0; m[i].token; i++ ) {
-		fprintf(stderr, "%s ", m[i].token);
-	}
-	fprintf(stderr, "'\nin package %s\n", pkg[p-1].name);
-	exit(1);
+//	r = strchr(s,'\n');
+//	*r = '\0';
+//	fprintf(stderr,"No match: '%s'\nin '", s);
+//	*r = '\n';
+//	for ( i=0; m[i].token; i++ ) {
+//		fprintf(stderr, "%s ", m[i].token);
+//	}
+//	fprintf(stderr, "'\nin package %s\n", pkg[p-1].name);
+//	exit(1);
 
 	return 0;
 }
@@ -346,17 +350,7 @@ void parse() {
 				}
 				goto skip;
 			}
-/*			if ( strstr(l, "win32") || strstr(l, "Win32") || strstr(l, "tlmgr") ) {
-				printf("*** %s\n", l);
-				goto skip;
-			}
-			for (i=0; rem[i]; i++) {
-				if ( !strncmp(l, rem[i], strlen(rem[i])) ) {
-					printf("*** %s\n", l);
-					goto skip;
-				}
-			}
-*/			switch ( filetype ) {
+			switch ( filetype ) {
 				case FT_RUN:
 #ifdef PACKAGE_DOCS
 #ifdef MERGE_DOCS
@@ -448,6 +442,7 @@ exit:
 			}
 			continue;
 		}
+next_name:
 		if ( !strncmp(l,"name ", 5) ) {
 			size_t sarch, sname;
 			int i, blacklisted = 0;
@@ -457,12 +452,21 @@ exit:
 					break;
 				}
 			}
+			if (!blacklisted) {
+				for (i=0; fedora_license[i]; i+=2) {
+					if ( !strcmp(l+5, fedora_license[i]) && !fedora_license[i+1]) {
+						blacklisted = 1;
+						break;
+					}
+				}
+			}
 			if ( blacklisted ) {
 				fprintf(stderr, "Blacklisted: %s\n", pkg_blacklist[i]);
 				while ( (l=get_line()) ) {
 					if ( !strncmp(l, "name ", 5) ) break;
 				}
 				if (!l) continue;
+				goto next_name;
 			}
 			p++;
 			pkg = realloc(pkg, p*sizeof(package));
@@ -551,6 +555,15 @@ exit:
 		}
 		if ( !strncmp(l,"catalogue-license ", 18) ) {
 			pkg[p-1].catalogue_license = get_token(l+18, license);
+			{
+				int n;
+				for (n=0; fedora_license[n]; n+=2) {
+					if (!strcmp(fedora_license[n], pkg[p-1].name)) {
+						pkg[p-1].fedora_license = fedora_license[n+1];
+						break;
+					}
+				}
+			}
 			continue;
 		}
 		if ( !strncmp(l,"catalogue-date ", 15) ) {
@@ -587,7 +600,7 @@ exit:
 }
 
 package **inst;
-int installed, srcno=4, mainsrcno = 1000, mainpkg;
+int installed, srcno=100, mainsrcno = 6000, mainpkg;
 FILE *fpack, *ffile, *funpack, *fsrc, *fremove, *ffont;
 
 char *cnf_files[] = {
@@ -596,6 +609,7 @@ char *cnf_files[] = {
 	"texmf/web2c/texmf.cnf",
 	"texmf/web2c/context.cnf",
 	"texmf/web2c/mktex.cnf",
+	"texmf/dvips/config/config.ps",		/* rhbz#441171 */
 	NULL,
 };
 
@@ -619,7 +633,7 @@ void append_filelist( char *pkg, char *pkgsuf, int files, char **filelist, char 
 		*binpos = '\0';
 		strcat(binpos, "-bin");
 	}
-	if ( pkglicense && !(get_token(pkglicense, license)&LIC_PROBLEMATIC) ) {
+	if ( pkglicense && get_token(pkglicense, license) && !(get_token(pkglicense, license)&LIC_PROBLEMATIC) ) {
 			fprintf(ffile, "%%files %s\n%%defattr(-,root,root)\n%%doc %s.txt\n", mainpkg?(!main_written?"":pkgsuf):pkgname, pkglicense);
 	} else {
 		fprintf(ffile, "%%files %s\n%%defattr(-,root,root)\n", mainpkg?(!main_written?"":pkgsuf):pkgname);
@@ -635,13 +649,16 @@ void append_filelist( char *pkg, char *pkgsuf, int files, char **filelist, char 
 				size_t bin_index = 0;
 				if ( bin ) bin_index = 5+strlen(arch);
 				if ( dir[y].pkgs == 1 ) {
-//					fprintf(ffile, "%%dir %s/%s\n", bin?"%{_bindir}":"%{_texdir}", &dir[y].dir[bin_index]);
 					if ( !bin ) {
+#ifdef SHORTEN_FILELISTS
 						int found = 0;
+#endif
 						for (n=0; n<dirs; n++) {
 							if ( y==n ) continue;
 							if ( !strncmp(dir[n].dir, dir[y].dir, strlen(dir[y].dir)) ) {
+#ifdef SHORTEN_FILELISTS
 								found = 1;
+#endif
 								break;
 							}
 						}
@@ -737,7 +754,7 @@ static void provide_file(package *p, char *suf) {
 	int n;
 	for (n=0; n<p->runfs; n++) {
 		if ( !strncmp(&p->runf[n][strlen(p->runf[n])-strlen(suf)], suf, strlen(suf)) ) {
-			fprintf(fpack, "Provides: tex(%s)\n", strrchr(p->runf[n], '/')+1);
+			fprintf(fpack, "Provides: tex(%s) = %%{tl_version}\n", strrchr(p->runf[n], '/')+1);
 		   }
 	}
 }
@@ -746,7 +763,7 @@ static void fill_provide_file(package *p, char *suf) {
 	int n;
 	for (n=0; n<p->runfs; n++) {
 		if ( !strncmp(&p->runf[n][strlen(p->runf[n])-strlen(suf)], suf, strlen(suf)) ) {
-			fprintf(fpack, "Provides: tex(%s)\n", strrchr(p->runf[n], '/')+1);
+			fprintf(fpack, "Provides: tex(%s) = %%{tl_version}\n", strrchr(p->runf[n], '/')+1);
 		   }
 	}
 }
@@ -758,7 +775,7 @@ static void fill_file_reqprov() {
 	char *sufs[] = { ".tfm", ".ttf", ".ttc", ".pfa", ".pfb", ".pcf",
 			 ".otf", ".tex", ".cnf", ".cfg", ".def", ".dat",
 			 ".ldf", ".fd", ".enc", ".map", ".vf", ".vpl",
-			 ".clo", ".bug", ".bg2", ".cbx", ".bbx", ".cls", 
+			 ".clo", ".bug", ".bg2", ".cbx", ".bbx", ".cls",
 			 ".sty", NULL };
 
 	for (i=0; i<p; i++) {
@@ -1034,21 +1051,12 @@ skip:
 			}
 		}
 	}
-/*	for (i=0; i<p; i++) {
-		for (n=0; n<pkg[i].file_reqs; n++) {
-			fprintf(stderr,"****** %s requires %s\n", pkg[i].name, pkg[i].file_req[n]);
-		}
-		for (n=0; n<pkg[i].file_provs; n++) {
-			fprintf(stderr,"****** %s provides %s\n", pkg[i].name, pkg[i].file_prov[n]);
-		}
-	}*/
 }
 
 int level;
 void solve(char *name) {
 	unsigned long h;
-	int i, found = 0, reqs;
-	char **req;
+	int i, found = 0, doc_expanded = 0;
 #ifdef SRPMS
 	FILE *ofpack = NULL, *offile = NULL, *ofunpack = NULL, *ofsrc = NULL, *ofremove = NULL, *offont = NULL;
 #endif
@@ -1104,17 +1112,15 @@ void solve(char *name) {
 					printf("> %s\n", pkg[i].exe[n]);
 				}
 			}
-#ifdef SRPMS
 			if ( pkg[i].binfs ) {
 				char s[0x100], *p;
 				strcpy(s, name);
 				p = strstr(s, ".ARCH");
 				*p = 0;
-				fprintf(fsrc, "Source%d: "CTAN_URL"%s.%s.tar."UNPACK"\n", mainsrcno, s, arch);
+				fprintf(fsrc, "Source%04d: "CTAN_URL"%s.%s.tar."UNPACK"\n", mainsrcno, s, arch);
 				fprintf(funpack, UNPACK" -dc %%{SOURCE%d} | tar x -C %%{buildroot}\n", mainsrcno);
 				mainsrcno++;
 			}
-
 			/* is it collection or scheme? then don't create a separate package for it and put it to main one */
 			if ( !strncmp(name, "collection-", 11) || !strncmp(name, "scheme-", 7) ) {
 				fprintf(funpack, UNPACK" -dc %%{SOURCE%d} | tar x -C %%{buildroot}%%{_texdir}%s\n", mainsrcno, pkg[i].reloc?"/texmf-dist":"");
@@ -1124,31 +1130,35 @@ void solve(char *name) {
 				} else {
 					fprintf(fpack, "Summary: %s package\n", name);
 				}
-				fprintf(fpack, "Version: %%{tl_version}\n");
+				fprintf(fpack, "Version: ");
+				if ( pkg[i].catalogue_version ) fprintf(fpack, "%s.svn%s\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "0.svn%s\n", pkg[i].revision);
 				fprintf(fpack, "Release: ");
-//				if ( pkg[i].catalogue_version ) fprintf(fpack, "%%{tl_noarch_release}.%s.svn%s%%{?dist}\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "%%{tl_noarch_release}.svn%s%%{?dist}\n", pkg[i].revision);
-				if ( pkg[i].catalogue_version ) fprintf(fpack, "%%{tl_release}.%s.svn%s%%{?dist}\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "%%{tl_release}.svn%s%%{?dist}\n", pkg[i].revision);
+				fprintf(fpack, "%%{tl_release}\n");
 				fprintf(fpack, "BuildArch: noarch\n");
-				fprintf(fsrc, "Source%d: "CTAN_URL"%s.tar."UNPACK"\n", mainsrcno++, name);
-				fprintf(fpack, "Requires: texlive-base = %%{tl_version}\n");
+				fprintf(fsrc, "Source%04d: "CTAN_URL"%s.tar."UNPACK"\n", mainsrcno++, name);
+				fprintf(fpack, "Requires: texlive-base\n");
 				for (n=0; n<pkg[i].reqs; n++) {
 					if ( pkg[i].req[n] ) {
 						if ( pkg[i].req[n]->catalogue_license & LIC_NOTALLOWED ) {
 							continue;
 						}
 						if ( pkg[i].req[n]->reqs || pkg[i].req[n]->runfs || pkg[i].req[n]->exes ) {
-							fprintf(fpack, "Requires: texlive-%s = %%{tl_version}\n", pkg[i].dep[n]);
+							if (strncmp(pkg[i].dep[n], "collection-", 11)) {
+								fprintf(fpack, "Requires: tex-%s\n", pkg[i].dep[n]);
+							} else {
+								fprintf(fpack, "Requires: texlive-%s\n", pkg[i].dep[n]);
+							}
 							continue;
 						}
 #ifdef PACKAGE_DOCS
 						if ( pkg[i].req[n]->docfs ) {
-							fprintf(fpack, "Requires: texlive-%s-doc = %%{tl_version}\n", pkg[i].dep[n]);
+							fprintf(fpack, "Requires: texlive-%s-doc\n", pkg[i].dep[n]);
 							continue;
 						}
 #endif
 #ifdef PACKAGE_SOURCE
 						if ( pkg[i].req[n]->srcfs ) {
-							fprintf(fpack, "Requires: texlive-%s-source = %%{tl_version}\n", pkg[i].dep[n]);
+							fprintf(fpack, "Requires: texlive-%s-source\n", pkg[i].dep[n]);
 							continue;
 						}
 #endif
@@ -1159,7 +1169,7 @@ void solve(char *name) {
 								exit(1);
 							}
 							pkg[i].dep[n][spost] = '\0';
-							fprintf(fpack, "Requires: texlive-%s-bin = %%{tl_version}\n", pkg[i].dep[n]);
+							fprintf(fpack, "Requires: texlive-%s-bin\n", pkg[i].dep[n]);
 							pkg[i].dep[n][spost] = '.';
 							continue;
 						}
@@ -1168,7 +1178,7 @@ void solve(char *name) {
 				/* write virtual provides */
 				if ( !strncmp(name, "collection-", 11) ) {
 					if (!strcmp(name+11, "latex")) {
-						fprintf(fpack, "Provides: tex(latex) = %%{tl_version}\n");
+						fprintf(fpack, "Provides: tex(latex) = %%{tl_version}, texlive-latex = %%{tl_version}\n");
 					} else if (!strcmp(name+11, "basic")) {
 						fprintf(fpack, "Provides: tex(tex) = %%{tl_version}, tex = %%{tl_version}\n");
 						fprintf(fpack, "Requires: dvipdfm, dvipdfmx, xdvik\n");
@@ -1187,11 +1197,9 @@ void solve(char *name) {
 						fprintf(fpack, "Obsoletes: texlive-texmf-fonts < %%{tl_version}\n");
 					} else if (!strcmp(name+11, "binextra")) {
 						fprintf(fpack, "Obsoletes: texlive-utils < %%{tl_version}\n");
-//						fprintf(fpack, "Requires: dvipng, dvisvgm\n");
 						fprintf(fpack, "Requires: dvipng\n");
 					} else if (!strcmp(name+11, "xetex")) {
 						fprintf(fpack, "Provides: tex(xetex) = %%{tl_version}\n");
-//						fprintf(fpack, "Obsoletes: texlive-xetex < %%{tl_version}\n");
 						fprintf(fpack, "Obsoletes: texlive-texmf-xetex < %%{tl_version}\n");
 					} else if (!strcmp(name+11, "fontutils")) {
 						fprintf(fpack, "Requires: t1utils, psutils, lcdf-typetools\n");
@@ -1205,7 +1213,6 @@ void solve(char *name) {
 				}
 				if ( !strcmp(name, "scheme-context") ) {
 					fprintf(fpack, "Provides: tex(context) = %%{tl_version}\n");
-//					fprintf(fpack, "Obsoletes: texlive-context < %%{tl_version}\n");
 					fprintf(fpack, "Obsoletes: texlive-texmf-context < %%{tl_version}\n");
 				}
 				/* description */
@@ -1219,7 +1226,6 @@ void solve(char *name) {
 				fprintf(ffile, "%%files %s\n%%defattr(-,root,root)\n\n", name);
 				goto slv;
 			}
-#endif
 #ifdef SRPMS
 			if ( !pkg[i].binfs ) {
 				char path[0x100];
@@ -1232,7 +1238,7 @@ void solve(char *name) {
 				ofremove = fremove;
 				offont = ffont;
 
-				snprintf(path, sizeof(path), "specs/texlive-%s", name);
+				snprintf(path, sizeof(path), "specs/tex-%s", name);
 				mkdir(path, 0775);
 				snprintf(p, sizeof(p), "%s/_packages.spec", path);
 				fpack = fopen(p, "wt");
@@ -1258,21 +1264,22 @@ void solve(char *name) {
 				fprintf(funpack, UNPACK" -dc %%{SOURCE%d} | tar x -C %%{buildroot}%%{_texdir}%s\n", srcno, pkg[i].reloc?"/texmf-dist":"");
 #ifndef SRPMS
 				fprintf(fpack, "%%package %s\n", name);
+				fprintf(fpack, "Provides: tex-%s = %%{tl_version}\n", name);
 #else
-				fprintf(fpack, "Name: texlive-%s\n", name);
-				fprintf(fpack, "License: %s\n", put_token(pkg[i].catalogue_license, spec_license)?put_token(pkg[i].catalogue_license, spec_license):"LPPL");
+				fprintf(fpack, "Name: tex-%s\n", name);
+				fprintf(fpack, "Obsoletes: texlive-%s texlive-%s-doc texlive-%s-fedora-fonts\n", name, name, name);
 #endif
+				fprintf(fpack, "License: %s\n", pkg[i].fedora_license?pkg[i].fedora_license:(put_token(pkg[i].catalogue_license, spec_license)?put_token(pkg[i].catalogue_license, spec_license):"LPPL"));
 				if ( pkg[i].shortdesc ) {
 					fprintf(fpack, "Summary: %s\n", pkg[i].shortdesc);
 				} else {
 					fprintf(fpack, "Summary: %s package\n", name);
 				}
-				fprintf(fpack, "Version: %%{tl_version}\n");
-				fprintf(fpack, "Release: ");
-				if ( pkg[i].catalogue_version ) fprintf(fpack, "%%{tl_noarch_release}.%s.svn%s%%{?dist}\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "%%{tl_noarch_release}.svn%s%%{?dist}\n", pkg[i].revision);
-//				if ( pkg[i].catalogue_version ) fprintf(fpack, "%%{tl_release}.%s.svn%s%%{?dist}\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "%%{tl_release}.svn%s%%{?dist}\n", pkg[i].revision);
+				fprintf(fpack, "Version: ");
+				if ( pkg[i].catalogue_version ) fprintf(fpack, "%s.svn%s\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "0.svn%s\n", pkg[i].revision);
+				fprintf(fpack, "Release: %%{tl_noarch_release}\n");
 				fprintf(fpack, "BuildArch: noarch\nAutoReqProv: No\n");
-				fprintf(fsrc, "Source%d: "CTAN_URL"%s.tar."UNPACK"\n", srcno++, name);
+				fprintf(fsrc, "Source%04d: "CTAN_URL"%s.tar."UNPACK"\n", srcno++, name);
 				if ( pkg[i].has_man || pkg[i].has_info ) {
 					char nm[0x100];
 					FILE *f;
@@ -1280,15 +1287,17 @@ void solve(char *name) {
 					f = fopen(nm, "rb");
 					if ( f ) {
 						fprintf(funpack, UNPACK" -dc %%{SOURCE%d} | tar x -C %%{buildroot}%%{_texdir}%s\n", srcno, pkg[i].reloc?"/texmf-dist":"");
-						fprintf(fsrc, "Source%d: "CTAN_URL"%s.doc.tar."UNPACK"\n", srcno++, name);
+						fprintf(fsrc, "Source%04d: "CTAN_URL"%s.doc.tar."UNPACK"\n", srcno++, name);
+						doc_expanded = 1;
 						fclose(f);
 					}
 				}
 
 				if ( strncmp(name, "kpathsea", 8) ) {
-					fprintf(fpack, "Requires: texlive-base = %%{tl_version}\n");
+					fprintf(fpack, "Requires: texlive-base\n");
 				} else {
 					fprintf(fpack, "Provides: kpathsea = %%{tl_version}\n");
+					fprintf(fpack, "Obsoletes: kpathsea < %%{tl_version}\n");
 					fprintf(funpack, "\n# add reference to support old texmf tree\n"
 					"sed -i 's|TEXMFLOCAL = $SELFAUTOPARENT/../texmf-local|TEXMFLOCAL = $SELFAUTOPARENT/../texmf|g' %%{buildroot}%%{_texdir}/texmf/web2c/texmf.cnf\n\n");
 				}
@@ -1308,36 +1317,36 @@ void solve(char *name) {
 /*				if ( !strncmp(name, "asymptote", 9) ) {
 					fprintf(fpack, "Provides: asymptote = %%{tl_version}\n");
 					fprintf(fpack, "Obsoletes: asymptote < %%{tl_version}\n");
-				}
-*/				if ( !strncmp(name, "jadetex", 7) ) {
+				}*/
+				if ( !strncmp(name, "jadetex", 7) ) {
 					fprintf(fpack, "Provides: jadetex = %%{tl_version}\n");
 					fprintf(fpack, "Obsoletes: jadetex < %%{tl_version}\n");
 				}
-				fprintf(fpack, REQ_POSTTRANS"texlive-kpathsea-bin = %%{tl_version}, texlive-kpathsea = %%{tl_version}\n");
+				fprintf(fpack, REQ_POSTTRANS"texlive-kpathsea-bin, tex-kpathsea\n");
 				if ( pkg[i].exes ) {
-					fprintf(fpack, REQ_POSTTRANS"texlive-tetex-bin = %%{tl_version}, texlive-tetex = %%{tl_version}\n");
-					fprintf(fpack, "Requires(post,postun): texlive-tetex-bin = %%{tl_version}, texlive-tetex = %%{tl_version}, texlive-hyphen-base = %%{tl_version}, texlive-base = %%{tl_version}\n");
+					fprintf(fpack, REQ_POSTTRANS"texlive-tetex-bin, tex-tetex\n");
+					fprintf(fpack, REQ_POST_POSTUN"texlive-tetex-bin, tex-tetex, tex-hyphen-base, texlive-base\n");
 				}
-				if ( pkg[i].runfs ) fprintf(fpack, "Requires(post,postun): texlive-kpathsea-bin = %%{tl_version}, texlive-kpathsea = %%{tl_version}\n");
-				if ( pkg[i].has_info ) fprintf(fpack, "Requires(preun,post): /sbin/install-info\n");
+//				if ( pkg[i].runfs ) fprintf(fpack, REQ_POST_POSTUN"texlive-kpathsea-bin, tex-kpathsea\n");
+				if ( pkg[i].has_info ) fprintf(fpack, REQ_POST_POSTUN"/sbin/install-info\n");
 				for (n=0; n<pkg[i].reqs; n++) {
 					if ( pkg[i].req[n] ) {
 						if ( pkg[i].req[n]->catalogue_license & LIC_NOTALLOWED ) {
 							continue;
 						}
 						if ( pkg[i].req[n]->reqs || pkg[i].req[n]->runfs || pkg[i].req[n]->exes ) {
-							fprintf(fpack, "Requires: texlive-%s = %%{tl_version}\n", pkg[i].dep[n]);
+							fprintf(fpack, "Requires: tex-%s\n", pkg[i].dep[n]);
 							continue;
 						}
 #ifdef PACKAGE_DOCS
 						if ( pkg[i].req[n]->docfs ) {
-							fprintf(fpack, "Requires: texlive-%s-doc = %%{tl_version}\n", pkg[i].dep[n]);
+							fprintf(fpack, "Requires: tex-%s-doc\n", pkg[i].dep[n]);
 							continue;
 						}
 #endif
 #ifdef PACKAGE_SOURCE
 						if ( pkg[i].req[n]->srcfs ) {
-							fprintf(fpack, "Requires: texlive-%s-source = %%{tl_version}\n", pkg[i].dep[n]);
+							fprintf(fpack, "Requires: tex-%s-source\n", pkg[i].dep[n]);
 							continue;
 						}
 #endif
@@ -1348,19 +1357,11 @@ void solve(char *name) {
 								exit(1);
 							}
 							pkg[i].dep[n][spost] = '\0';
-							fprintf(fpack, "Requires: texlive-%s-bin = %%{tl_version}\n", pkg[i].dep[n]);
+							fprintf(fpack, "Requires: texlive-%s-bin\n", pkg[i].dep[n]);
 							pkg[i].dep[n][spost] = '.';
 							continue;
 						}
 					}
-				}
-				/* Lua dependencies */
-				for (n=0; n<pkg[i].runfs; n++) {
-					if ( !strncmp(&pkg[i].runf[n][strlen(pkg[i].runf[n])-4], ".lua", 4)
-					   ) {
-						fprintf(fpack, "Requires: lua\n");
-						break;
-					   }
 				}
 				/* Ruby dependencies */
 				for (n=0; n<pkg[i].runfs; n++) {
@@ -1376,8 +1377,9 @@ void solve(char *name) {
 				}
 				/* Provide all important files */
 				for (n=0; n<pkg[i].file_provs; n++) {
-					fprintf(fpack, "Provides: tex(%s)\n", pkg[i].file_prov[n]);
+					fprintf(fpack, "Provides: tex(%s) = %%{tl_version}\n", pkg[i].file_prov[n]);
 				}
+#ifdef FEDORA_FONTS
 				/* check for fonts */
 				for (n=0; n<pkg[i].runfs; n++) {
 					size_t s = strlen(pkg[i].runf[n]);
@@ -1389,14 +1391,15 @@ void solve(char *name) {
 						    !strcmp(&pkg[i].runf[n][s-4], ".pcf") ||
 						    !strcmp(&pkg[i].runf[n][s-4], ".otf")
 						) {
-							fprintf(fpack, "Requires: texlive-%s-fedora-fonts = %%{tl_version}\n", name);
+							fprintf(fpack, "Requires: tex-%s-fedora-fonts\n", name);
 							break;
 						}
 					}
 				}
+#endif
 				/* write virtual provides */
 				if ( !strcmp(name, "dvips") ) {
-					fprintf(fpack, "Provides: tex(dvips) = %%{tl_version}, tetex-dvips = 3.1-99, texlive-texmf-dvips = %%{tl_version}\n");
+					fprintf(fpack, "Provides: tex(dvips) = %%{tl_version}, tetex-dvips = 3.1-99, texlive-texmf-dvips = %%{tl_version}, texlive-dvips = %%{tl_version}\n");
 					fprintf(fpack, "Obsoletes: tetex-dvips < 3.1-99, texlive-texmf-dvips < %%{tl_version}\n");
 				}
 				if ( !strcmp(name, "tex4ht") ) {
@@ -1404,8 +1407,8 @@ void solve(char *name) {
 					fprintf(fpack, "Obsoletes: tetex-tex4ht < %%{tl_version}\n");
 				}
 				if ( !strcmp(name, "latex") ) {
-					fprintf(fpack, "Provides: tetex-latex = 3.1-99, texlive-latex = %%{tl_version}, texlive-texmf-latex = %%{tl_version}\n");
-					fprintf(fpack, "Obsoletes: tetex-latex < 3.1-99, texlive-latex < %%{tl_version}, texlive-texmf-latex < %%{tl_version}\n");
+					fprintf(fpack, "Provides: tetex-latex = 3.1-99, texlive-texmf-latex = %%{tl_version}\n");
+					fprintf(fpack, "Obsoletes: tetex-latex < 3.1-99, texlive-texmf-latex < %%{tl_version}\n");
 				}
 				if ( !strcmp(name, "IEEEtran") ) {
 					fprintf(fpack, "Provides: tetex-IEEEtran = %%{tl_version}\n");
@@ -1434,6 +1437,26 @@ void solve(char *name) {
 				if ( !strcmp(name, "pdfjam") ) {
 					fprintf(fpack, "Provides: pdfjam = %%{tl_version}\n");
 					fprintf(fpack, "Obsoletes: pdfjam < %%{tl_version}\n");
+				}
+				if ( !strcmp(name, "ptex") ) {
+					fprintf(fpack, "Provides: mendexk = %%{tl_version}\n");
+					fprintf(fpack, "Obsoletes: mendexk < %%{tl_version}\n");
+				}
+				if ( !strcmp(name, "japanese") ) {
+					fprintf(fpack, "Provides: texlive-east-asian = %%{tl_version}\n");
+					fprintf(fpack, "Obsoletes: texlive-east-asian < %%{tl_version}\n");
+				}
+				if ( !strcmp(name, "preview") ) {
+					fprintf(fpack, "Provides: tex-preview = %%{tl_version}\n");
+					fprintf(fpack, "Obsoletes: tex-preview < %%{tl_version}\n");
+				}
+				if ( !strcmp(name, "latexmk") ) {
+					fprintf(fpack, "Provides: latexmk = %%{tl_version}\n");
+					fprintf(fpack, "Obsoletes: latexmk < %%{tl_version}\n");
+				}
+				if ( !strcmp(name, "chktex") ) {	/* rhbz#864211 */
+					fprintf(fpack, "Provides: chktex = %%{tl_version}\n");
+					fprintf(fpack, "Obsoletes: chktex < %%{tl_version}\n");
 				}
 				/* description */
 #ifndef SRPMS
@@ -1481,26 +1504,26 @@ void solve(char *name) {
 							}
 						}
 					}
-					fprintf(fpack, "if [ $1 == 1 ] ; then\n");
+					fprintf(fpack, "if [ $1 -gt 0 ] ; then\n");
 					for (run_updmap=run_fmtutil=n=0; n<pkg[i].exes; n++) {
 						if ( !strncmp(pkg[i].exe[n], "addLuaMap ", 9) ) {
 							continue;
 						}
 						if ( !strncmp(pkg[i].exe[n], "addMap ", 7) ) {
+							fprintf(fpack, "sed -i '/^Map %s/d' %%{_texdir}/texmf/web2c/updmap.cfg\n", &pkg[i].exe[n][7]);
 							fprintf(fpack, "echo \"Map %s\" >> %%{_texdir}/texmf/web2c/updmap.cfg\n", &pkg[i].exe[n][7]);
-//							fprintf(fpack, "%%{_bindir}/updmap-sys --nomkmap --quiet --enable Map %s\n", &pkg[i].exe[n][7]);
 							run_updmap = 1;
 							continue;
 						}
 						if ( !strncmp(pkg[i].exe[n], "addMixedMap ", 12) ) {
+							fprintf(fpack, "sed -i '/^MixedMap %s/d' %%{_texdir}/texmf/web2c/updmap.cfg\n", &pkg[i].exe[n][12]);
 							fprintf(fpack, "echo \"MixedMap %s\" >> %%{_texdir}/texmf/web2c/updmap.cfg\n", &pkg[i].exe[n][12]);
-//							fprintf(fpack, "%%{_bindir}/updmap-sys --nomkmap --quiet --enable MixedMap %s\n", &pkg[i].exe[n][12]);
 							run_updmap = 1;
 							continue;
 						}
 						if ( !strncmp(pkg[i].exe[n], "addKanjiMap ", 12) ) {
+							fprintf(fpack, "sed -i '/^KanjiMap %s/d' %%{_texdir}/texmf/web2c/updmap.cfg\n", &pkg[i].exe[n][12]);
 							fprintf(fpack, "echo \"KanjiMap %s\" >> %%{_texdir}/texmf/web2c/updmap.cfg\n", &pkg[i].exe[n][12]);
-//							fprintf(fpack, "%%{_bindir}/updmap-sys --nomkmap --quiet --enable MixedMap %s\n", &pkg[i].exe[n][12]);
 							run_updmap = 1;
 							continue;
 						}
@@ -1566,26 +1589,32 @@ void solve(char *name) {
 							file += 5;
 							for (k=10; pkg[i].exe[n][k]; k++) if ( pkg[i].exe[n][k] == ' ' ) pkg[i].exe[n][k] = '\0';
 
+							fprintf(fpack, "sed -i '/%s.*/d' %%{_texdir}/texmf/tex/generic/config/language.dat\n", name);
 							fprintf(fpack, "echo \"%s %s\" >> %%{_texdir}/texmf/tex/generic/config/language.dat\n", name, file);
 							if ( synonyms ) {
 								char *syn = synonyms, *s;
 								while ( (s=strchr(syn, ',')) ) {
 									*s = '\0';
+									fprintf(fpack, "sed -i '/=%s/d' %%{_texdir}/texmf/tex/generic/config/language.dat\n", syn);
 									fprintf(fpack, "echo \"=%s\" >> %%{_texdir}/texmf/tex/generic/config/language.dat\n", syn);
 									*s = ',';
 									syn = s+1;
 								}
+								fprintf(fpack, "sed -i '/=%s/d' %%{_texdir}/texmf/tex/generic/config/language.dat\n", syn);
 								fprintf(fpack, "echo \"=%s\" >> %%{_texdir}/texmf/tex/generic/config/language.dat\n", syn);
 							}
+							fprintf(fpack, "sed -i '/\\\\addlanguage{%s}.*/d' %%{_texdir}/texmf/tex/generic/config/language.def\n", name);
 							fprintf(fpack, "echo \"\\addlanguage{%s}{%s}{}{%s}{%s}\" >> %%{_texdir}/texmf/tex/generic/config/language.def\n", name, file, lefthyphenmin, righthyphenmin);
 							if ( synonyms ) {
 								char *syn = synonyms, *s;
 								while ( (s=strchr(syn, ',')) ) {
 									*s = '\0';
+									fprintf(fpack, "sed -i '/\\\\addlanguage{%s}.*/d' %%{_texdir}/texmf/tex/generic/config/language.def\n", syn);
 									fprintf(fpack, "echo \"\\addlanguage{%s}{%s}{}{%s}{%s}\" >> %%{_texdir}/texmf/tex/generic/config/language.def\n", syn, file, lefthyphenmin, righthyphenmin);
 									*s = ',';
 									syn = s+1;
 								}
+								fprintf(fpack, "sed -i '/\\\\addlanguage{%s}.*/d' %%{_texdir}/texmf/tex/generic/config/language.def\n", syn);
 								fprintf(fpack, "echo \"\\addlanguage{%s}{%s}{}{%s}{%s}\" >> %%{_texdir}/texmf/tex/generic/config/language.def\n", syn, file, lefthyphenmin, righthyphenmin);
 							}
 							for (--k; k>=10; k--) if ( pkg[i].exe[n][k] == '\0' ) pkg[i].exe[n][k] = ' ';
@@ -1604,7 +1633,6 @@ void solve(char *name) {
 #else
 					fprintf(fpack, "\n%%postun\n");
 #endif
-//					fprintf(fpack, "echo 'postun'\nif [ $1 == 0 ] ; then\n");
 					fprintf(fpack, "if [ $1 == 0 ] ; then\n");
 					for (run_updmap=n=0; n<pkg[i].exes; n++) {
 						if ( !strncmp(pkg[i].exe[n], "addLuaMap", 9) ) {
@@ -1612,19 +1640,16 @@ void solve(char *name) {
 						}
 						if ( !strncmp(pkg[i].exe[n], "addMap ", 7) ) {
 							fprintf(fpack, "sed -i '/^Map %s/d' %%{_texdir}/texmf/web2c/updmap.cfg\n", &pkg[i].exe[n][7]);
-//							fprintf(fpack, "%%{_bindir}/updmap-sys --nomkmap --quiet --disable %s\n", &pkg[i].exe[n][7]);
 							run_updmap = 1;
 							continue;
 						}
 						if ( !strncmp(pkg[i].exe[n], "addMixedMap ", 12) ) {
 							fprintf(fpack, "sed -i '/^MixedMap %s/d' %%{_texdir}/texmf/web2c/updmap.cfg\n", &pkg[i].exe[n][12]);
-//							fprintf(fpack, "%%{_bindir}/updmap-sys --nomkmap --quiet --disable %s\n", &pkg[i].exe[n][12]);
 							run_updmap = 1;
 							continue;
 						}
 						if ( !strncmp(pkg[i].exe[n], "addKanjiMap ", 12) ) {
 							fprintf(fpack, "sed -i '/^KanjiMap %s/d' %%{_texdir}/texmf/web2c/updmap.cfg\n", &pkg[i].exe[n][12]);
-//							fprintf(fpack, "%%{_bindir}/updmap-sys --nomkmap --quiet --disable %s\n", &pkg[i].exe[n][12]);
 							run_updmap = 1;
 							continue;
 						}
@@ -1690,7 +1715,7 @@ void solve(char *name) {
 							file += 5;
 							for (k=10; pkg[i].exe[n][k]; k++) if ( pkg[i].exe[n][k] == ' ' ) pkg[i].exe[n][k] = '\0';
 
-							fprintf(fpack, "sed -i '/%s %s/d' %%{_texdir}/texmf/tex/generic/config/language.dat\n", name, file);
+							fprintf(fpack, "sed -i '/%s.*/d' %%{_texdir}/texmf/tex/generic/config/language.dat\n", name);
 							if ( synonyms ) {
 								char *syn = synonyms, *s;
 								while ( (s=strchr(syn, ',')) ) {
@@ -1701,16 +1726,16 @@ void solve(char *name) {
 								}
 								fprintf(fpack, "  sed -i '/=%s/d' %%{_texdir}/texmf/tex/generic/config/language.dat\n", syn);
 							}
-							fprintf(fpack, "sed -i '/\\\\addlanguage{%s}{%s}{}{%s}{%s}/d' %%{_texdir}/texmf/tex/generic/config/language.def\n", name, file, lefthyphenmin, righthyphenmin);
+							fprintf(fpack, "sed -i '/\\\\addlanguage{%s}.*/d' %%{_texdir}/texmf/tex/generic/config/language.def\n", name);
 							if ( synonyms ) {
 								char *syn = synonyms, *s;
 								while ( (s=strchr(syn, ',')) ) {
 									*s = '\0';
-									fprintf(fpack, "sed -i '/\\\\addlanguage{%s}{%s}{}{%s}{%s}/d' %%{_texdir}/texmf/tex/generic/config/language.def\n", syn, file, lefthyphenmin, righthyphenmin);
+									fprintf(fpack, "sed -i '/\\\\addlanguage{%s}.*/d' %%{_texdir}/texmf/tex/generic/config/language.def\n", syn);
 									*s = ',';
 									syn = s+1;
 								}
-								fprintf(fpack, "sed -i '/\\\\addlanguage{%s}{%s}{}{%s}{%s}/d' %%{_texdir}/texmf/tex/generic/config/language.def\n", syn, file, lefthyphenmin, righthyphenmin);
+								fprintf(fpack, "sed -i '/\\\\addlanguage{%s}.*/d' %%{_texdir}/texmf/tex/generic/config/language.def\n", syn);
 							}
 							for (--k; k>=10; k--) if ( pkg[i].exe[n][k] == '\0' ) pkg[i].exe[n][k] = ' ';
 							run_fmtutil = 1;
@@ -1726,11 +1751,10 @@ void solve(char *name) {
 #else
 					fprintf(fpack, "%%posttrans\n");
 #endif
-//					fprintf(fpack, "echo 'posttrans'\n[ -e /var/run/texlive/run-texhash ] && %%{_bindir}/texhash 2> /dev/null; rm -f /var/run/texlive/run-texhash\n");
 					fprintf(fpack, "[ -e /var/run/texlive/run-texhash ] && %%{_bindir}/texhash 2> /dev/null; rm -f /var/run/texlive/run-texhash\n");
 					if ( run_updmap ) fprintf(fpack, "[ -e /var/run/texlive/run-updmap ] && %%{_bindir}/updmap-sys --nohash --quiet &> /dev/null; rm -f /var/run/texlive/run-updmap\n");
 					if ( run_fmtutil ) fprintf(fpack, "[ -e /var/run/texlive/run-fmtutil ] && %%{_bindir}/fmtutil-sys --all &> /dev/null; rm -f /var/run/texlive/run-fmtutil\n");
-//					fprintf(fpack, "[ -e /var/run/texlive ] && rm -rf /var/run/texlive\n:\n\n");
+					fprintf(fpack, "[ -e /usr/bin/mtxrun ] && export TEXMF=/usr/share/texlive/texmf-dist; export TEXMFCNF=/usr/share/texlive/texmf/web2c; export TEXMFCACHE=/var/lib/texmf; %%{_bindir}/mtxrun --generate &> /dev/null\n");
 					fprintf(fpack, ":\n\n");
 				} else if ( pkg[i].runfs ) {
 #ifndef SRPMS
@@ -1738,7 +1762,6 @@ void solve(char *name) {
 #else
 					fprintf(fpack, "%%post\n");
 #endif
-//					fprintf(fpack, "echo 'post'\nmkdir -p /var/run/texlive\ntouch /var/run/texlive/run-texhash\n");
 					fprintf(fpack, "mkdir -p /var/run/texlive\ntouch /var/run/texlive/run-texhash\n");
 					if ( pkg[i].has_info ) {
 						int k;
@@ -1755,7 +1778,6 @@ void solve(char *name) {
 #else
 					fprintf(fpack, "\n%%postun\n");
 #endif
-//					fprintf(fpack, "echo 'postun'\nif [ $1 == 1 ]; then\n  mkdir -p /var/run/texlive\n  touch /var/run/run-texhash\nelse\n  %%{_bindir}/texhash 2> /dev/null\nfi\n");
 					fprintf(fpack, "if [ $1 == 1 ]; then\n  mkdir -p /var/run/texlive\n  touch /var/run/run-texhash\nelse\n  %%{_bindir}/texhash 2> /dev/null\nfi\n");
 					fprintf(fpack, ":\n\n");
 #ifndef SRPMS
@@ -1763,16 +1785,16 @@ void solve(char *name) {
 #else
 					fprintf(fpack, "%%posttrans\n");
 #endif
-//					fprintf(fpack, "[ -e /var/run/texlive/run-texhash ] && rm -f /var/run/texlive/run-texhash && [ -e %%{_bindir}/texhash ] && %%{_bindir}/texhash 2> /dev/null\n[ -e /var/run/texlive ] && rm -rf /var/run/texlive\n:\n\n");
-//					fprintf(fpack, "echo 'posttrans'\n[ -e /var/run/texlive/run-texhash ] && [ -e %%{_bindir}/texhash ] && %%{_bindir}/texhash 2> /dev/null; rm -f /var/run/texlive/run-texhash\n:\n\n");
-					fprintf(fpack, "[ -e /var/run/texlive/run-texhash ] && [ -e %%{_bindir}/texhash ] && %%{_bindir}/texhash 2> /dev/null; rm -f /var/run/texlive/run-texhash\n:\n\n");
+					fprintf(fpack, "[ -e /var/run/texlive/run-texhash ] && [ -e %%{_bindir}/texhash ] && %%{_bindir}/texhash 2> /dev/null; rm -f /var/run/texlive/run-texhash\n");
+					fprintf(fpack, "[ -e /usr/bin/mtxrun ] && export TEXMF=/usr/share/texlive/texmf-dist; export TEXMFCNF=/usr/share/texlive/texmf/web2c; export TEXMFCACHE=/var/lib/texmf; %%{_bindir}/mtxrun --generate &> /dev/null\n");
+					fprintf(fpack, ":\n\n");
 				}
 
 				/* ... and main files */
 #ifdef SRPMS
 				mainpkg = 1;
 #endif
-				append_filelist(pkg[i].name, "", pkg[i].runfs, pkg[i].runf, put_token(pkg[i].catalogue_license, license));
+				append_filelist(pkg[i].name, "", pkg[i].runfs, pkg[i].runf, pkg[i].fedora_license?pkg[i].fedora_license:put_token(pkg[i].catalogue_license, license));
 #ifdef SRPMS
 				mainpkg = 0;
 #endif
@@ -1781,12 +1803,16 @@ void solve(char *name) {
 			/* write doc package if exists */
 			if ( pkg[i].docfs ) {
 				main_written = pkg[i].runfs || pkg[i].reqs || pkg[i].exes;
-				fprintf(funpack, UNPACK" -dc %%{SOURCE%d} | tar x -C %%{buildroot}%%{_texdir}%s\n", srcno, pkg[i].reloc?"/texmf-dist":"");
-				fprintf(fsrc, "Source%d: "CTAN_URL"%s.doc.tar."UNPACK"\n", srcno++, name);
+				if ( !doc_expanded ) {
+					fprintf(funpack, UNPACK" -dc %%{SOURCE%d} | tar x -C %%{buildroot}%%{_texdir}%s\n", srcno, pkg[i].reloc?"/texmf-dist":"");
+					fprintf(fsrc, "Source%04d: "CTAN_URL"%s.doc.tar."UNPACK"\n", srcno++, name);
+				}
+				doc_expanded = 0;
 #ifdef SRPMS
 				if ( !main_written ) {
-					fprintf(fpack, "Name: texlive-%s-doc\n", name);
-					fprintf(fpack, "License: %s\n", put_token(pkg[i].catalogue_license, spec_license)?put_token(pkg[i].catalogue_license, spec_license):"LPPL");
+					fprintf(fpack, "Name: tex-%s-doc\n", name);
+					fprintf(fpack, "Obsoletes: texlive-%s-doc\n", name);
+					fprintf(fpack, "License: %s\n", pkg[i].fedora_license?pkg[i].fedora_license:(put_token(pkg[i].catalogue_license, spec_license)?put_token(pkg[i].catalogue_license, spec_license):"LPPL"));
 				} else {
 					fprintf(fpack, "%%package doc\n");
 				}
@@ -1794,22 +1820,16 @@ void solve(char *name) {
 				fprintf(fpack, "%%package %s-doc\n", name);
 #endif
 				fprintf(fpack, "Summary: Documentation for %s\n", name);
-				fprintf(fpack, "Version: %%{tl_version}\n");
-				fprintf(fpack, "Release: ");
-				if ( pkg[i].catalogue_version ) fprintf(fpack, "%%{tl_noarch_release}.%s.svn%s%%{?dist}\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "%%{tl_noarch_release}.svn%s%%{?dist}\n", pkg[i].revision);
-//				if ( pkg[i].catalogue_version ) fprintf(fpack, "%%{tl_release}.%s.svn%s%%{?dist}\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "%%{tl_release}.svn%s%%{?dist}\n", pkg[i].revision);
-				if ( strncmp(name, "kpathsea", 8) ) {
-					fprintf(fpack, "Requires: texlive-base = %%{tl_version}\n");
-				} else {
-					fprintf(fpack, "Obsoletes: kpathsea < %%{tl_version}\n");
-				}
-//				if ( pkg[i].docfs ) fprintf(fpack, "Requires(post,postun): texlive-kpathsea-bin = %%{tl_version}\n");
+				fprintf(fpack, "Version: ");
+				if ( pkg[i].catalogue_version ) fprintf(fpack, "%s.svn%s\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "0.svn%s\n", pkg[i].revision);
+				fprintf(fpack, "Release: %%{tl_noarch_release}\n");
+				fprintf(fpack, "Provides: tex-%s-doc\n", name);
 				fprintf(fpack, "BuildArch: noarch\nAutoReqProv: No\n");
 				for (n=0; n<pkg[i].reqs; n++) {
 					if ( !pkg[i].req[n] ) continue;
 					if ( pkg[i].req[n]->catalogue_license & LIC_NOTALLOWED ) continue;
 					if ( pkg[i].req[n]->docfs )
-						fprintf(fpack, "Requires: texlive-%s-doc\n", pkg[i].dep[n]);
+						fprintf(fpack, "Requires: tex-%s-doc\n", pkg[i].dep[n]);
 				}
 				if ( main_written ) {
 #ifndef SRPMS
@@ -1826,17 +1846,11 @@ void solve(char *name) {
 				}
 				fprintf(fpack, "Documentation for %s\n\n", name);
 
-/*				if ( main_written ) {
-					fprintf(fpack, "%%post doc\n%%{_bindir}/texhash 2> /dev/null\n:\n\n%%postun doc\n%%{_bindir}/texhash 2> /dev/null\n:\n\n");
-				} else {
-					fprintf(fpack, "%%post\n%%{_bindir}/texhash 2> /dev/null\n:\n\n%%postun\n%%{_bindir}/texhash 2> /dev/null\n:\n\n");
-				}
-*/
 				/* ... and doc files */
 #ifdef SRPMS
 				mainpkg = 1;
 #endif
-				append_filelist(pkg[i].name, "doc", pkg[i].docfs, pkg[i].docf, put_token(pkg[i].catalogue_license, license));
+				append_filelist(pkg[i].name, "doc", pkg[i].docfs, pkg[i].docf, pkg[i].fedora_license?pkg[i].fedora_license:put_token(pkg[i].catalogue_license, license));
 #ifdef SRPMS
 				mainpkg = 0;
 #endif
@@ -1847,25 +1861,23 @@ void solve(char *name) {
 			/* write source package if exists */
 			if ( pkg[i].srcfs ) {
 				fprintf(funpack, UNPACK" -dc %%{SOURCE%d} | tar x -C %%{buildroot}%%{_texdir}%s\n", srcno, pkg[i].reloc?"/texmf-dist":"");
-				fprintf(fsrc, "Source%d: "CTAN_URL"%s.source.tar."UNPACK"\n", srcno++, name);
+				fprintf(fsrc, "Source%04d: "CTAN_URL"%s.source.tar."UNPACK"\n", srcno++, name);
 #ifndef SRPMS
 				fprintf(fpack, "%%package %s-source\n", name);
 #else
 				fprintf(fpack, "%%package source\n");
 #endif
 				fprintf(fpack, "Summary: Sources for %s\n", name);
-				fprintf(fpack, "Version: %%{tl_version}\n");
-				fprintf(fpack, "Release: ");
-				if ( pkg[i].catalogue_version ) fprintf(fpack, "%%{tl_noarch_release}.%s.svn%s%%{?dist}\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "%%{tl_noarch_release}.svn%s%%{?dist}\n", pkg[i].revision);
-//				if ( pkg[i].catalogue_version ) fprintf(fpack, "%%{tl_release}.%s.svn%s%%{?dist}\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "%%{tl_release}.svn%s%%{?dist}\n", pkg[i].revision);
-				if ( strncmp(name, "kpathsea", 8) ) fprintf(fpack, "Requires: texlive-base = %%{tl_version}\n");
-//				if ( pkg[i].srcfs ) fprintf(fpack, "Requires(post,postun): texlive-kpathsea-bin = %%{tl_version}\n");
+				fprintf(fpack, "Version: ");
+				if ( pkg[i].catalogue_version ) fprintf(fpack, "%s.svn%s\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "0.svn%s\n", pkg[i].revision);
+				fprintf(fpack, "Release: %%{tl_noarch_release}\n");
+				if ( strncmp(name, "kpathsea", 8) ) fprintf(fpack, "Requires: texlive-base\n");
 				fprintf(fpack, "BuildArch: noarch\nAutoReqProv: No\n");
 				for (n=0; n<pkg[i].reqs; n++) {
 					if ( !pkg[i].req[n] ) continue;
 					if ( pkg[i].req[n]->catalogue_license & LIC_NOTALLOWED ) continue;
 					if ( pkg[i].req[n]->srcfs )
-						fprintf(fpack, "Requires: texlive-%s-source = %%{tl_version}\n", pkg[i].dep[n]);
+						fprintf(fpack, "Requires: tex-%s-source\n", pkg[i].dep[n]);
 				}
 #ifndef SRPMS
 				fprintf(fpack, "\n%%description %s-source\n", name);
@@ -1874,20 +1886,11 @@ void solve(char *name) {
 #endif
 				fprintf(fpack, "Sources for %s\n\n", name);
 
-/*				if ( pkg[i].docfs ) {
-					fprintf(fpack, "%%post source\n");
-					fprintf(fpack, "%%{_bindir}/texhash 2> /dev/null\n");
-					fprintf(fpack, ":\n");
-					fprintf(fpack, "\n%%postun source\n");
-					fprintf(fpack, "%%{_bindir}/texhash 2> /dev/null\n");
-					fprintf(fpack, ":\n\n");
-				}
-*/
 				/* ... and src files */
 #ifdef SRPMS
 				mainpkg = 1;
 #endif
-				append_filelist(pkg[i].name, "source", pkg[i].srcfs, pkg[i].srcf, put_token(pkg[i].catalogue_license, license));
+				append_filelist(pkg[i].name, "source", pkg[i].srcfs, pkg[i].srcf, pkg[i].fedora_license?pkg[i].fedora_license:put_token(pkg[i].catalogue_license, license));
 #ifdef SRPMS
 				mainpkg = 0;
 #endif
@@ -1895,9 +1898,10 @@ void solve(char *name) {
 #else
 			/* write just link to source */
 			if ( pkg[i].srcfs ) {
-				fprintf(fsrc, "Source%d: "CTAN_URL"%s.source.tar."UNPACK"\n", srcno++, name);
+				fprintf(fsrc, "Source%04d: "CTAN_URL"%s.source.tar."UNPACK"\n", srcno++, name);
 			}
 #endif
+#ifdef FEDORA_FONTS
 			/* fonts */
 			{
 				int n, has_fonts = 0, k;
@@ -1919,13 +1923,12 @@ void solve(char *name) {
 								fprintf(fpack, "%%package %s-fedora-fonts\n", name);
 #endif
 								fprintf(fpack, "Summary: Fonts for %s\n", name);
-								fprintf(fpack, "Version: %%{tl_version}\n");
-								fprintf(fpack, "Release: ");
-								if ( pkg[i].catalogue_version ) fprintf(fpack, "%%{tl_noarch_release}.%s.svn%s%%{?dist}\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "%%{tl_noarch_release}.svn%s%%{?dist}\n", pkg[i].revision);
-//								if ( pkg[i].catalogue_version ) fprintf(fpack, "%%{tl_release}.%s.svn%s%%{?dist}\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "%%{tl_release}.svn%s%%{?dist}\n", pkg[i].revision);
+								fprintf(fpack, "Version: ");
+								if ( pkg[i].catalogue_version ) fprintf(fpack, "%s.svn%s\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "0.svn%s\n", pkg[i].revision);
+								fprintf(fpack, "Release: %%{tl_noarch_release}\n");
 								fprintf(fpack, "Requires: fontpackages-filesystem\n");
 								fprintf(fpack, "BuildRequires: fontpackages-devel\n");
-								fprintf(fpack, "Requires: texlive-%s = %%{tl_version}\n", name);
+								fprintf(fpack, "Requires: tex-%s\n", name);
 								fprintf(fpack, "BuildArch: noarch\n");
 #ifdef SRPMS
 								fprintf(fpack, "\n%%description fedora-fonts\n");
@@ -1964,6 +1967,7 @@ void solve(char *name) {
 #endif
 				}
 			}
+#endif
 #ifdef SRPMS
 			if (pkg[i].has_man) {
 				fprintf(fremove, "mkdir -p %%{buildroot}/%%{_datadir}/\n");
@@ -1997,10 +2001,8 @@ void solve(char *name) {
 				fprintf(fpack, "%%package %s-bin\n", name);
 				fprintf(fpack, "Summary: Binaries for %s\n", name);
 				fprintf(fpack, "Version: %%{tl_version}\n");
-				fprintf(fpack, "Release: ");
-				if ( pkg[i].catalogue_version ) fprintf(fpack, "%%{tl_release}.%s.snv%s%%{?dist}\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "%%{tl_release}.svn%s%%{?dist}\n", pkg[i].revision);
-				if ( strncmp(name, "kpathsea", 8) ) fprintf(fpack, "Requires: texlive-base = %%{tl_version}\n"); //else fprintf(fpack, "Provides: kpathsea = %%{tl_version}\nObsoletes: kpathsea < %%{tl_version}\n");
-				fprintf(fpack, "Requires: texlive-%s  = %%{tl_version}\n", name);
+				if ( strncmp(name, "kpathsea", 8) ) fprintf(fpack, "Requires: texlive-base\n"); //else fprintf(fpack, "Provides: kpathsea = %%{tl_version}\nObsoletes: kpathsea < %%{tl_version}\n");
+				fprintf(fpack, "Requires: tex-%s\n", name);
 				if ( !strcmp(name, "xetex") ) {
 					fprintf(fpack, "Requires: teckit\n");
 					fprintf(fpack, "Provides: xdvipdfmx = %%{version}-%%{release}\n");
@@ -2035,11 +2037,15 @@ void solve(char *name) {
 					fprintf(fpack, "Provides: xmltex = %%{tl_version}\n");
 					fprintf(fpack, "Obsoletes: xmltex < %%{tl_version}\n");
 				}
+				if ( !strcmp(name, "pstools") ) {
+					fprintf(fpack, "Provides: ps2eps = %%{tl_version}\n");
+					fprintf(fpack, "Obsoletes: ps2eps < %%{tl_version}\n");
+				}
 /*				if ( !strcmp(name, "asymptote") ) {
 					fprintf(fpack, "Provides: asymptote = %%{tl_version}\n");
 					fprintf(fpack, "Obsoletes: asymptote < %%{tl_version}\n");
-				}
-*/
+				}*/
+
 				printf("bin-package %s contains %d files\n", pkg[i].name, pkg[i].binfs);
 				{
 					int n, noarch = 1;
@@ -2066,9 +2072,15 @@ void solve(char *name) {
 							printf("Unable to open: %s\n", s);
 							exit(1);
 						}
-//						printf("@ %s\n", pkg[i].binf[n]);
 					}
-					if (noarch) fprintf(fpack, "BuildArch: noarch\n");
+					if (noarch) {
+						fprintf(fpack, "Release: ");
+						if ( pkg[i].catalogue_version ) fprintf(fpack, "%s.svn%s.%%{tl_release}\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "0.svn%s.%%{tl_release}\n", pkg[i].revision);
+						fprintf(fpack, "BuildArch: noarch\n");
+					} else {
+						fprintf(fpack, "Release: ");
+						if ( pkg[i].catalogue_version ) fprintf(fpack, "%s.svn%s.%%{tl_release}%%{?dist}\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "0.svn%s.%%{tl_release}%%{?dist}\n", pkg[i].revision);
+					}
 				}
 				fprintf(fpack, "\n%%description %s-bin\n", name);
 				fprintf(fpack, "Binaries for %s\n\n", name);
@@ -2076,7 +2088,7 @@ void solve(char *name) {
 
 				/* ... and add bin files */
 				{
-					char s[0x100];
+					char s[0x100], *lic_name = NULL;
 					int ii, lic_code = LIC_LPPL;
 					unsigned long h;
 
@@ -2086,10 +2098,11 @@ void solve(char *name) {
 					for (ii=0; ii<p; ii++) {
 						if ( pkg[ii].namehash == h && !strcmp(pkg[ii].name, s)) {
 							lic_code = pkg[ii].catalogue_license?pkg[ii].catalogue_license:LIC_LPPL;
+							lic_name = pkg[ii].fedora_license;
 							break;
 						}
 					}
-					append_filelist(pkg[i].name, "", pkg[i].binfs, pkg[i].binf, put_token(lic_code, license));
+					append_filelist(pkg[i].name, "", pkg[i].binfs, pkg[i].binf, lic_name?lic_name:put_token(lic_code, license));
 				}
 			}
 slv:
@@ -2165,7 +2178,7 @@ int main() {
 		system("rm -rf ./specs; mkdir specs");
 #endif
 		fill_file_reqprov();
-		for (i=0; i<p; i++) if ( !strncmp(pkg[i].name, "scheme", 6) ) solve(pkg[i].name);
+		for (i=0; i<p; i++) solve(pkg[i].name);
 	}
 
 	{

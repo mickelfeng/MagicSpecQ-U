@@ -1,5 +1,5 @@
---- texlive.tlpdb.orig	2011-10-05 07:22:29.972963572 +0200
-+++ texlive.tlpdb	2011-10-05 07:22:30.023963793 +0200
+--- texlive.tlpdb.orig	2012-10-06 19:47:35.146269287 +0200
++++ texlive.tlpdb	2012-10-06 19:47:35.504264812 +0200
 @@ -76,7 +76,7 @@
  catalogue-ctan /macros/latex/contrib/abc
  catalogue-date 2008-03-08 20:47:21 +0100
@@ -7,18 +7,18 @@
 -catalogue-version .0
 +catalogue-version 0
  
- name abstract
+ name abraces
  category Package
-@@ -6702,7 +6702,7 @@
+@@ -6884,7 +6884,7 @@
  catalogue-license pd
  catalogue-version 1.0a
  
 -name Asana-Math
 +name asana-math
  category Package
- revision 23634
+ revision 27228
  shortdesc A font to typeset maths in Xe(La)TeX and Lua(La)TeX.
-@@ -23513,7 +23513,6 @@
+@@ -24386,7 +24386,6 @@
  shortdesc TeX Live documentation
  relocated 1
  depend texlive-common
@@ -26,8 +26,8 @@
  depend texlive-en
  
  name collection-documentation-bulgarian
-@@ -23803,7 +23802,7 @@
- revision 23709
+@@ -24685,7 +24684,7 @@
+ revision 27812
  shortdesc Extra fonts
  relocated 1
 -depend Asana-Math
@@ -35,24 +35,43 @@
  depend adforn
  depend adfsymbols
  depend allrunes
-@@ -23914,7 +23913,7 @@
- depend lfb
- depend libertine
+@@ -24804,7 +24803,7 @@
+ depend libertine-type1
+ depend libertineotf
  depend libris
 -depend linearA
 +depend lineara
  depend lxfonts
  depend ly1
  depend mathabx
-@@ -26051,24 +26050,6 @@
+@@ -25158,7 +25157,7 @@
+ depend cns
+ depend ctex
+ depend dnp
+-depend fonts-tlwg
++depend tlwg
+ depend garuda-c90
+ depend hyphen-chinese
+ depend ipaex
+@@ -26665,7 +26664,7 @@
+ depend m-tx
+ depend musixguit
+ depend musixtex
+-depend musixtex-fonts
++depend musixtex-fnts
+ depend pmx
+ depend songbook
+ depend collection-latex
+@@ -27094,25 +27093,6 @@
  depend texinfo
  depend collection-basic
  
 -name collection-texworks
 -category Collection
--revision 15618
--shortdesc The TeXworks Editor
+-revision 25704
+-shortdesc TeXworks editor
 -relocated 1
+-longdesc See http://tug.org/texworks.
 -depend collection-basic
 -depend texworks
 -
@@ -68,16 +87,31 @@
 -
  name collection-xetex
  category Collection
- revision 24140
-@@ -54848,7 +54829,6 @@
- revision 19743
- shortdesc i386-linux files of installfont
- binfiles arch=i386-linux size=1
-- bin/i386-linux/installfont-tl
+ revision 27811
+@@ -48241,7 +48221,7 @@
+ catalogue-license lppl1.3
+ catalogue-version v2.2b
  
+-name fonts-tlwg
++name tlwg
+ category Package
+ revision 25417
+ shortdesc Thai fonts for LaTeX from TLWG.
+@@ -59175,13 +59155,6 @@
+ catalogue-license lppl
+ catalogue-version v1.6b
+ 
+-name installfont.i386-linux
+-category Package
+-revision 19743
+-shortdesc i386-linux files of installfont
+-binfiles arch=i386-linux size=1
+- bin/i386-linux/installfont-tl
+-
  name interactiveworkbook
  category Package
-@@ -60964,7 +60944,7 @@
+ revision 15878
+@@ -68426,7 +68399,7 @@
  catalogue-ctan /macros/latex/contrib/labels
  catalogue-date 2009-09-29 00:01:21 +0200
  catalogue-license lppl1.2
@@ -86,7 +120,7 @@
  
  name lacheck
  category TLCore
-@@ -69173,7 +69153,7 @@
+@@ -74063,7 +74036,7 @@
  catalogue-date 2007-01-08 23:14:30 +0100
  catalogue-license lppl
  
@@ -95,7 +129,7 @@
  category Package
  revision 15878
  shortdesc Linear A script fonts.
-@@ -71275,7 +71255,7 @@
+@@ -76242,7 +76215,7 @@
  catalogue-ctan /info/lshort/persian
  catalogue-date 2009-11-09 23:05:00 +0100
  catalogue-license pd
@@ -104,38 +138,25 @@
  
  name lshort-polish
  category Package
-@@ -93267,7 +93247,7 @@
+@@ -85161,7 +85134,7 @@
+ catalogue-license lppl1.3
+ catalogue-version 1.2.2
+ 
+-name musixtex-fonts
++name musixtex-fnts
+ category Package
+ revision 24517
+ shortdesc Fonts used by MusixTeX.
+@@ -100076,7 +100049,7 @@
  catalogue-ctan /graphics/pstricks/contrib/pst-layout
- catalogue-date 2011-05-23 11:13:27 +0200
+ catalogue-date 2011-05-27 12:35:46 +0200
  catalogue-license lppl
 -catalogue-version .95
 +catalogue-version 95
  
  name pst-lens
  category Package
-@@ -105275,21 +105255,6 @@
-  RELOC/tex/latex/taupin/t1cmsc.fd
-  RELOC/tex/latex/taupin/varsects.sty
- 
--name tcdialog
--category TLCore
--revision 23089
--depend tcdialog.ARCH
--docfiles size=25
-- texmf/doc/man/man1/tcdialog.1
-- texmf/doc/man/man1/tcdialog.man1.pdf
--
--name tcdialog.i386-linux
--category TLCore
--revision 22641
--shortdesc i386-linux files of tcdialog
--binfiles arch=i386-linux size=35
-- bin/i386-linux/tcdialog
--
- name tcldoc
- category Package
- revision 22018
-@@ -107470,7 +107435,6 @@
+@@ -117661,7 +117634,6 @@
  revision 13663
  shortdesc i386-linux files of texlive-scripts
  binfiles arch=i386-linux size=2
@@ -143,7 +164,7 @@
   bin/i386-linux/rungs
  
  name texlive-sr
-@@ -116435,7 +116399,7 @@
+@@ -126709,7 +126681,7 @@
  catalogue-ctan /macros/latex209/contrib/trees/tree-dvips
  catalogue-date 2011-03-14 14:09:23 +0100
  catalogue-license lppl1
@@ -152,10 +173,10 @@
  
  name treetex
  category Package
-@@ -127207,7 +127171,6 @@
- revision 22981
+@@ -137949,7 +137921,6 @@
+ revision 26912
  shortdesc i386-linux files of xetex
- binfiles arch=i386-linux size=5178
+ binfiles arch=i386-linux size=4837
 - bin/i386-linux/teckit_compile
   bin/i386-linux/xdvipdfmx
   bin/i386-linux/xelatex
