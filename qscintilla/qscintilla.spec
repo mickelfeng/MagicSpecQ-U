@@ -5,9 +5,10 @@
 %global python 1
 
 Name:    qscintilla
-Version: 2.6.1
-Release: 1%{?dist}
+Version: 2.6.2
+Release: 3%{?dist}
 Summary: A Scintilla port to Qt
+
 # matches up (pretty much) with qt4
 License: GPLv3 or GPLv2 with exceptions
 Group:   Development/Tools
@@ -17,7 +18,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 ## Upstreamable patches
 # posted to upstream ml, not in archive yet
-Patch50: QScintilla-gpl-2.4-qt4_designer_incpath.patch 
+Patch50: QScintilla-gpl-2.6.2-qt4qt5_designer_incpath.patch
 
 Obsoletes: qscintilla-designer < 2.4-3
 Provides:  qscintilla-designer = %{version}-%{release}
@@ -76,16 +77,12 @@ Obsoletes: qscintilla-python-devel < 2.4-4
 
 %patch50 -p1 -b .qt4_designer_incpath
 
-# fix permissions on doc files
-find doc example-Qt4  -type f -exec chmod 0644 {} ';'
-find src include -type f -exec chmod 0644 {} ';'
-
 # fix line endings in license file(s)
 sed -i 's/\r//' LICENSE.GPL2 GPL_EXCEPTION_ADDENDUM.TXT
 
 
 %build
-pushd Qt4
+pushd Qt4Qt5
 %{_qt4_qmake} qscintilla.pro
 make %{?_smp_mflags}
 popd
@@ -100,8 +97,8 @@ pushd Python
 %{__python} \
   configure.py \
     -c -j 3 \
-    -n ../Qt4 \
-    -o ../Qt4
+    -n ../Qt4Qt5 \
+    -o ../Qt4Qt5
 make %{?_smp_mflags}
 popd
 %endif
@@ -110,12 +107,12 @@ popd
 %install
 rm -rf %{buildroot}
 
-make -C Qt4 install INSTALL_ROOT=%{buildroot} 
+make -C Qt4Qt5 install INSTALL_ROOT=%{buildroot} 
 make -C designer-Qt4 install INSTALL_ROOT=%{buildroot}
 %if 0%{?python}
 make -C Python install DESTDIR=%{buildroot}
 %endif
-
+magic_rpm_clean.sh
 
 %clean
 rm -rf %{buildroot}
@@ -136,7 +133,7 @@ rm -rf %{buildroot}
 
 %files devel
 %defattr(-,root,root,-)
-%doc doc/html-Qt4 doc/Scintilla example-Qt4
+%doc doc/html-Qt4Qt5 doc/Scintilla example-Qt4Qt5
 %{_qt4_headerdir}/Qsci/
 %{_qt4_libdir}/libqscintilla2.so
 
@@ -152,6 +149,15 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Oct 01 2012 Rex Dieter <rdieter@fedoraproject.org> 2.6.2-3
+- rebuild (sip)
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.6.2-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Fri Jun 22 2012 Rex Dieter <rdieter@fedoraproject.org> 2.6.2-1
+- 2.6.2
+
 * Sat Feb 11 2012 Rex Dieter <rdieter@fedoraproject.org> 2.6.1-1
 - 2.6.1
 - pkgconfig-style deps
