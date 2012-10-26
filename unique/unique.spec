@@ -1,6 +1,6 @@
 Name:           unique
 Version:        1.1.6
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Single instance support for applications
 Summary(zh_CN.UTF-8):	应用程序的单一实例支持
 
@@ -52,7 +52,7 @@ Headers and libraries for Unique.
 %patch1 -p1
 
 %build
-%configure --enable-gtk-doc --disable-static
+%configure --enable-gtk-doc --disable-static --enable-introspection=no --enable-maintainer-flags=no
 make %{?_smp_mflags}
 
 %install
@@ -79,8 +79,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/unique-1.0/
 %{_libdir}/pkgconfig/*
 %{_libdir}/lib*.so
-%{_libdir}/girepository-1.0/Unique-1.0.typelib
-%{_datadir}/gir-1.0/Unique-1.0.gir
 
 %changelog
+* Fri Oct 26 2012 Liu Di <liudidi@gmail.com> - 1.1.6-2
+- 为 Magic 3.0 重建
+
 
