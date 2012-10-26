@@ -1,35 +1,33 @@
-%global minorversion 1.3
+%global minorversion 1.4
 
 Name:           Thunar
-Version:        1.3.0
-Release:        7%{?dist}
+Version:        1.4.0
+Release:        2%{?dist}
 Summary:        Thunar File Manager
 
 Group:          User Interface/Desktops
 License:        GPLv2+
 URL:            http://thunar.xfce.org/
+#VCS git:git://git.xfce.org/xfce/thunar
 Source0:        http://archive.xfce.org/src/xfce/thunar/%{minorversion}/%{name}-%{version}.tar.bz2
 Source1:        thunar-sendto-bluetooth.desktop
 Source2:        thunar-sendto-audacious-playlist.desktop
 Source3:        thunar-sendto-quodlibet-playlist.desktop
-# Format string flaw when copying / moving files with % in the name  - CVE-2011-1588
-# http://git.xfce.org/xfce/thunar/commit/?id=03dd312e157d4fa8a11d5fa402706ae5b05806fa
-Patch0:         Thunar-1.3.0-CVE-2011-1588.patch
+Patch1:         Thunar-1.3.1-desktop-fix.patch
 Buildroot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildRequires:  exo-devel >= 0.5.1
-BuildRequires:  libxfce4ui-devel >= 4.7.1
-BuildRequires:  xfce4-panel-devel >= 4.7.0
-BuildRequires:  libpng-devel >= 2:1.2.2-16
-BuildRequires:  libexif-devel
-BuildRequires:  pcre-devel
-BuildRequires:  startup-notification-devel >= 0.4
-BuildRequires:  dbus-glib-devel 
-BuildRequires:  libexif-devel
-BuildRequires:  libgudev1-devel
-BuildRequires:  libICE-devel
-BuildRequires:  libnotify-devel
+BuildRequires:  pkgconfig(dbus-glib-1) >= 0.34
+BuildRequires:  pkgconfig(exo-1) >= 0.6.0
+BuildRequires:  pkgconfig(gudev-1.0) >= 145
+BuildRequires:  pkgconfig(libexif) >= 0.6.0
+BuildRequires:  pkgconfig(libpcre) >= 6.0
+BuildRequires:  pkgconfig(libstartup-notification-1.0) >= 0.4
+BuildRequires:  pkgconfig(libnotify) >= 0.4.0
+BuildRequires:  pkgconfig(libxfce4ui-1) >= 4.9.0
+BuildRequires:  pkgconfig(libxfce4panel-1.0) >= 4.9.0
 BuildRequires:  freetype-devel
+BuildRequires:  libpng-devel >= 2:1.2.2-16
+BuildRequires:  libICE-devel
 BuildRequires:  pkgconfig
 BuildRequires:  intltool gettext
 BuildRequires:  desktop-file-utils >= 0.7
@@ -67,11 +65,11 @@ libraries and header files for the Thunar file manager.
 %prep
 %setup -q
 
+%patch1 -p1
+
 # fix icon in thunar-sendto-email.desktop
 sed -i 's!internet-mail!mail-message-new!' \
         plugins/thunar-sendto-email/thunar-sendto-email.desktop.in.in
-
-%patch0 -p1 -b .CVE-2011-1588
 
 %build
 %configure --enable-dbus --enable-gtk-doc
@@ -83,7 +81,7 @@ sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
 # because lt-thunarx-scan is linked against libthunarx
 export LD_LIBRARY_PATH=$( pwd )/thunarx/.libs
 
-make %{?_smp_mflags}
+make %{?_smp_mflags} V=1
 
 
 %install
@@ -98,25 +96,25 @@ chmod 644 examples/thunar-file-manager.py
 chmod 644 examples/xfce-file-manager.py
 
 find $RPM_BUILD_ROOT -name '*.la' -exec rm -f {} ';'
-
+magic_rpm_clean.sh
 %find_lang Thunar
 
-desktop-file-install --vendor fedora --delete-original          \
+desktop-file-install --vendor magic --delete-original          \
         --dir ${RPM_BUILD_ROOT}%{_datadir}/applications         \
         ${RPM_BUILD_ROOT}%{_datadir}/applications/thunar-settings.desktop
 
-desktop-file-install --vendor fedora --delete-original          \
+desktop-file-install --vendor magic --delete-original          \
         --dir ${RPM_BUILD_ROOT}%{_datadir}/applications         \
         --delete-original                                       \
         ${RPM_BUILD_ROOT}%{_datadir}/applications/Thunar-bulk-rename.desktop
 
-desktop-file-install --vendor fedora --delete-original          \
+desktop-file-install --vendor magic --delete-original          \
         --dir ${RPM_BUILD_ROOT}%{_datadir}/applications         \
         --remove-mime-type x-directory/gnome-default-handler    \
         --remove-mime-type x-directory/normal                   \
         ${RPM_BUILD_ROOT}%{_datadir}/applications/Thunar-folder-handler.desktop
 
-desktop-file-install --vendor fedora --delete-original          \
+desktop-file-install --vendor magic --delete-original          \
         --dir ${RPM_BUILD_ROOT}%{_datadir}/applications         \
         ${RPM_BUILD_ROOT}%{_datadir}/applications/Thunar.desktop
 
@@ -146,13 +144,13 @@ do
 done
 
 %post
-/sbin/ldconfig
+/usr/sbin/ldconfig
 update-desktop-database &> /dev/null ||:
 touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
 
 
 %postun
-/sbin/ldconfig
+/usr/sbin/ldconfig
 update-desktop-database &> /dev/null ||:
 if [ $1 -eq 0 ] ; then
     touch --no-create %{_datadir}/icons/hicolor &>/dev/null
@@ -180,7 +178,6 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_libdir}/thunarx-*/thunar*.so
 %dir %{_libdir}/Thunar/
 %{_libdir}/Thunar/ThunarBulkRename
-%{_libdir}/Thunar/ThunarHelp
 %{_libdir}/Thunar/thunar-sendto-email
 %dir %{_datadir}/Thunar/
 %dir %{_datadir}/Thunar/sendto/
@@ -197,7 +194,6 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %dir %{_sysconfdir}/xdg/Thunar
 %config(noreplace) %{_sysconfdir}/xdg/Thunar/uca.xml
 
-
 %files devel
 %defattr(-,root,root,-)
 %doc examples
@@ -208,6 +204,20 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 
 
 %changelog
+* Wed Jul 18 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.4.0-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Sun Apr 29 2012 Christoph Wickert <cwickert@fedoraproject.org> - 4.10.0-1
+- Update to 1.4.0 (Xfce 4.10 final)
+- Make build verbose
+- Add VCS key
+
+* Sat Apr 14 2012 Kevin Fenzi <kevin@scrye.com> - 1.3.2-1
+- Update to 1.3.2 (Xfce 4.10pre2)
+
+* Mon Apr 02 2012 Kevin Fenzi <kevin@scrye.com> - 1.3.1-1
+- Update to 1.3.1
+
 * Fri Feb 10 2012 Petr Pisar <ppisar@redhat.com> - 1.3.0-7
 - Rebuild against PCRE 8.30
 
