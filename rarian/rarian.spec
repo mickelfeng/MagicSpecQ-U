@@ -2,7 +2,7 @@
 
 Name: rarian
 Version: 0.8.1
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: LGPLv2+
 Group: System Environment/Base
 Group(zh_CN.UTF-8): 系统环境/基本
@@ -88,6 +88,7 @@ cp %{SOURCE1} $RPM_BUILD_ROOT%{_datadir}/xml/scrollkeeper/dtds
 
 rm -rf $RPM_BUILD_ROOT%{_libdir}/librarian.a
 rm -rf $RPM_BUILD_ROOT%{_libdir}/librarian.la
+magic_rpm_clean.sh
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -138,6 +139,9 @@ fi
 %{_libdir}/pkgconfig/rarian.pc
 
 %changelog
+* Fri Oct 26 2012 Liu Di <liudidi@gmail.com> - 0.8.1-4
+- 为 Magic 3.0 重建
+
 * Wed Feb 01 2012 Liu Di <liudidi@gmail.com> - 0.8.1-3
 - 为 Magic 3.0 重建
 
