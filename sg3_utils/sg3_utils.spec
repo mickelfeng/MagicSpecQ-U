@@ -1,15 +1,15 @@
-%define rescan_version 1.35
+%define rescan_version 1.56
 %define rescan_script rescan-scsi-bus.sh
 
 Summary: Utilities for devices that use SCSI command sets
 Name: sg3_utils
-Version: 1.31
-Release: 2%{?dist}
+Version: 1.34
+Release: 1%{?dist}
 License: GPLv2+ and BSD
 Group: Applications/System
 Source0: http://sg.danny.cz/sg/p/sg3_utils-%{version}.tgz
 Source1: http://www.garloff.de/kurt/linux/%{rescan_script}-%{rescan_version}
-Patch100: rescan-scsi-bus-fixes.patch
+Patch0: rescan-scsi-bus-fixes.patch
 URL: http://sg.danny.cz/sg/sg3_utils.html
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires: %{name}-libs = %{version}-%{release}
@@ -51,7 +51,8 @@ developing applications.
 
 # rescan-scsi-bus.sh
 cp -p %{SOURCE1} %{rescan_script}
-%patch100 -p1 -b .orig
+# apply fixes
+%patch0 -p1
 
 
 %build
@@ -70,7 +71,7 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/*.la
 
 install -p -m 755 %{rescan_script} $RPM_BUILD_ROOT%{_bindir}
 ( cd $RPM_BUILD_ROOT%{_bindir}; ln -sf %{rescan_script} scsi-rescan )
-
+magic_rpm_clean.sh
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -99,6 +100,21 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu Oct 18 2012 Dan Horák <dan@danny.cz> - 1.34-1
+- update to version 1.34
+
+* Fri Sep 14 2012 Dan Horák <dan@danny.cz> - 1.33-4
+- add fix for sg3_utils >= 1.32 to the rescan-scsi-bus script
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.33-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Wed Apr  4 2012 Dan Horák <dan@danny.cz> - 1.33-2
+- include rescan-scsi-bus script 1.56
+
+* Tue Apr  3 2012 Dan Horák <dan@danny.cz> - 1.33-1
+- update to version 1.33
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.31-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
