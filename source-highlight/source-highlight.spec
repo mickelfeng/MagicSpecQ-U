@@ -1,13 +1,12 @@
 Summary: Produces a document with syntax highlighting
 Name: source-highlight
-Version: 3.1.4
-Release: 7%{?dist}
+Version: 3.1.6
+Release: 4%{?dist}
 Group: Development/Tools
 License: GPLv3+
 Source0: ftp://ftp.gnu.org/gnu/src-highlite/%{name}-%{version}.tar.gz
 Source1: ftp://ftp.gnu.org/gnu/src-highlite/%{name}-%{version}.tar.gz.sig
 URL: http://www.gnu.org/software/src-highlite/
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: bison, flex, boost-devel
 BuildRequires: help2man, ctags, chrpath
 Requires(post): info
@@ -52,17 +51,17 @@ find $RPM_BUILD_ROOT -type f -name "*.a" -exec rm -f {} ';'
 chrpath --delete $RPM_BUILD_ROOT%{_bindir}/source-highlight
 chrpath --delete $RPM_BUILD_ROOT%{_bindir}/source-highlight-settings
 
-%clean
-rm -rf $RPM_BUILD_ROOT
+echo -e "\ncxx = cpp.lang" >> $RPM_BUILD_ROOT%{_datadir}/source-highlight/lang.map
+magic_rpm_clean.sh
 
 %post
-/sbin/ldconfig
-/sbin/install-info %{_infodir}/source-highlight.info \
+/usr/sbin/ldconfig
+/usr/sbin/install-info %{_infodir}/source-highlight.info \
   %{_infodir}/dir 2>/dev/null || :
 
 %preun
 if [ $1 -eq 0 ]; then
-  /sbin/install-info --delete %{_infodir}/source-highlight.info \
+  /usr/sbin/install-info --delete %{_infodir}/source-highlight.info \
     %{_infodir}/dir 2>/dev/null || :
 fi
 
@@ -78,7 +77,7 @@ fi
 %{_bindir}/source-highlight-settings
 %{_bindir}/src-hilite-lesspipe.sh
 %dir %{_sysconfdir}/bash_completion.d
-%{_sysconfdir}/bash_completion.d/source-highlight-bash-completion
+%{_sysconfdir}/bash_completion.d/source-highlight
 %{_libdir}/libsource-highlight.so.*
 %dir %{_datadir}/source-highlight
 %{_datadir}/source-highlight/*
@@ -91,11 +90,34 @@ fi
 %{_libdir}/libsource-highlight.so
 %{_libdir}/pkgconfig/source-highlight.pc
 %{_includedir}/srchilite/*.h
-%{_datadir}/aclocal/ax_boost_*.m4
 
 %changelog
-* Wed Feb 08 2012 Liu Di <liudidi@gmail.com> - 3.1.4-7
+* Thu Nov 01 2012 Liu Di <liudidi@gmail.com> - 3.1.6-4
 - 为 Magic 3.0 重建
+
+* Wed Aug  8 2012 Bill Nottingham <notting@redhat.com> - 3.1.6-3
+- rebuild against new boost
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.1.6-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Sun Mar 25 2012 Adrian Reber <adrian@lisas.de> - 3.1.6-1
+- updated to 3.1.6
+- removed buildroot and clean section
+- fixed "missing c++ source language detection for .cxx extension" (#728311)
+- fixed "source-highlight : Conflicts with autoconf-archive" (#797794)
+
+* Tue Feb 28 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.1.4-10
+- Rebuilt for c++ ABI breakage
+
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.1.4-9
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
+* Sun Nov 20 2011  <dodji@redhat.com> - 3.1.4-8
+- Rebuild against boost 1.48
+
+* Thu Jul 21 2011 Adrian Reber <adrian@lisas.de> - 3.1.4-7
+- and again a rebuilt for boost.
 
 * Fri Apr 01 2011 Christoph Wickert <cwickert@fedoraproject.org> - 3.1.4-6
 - Another rebuild, libboost SONAME has changed again
