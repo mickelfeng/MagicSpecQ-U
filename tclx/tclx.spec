@@ -5,7 +5,7 @@ Summary: Extensions for Tcl and Tk
 Summary(zh_CN.UTF-8): Tcl 的扩展。
 Name: tclx
 Version: %{major_ver}.0
-Release: 7%{?dist}
+Release: 8%{?dist}
 License: BSD
 Group: Development/Languages
 Group(zh_CN.UTF-8): 开发/语言
@@ -109,6 +109,7 @@ rm -rf $RPM_BUILD_ROOT
 
 # utf-8 locale needed to avoid truncating help files
 LANG=en_US.UTF-8 make install DESTDIR=%{buildroot}
+magic_rpm_clean.sh
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -131,6 +132,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man*
 
 %changelog
+* Thu Nov 01 2012 Liu Di <liudidi@gmail.com> - 8.4.0-8
+- 为 Magic 3.0 重建
+
 * Mon Feb 13 2012 Liu Di <liudidi@gmail.com> - 8.4.0-7
 - 为 Magic 3.0 重建
 
