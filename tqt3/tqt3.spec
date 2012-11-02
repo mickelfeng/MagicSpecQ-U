@@ -1,8 +1,8 @@
 %define git 1
-%define gitdate 20120423
+%define gitdate 20121102
 
 %define qt_dirname tqt-3.4
-%define qtdir %{_libdir}/%{qt_dirname}
+%define qtdir /opt/trinity/lib/%{qt_dirname}
 
 # define to enable immodule -- Rex
 %define immodule 0
@@ -453,23 +453,23 @@ echo yes | ./configure \
 %if %{buildSQL}
 # build psql plugin
 pushd plugins/src/sqldrivers/psql
-qmake -o Makefile "INCLUDEPATH+=/usr/include/pgsql /usr/include/pgsql/server /usr/include/pgsql/internal" "LIBS+=-lpq" psql.pro
+tqmake -o Makefile "INCLUDEPATH+=/usr/include/pgsql /usr/include/pgsql/server /usr/include/pgsql/internal" "LIBS+=-lpq" psql.pro
 popd
 
 # build mysql plugin
 pushd plugins/src/sqldrivers/mysql
-qmake -o Makefile "INCLUDEPATH+=/usr/include/mysql" "LIBS+=-L%{_libdir}/mysql -lmysqlclient" mysql.pro
+tqmake -o Makefile "INCLUDEPATH+=/usr/include/mysql" "LIBS+=-L%{_libdir}/mysql -lmysqlclient" mysql.pro
 popd
 
 pushd plugins/src/sqldrivers/odbc
-qmake -o Makefile "LIBS+=-lodbc" odbc.pro
+tqmake -o Makefile "LIBS+=-lodbc" odbc.pro
 popd
 %endif
 
 %if %{buildsqlite}
 # build sqlite plugin
 pushd plugins/src/sqldrivers/sqlite
-qmake -o Makefile "LIBS+=-lsqlite3" sqlite.pro
+tqmake -o Makefile "LIBS+=-lsqlite3" sqlite.pro
 popd
 %endif
 
@@ -557,7 +557,7 @@ mkdir -p $RPM_BUILD_ROOT%{qtdir}/{bin,include,lib}
 
 make install INSTALL_ROOT=$RPM_BUILD_ROOT/
 
-for i in findtr qt20fix qtrename140 lrelease lupdate ; do
+for i in findtr qt20fix qtrename140 tqlrelease tqlupdate ; do
    install bin/$i %{buildroot}%{qtdir}/bin/
 done
 
@@ -601,7 +601,7 @@ find examples -name "*.moc" | xargs rm -rf
 find tutorial -name "Makefile" | xargs rm -f
 
 for a in */*/Makefile ; do
-  sed 's|^SYSCONF_MOC.*|SYSCONF_MOC		= %{qtdir}/bin/moc|' < $a > ${a}.2
+  sed 's|^SYSCONF_MOC.*|SYSCONF_MOC		= %{qtdir}/bin/tqmoc|' < $a > ${a}.2
   mv -v ${a}.2 $a
 done
 
@@ -612,9 +612,9 @@ install -m 755 %{SOURCE2} %{SOURCE3} %{buildroot}/etc/profile.d/
 
 mkdir -p %{buildroot}%{_bindir}
 install -m 0755 bin/conv2ui %{buildroot}%{qtdir}/bin/conv2ui
-for i in bin/*; do
-  ln -s ../%{_lib}/%{qt_dirname}/bin/`basename $i` $RPM_BUILD_ROOT%{_bindir}/tqt-`basename $i`
-done
+#for i in bin/*; do
+#  ln -s ../%{_lib}/%{qt_dirname}/bin/`basename $i` $RPM_BUILD_ROOT%{_bindir}/tqt-`basename $i`
+#done
 
 # make symbolic link to qt docdir
 mv %{buildroot}%{_docdir}/qt-devel-3.4 %{buildroot}%{_docdir}/tqt3-devel-3.4
@@ -773,24 +773,24 @@ exit 0
 
 %files config
 %defattr(-,root,root,-)
-%{qtdir}/bin/qtconfig
-%{_bindir}/tqt-qtconfig*
+%{qtdir}/bin/tqtconfig
+#%{_bindir}/tqt-qtconfig*
 
 %files devel
 %defattr(-,root,root,-)
-%{qtdir}/bin/moc
-%{qtdir}/bin/uic
+%{qtdir}/bin/tqmoc
+%{qtdir}/bin/tquic
 %{qtdir}/bin/findtr
 %{qtdir}/bin/qt20fix
 %{qtdir}/bin/qtrename140
 %{qtdir}/bin/conv2ui
-%{qtdir}/bin/assistant
+%{qtdir}/bin/tqassistant
 %{qtdir}/bin/qm2ts
-%{qtdir}/bin/qmake
-%{qtdir}/bin/qembed
-%{qtdir}/bin/linguist
-%{qtdir}/bin/lupdate
-%{qtdir}/bin/lrelease
+%{qtdir}/bin/tqmake
+%{qtdir}/bin/tqembed
+%{qtdir}/bin/tqlinguist
+%{qtdir}/bin/tqlupdate
+%{qtdir}/bin/tqlrelease
 #以下需要确定所属包
 %{qtdir}/bin/createcw
 %{qtdir}/bin/makeqpf
@@ -813,18 +813,18 @@ exit 0
 %exclude %{_mandir}/*
 %{qtdir}/translations
 %{qtdir}/phrasebooks
-%{_bindir}/tqt-assistant*
-%{_bindir}/tqt-moc*
-%{_bindir}/tqt-uic*
-%{_bindir}/tqt-findtr*
-%{_bindir}/tqt-qt20fix*
-%{_bindir}/tqt-qtrename140*
-%{_bindir}/tqt-qmake*
-%{_bindir}/tqt-qm2ts*
-%{_bindir}/tqt-linguist
-%{_bindir}/tqt-lrelease
-%{_bindir}/tqt-lupdate
-%{_bindir}/tqt-conv2ui
+#%{_bindir}/tqt-assistant*
+#%{_bindir}/tqt-moc*
+#%{_bindir}/tqt-uic*
+#%{_bindir}/tqt-findtr*
+#%{_bindir}/tqt-qt20fix*
+#%{_bindir}/tqt-qtrename140*
+#%{_bindir}/tqt-qmake*
+#%{_bindir}/tqt-qm2ts*
+#%{_bindir}/tqt-linguist
+#%{_bindir}/tqt-lrelease
+#%{_bindir}/tqt-lupdate
+#%{_bindir}/tqt-conv2ui
 %{_libdir}/pkgconfig/*
 %{qtdir}/lib/pkgconfig
 %{qtdir}/doc
@@ -876,11 +876,11 @@ exit 0
 
 %files designer
 %defattr(-,root,root,-)
-%{_bindir}/tqt-designer*
+#%{_bindir}/tqt-designer*
 %dir %{qtdir}/plugins/designer
 %{qtdir}/templates
 %{qtdir}/plugins/designer/*
-%{qtdir}/bin/designer
+%{qtdir}/bin/tqdesigner
 %if %{desktop_file}
 %{_datadir}/applications/qt-designer3.desktop
 %else
