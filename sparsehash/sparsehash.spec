@@ -3,7 +3,7 @@
 
 Name:           sparsehash
 Version:        1.12
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Extremely memory-efficient C++ hash_map implementation
 
 Group:          Development/Libraries
@@ -41,6 +41,7 @@ make install DESTDIR=$RPM_BUILD_ROOT
 # Remove unneeded files
 rm $RPM_BUILD_ROOT%{_defaultdocdir}/sparsehash-%{version}/INSTALL
 rm $RPM_BUILD_ROOT%{_defaultdocdir}/sparsehash-%{version}/README_windows.txt
+magic_rpm_clean.sh
 
 %check
 make check
@@ -51,6 +52,9 @@ make check
 %{_libdir}/pkgconfig/libsparsehash.pc
 
 %changelog
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.12-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
 * Sat Jan 21 2012 Kalev Lember <kalevlember@gmail.com> - 1.12-1
 - Update to 1.12
 - Corrected the download URL
