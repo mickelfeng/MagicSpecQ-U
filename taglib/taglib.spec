@@ -1,26 +1,26 @@
 
 # Fedora cvs admin requests for taglib: http://bugzilla.redhat.com/418271
 
-%bcond_without tests
+%bcond_with tests
 
 %if %{with tests}
 %global buildtests -DBUILD_TESTS=ON
 %endif
 
 %bcond_without doc
-%global apidocdir __api-doc_fedora
+%global apidocdir __api-doc_magic
 
 Name:       taglib	
-Version:    1.7
+Version:    1.8
 Release:    2%{?dist}
 Summary:    Audio Meta-Data Library
 
 Group: 	    System Environment/Libraries
 License:    LGPLv2
-#URL:        http://developer.kde.org/~wheeler/taglib.html
+#URL:       http://developer.kde.org/~wheeler/taglib.html
 URL:        http://launchpad.net/taglib
-Source0:    http://launchpad.net/taglib/trunk/%{version}%{?pre}/+download/taglib-%{version}%{?pre}.tar.gz
-#Source0:    taglib-%{svn}.tar.gz
+Source0:    https://github.com/downloads/taglib/taglib/taglib-%{version}%{?pre}.tar.gz
+#Source0:   taglib-%{svn}.tar.gz
 # The svn tarball is generated with the following script
 Source1:    taglib-svn.sh
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -31,7 +31,8 @@ Patch1:     taglib-1.5b1-multilib.patch
 # try 2, kiss omit -L%_libdir
 Patch2:     taglib-1.5rc1-multilib.patch
 
-## upstream patches
+## upstreamable patches
+Patch50: taglib-1.8-version.patch
 
 BuildRequires: cmake
 BuildRequires: pkgconfig
@@ -51,7 +52,6 @@ popular audio formats. Currently it supports both ID3v1 and ID3v2 for MP3
 files, Ogg Vorbis comments and ID3 tags and Vorbis comments in FLAC, MPC,
 Speex, WavPack, TrueAudio files, as well as APE Tags.
 
-
 %if %{with doc}
 %package doc
 Summary: API Documentation for %{name}
@@ -62,7 +62,6 @@ BuildArch: noarch
 %description doc
 This is API documentation generated from the TagLib source code.
 %endif
-
 
 %package devel
 Summary: Development files for %{name} 
@@ -83,55 +82,49 @@ Files needed when building software with %{name}.
 # patch1 not applied
 ## omit for now
 %patch2 -p1 -b .multilib
+%patch50 -p1 -b .version
 
 
 %build
 mkdir -p %{_target_platform}
 pushd %{_target_platform}
-%{cmake} %{?buildtests} -DWITH_ASF=1 -DWITH_MP4=1 ..
+%{cmake} \
+  %{?buildtests} \
+  ..
 popd
 
 make %{?_smp_mflags} -C %{_target_platform}
 
 %if %{with doc}
-# run doxygen manually, 'make docs' target broken for builddir != srcdir
-doxygen 
+make docs -C %{_target_platform}
 %endif
 
 
 %install
 rm -rf %{buildroot}
 
-make install DESTDIR=%{buildroot} -C %{_target_platform}
-
-rm -fr examples/.deps
-rm -fr examples/Makefile* examples/CMake*
-rm -f %{buildroot}%{_libdir}/lib*.la
+make install/fast DESTDIR=%{buildroot} -C %{_target_platform}
 
 %if %{with doc}
 rm -fr %{apidocdir} ; mkdir %{apidocdir}
-cp -a doc/html/ doc/*.{css,html,png} %{apidocdir}/
+cp -a %{_target_platform}/doc/html/ %{apidocdir}/
 ln -s html/index.html %{apidocdir}
 find %{apidocdir} -name '*.md5' | xargs rm -fv
 %endif
-
+magic_rpm_clean.sh
 
 %if %{with tests}
 %check
-cp -a tests/data %{_target_platform}/tests
-cd %{_target_platform}
-LD_LIBRARY_PATH=%{buildroot}%{_libdir}:$LD_LIBRARY_PATH make check
+ln -s ../../tests/data %{_target_platform}/tests/
+LD_LIBRARY_PATH=%{buildroot}%{_libdir}:$LD_LIBRARY_PATH make check -C %{_target_platform}
 %endif
-
 
 %clean
 rm -rf %{buildroot}
 
 
 %post -p /sbin/ldconfig
-
 %postun -p /sbin/ldconfig
-
 
 %files
 %defattr(-,root,root,-)
@@ -157,8 +150,29 @@ rm -rf %{buildroot}
 
 
 %changelog
-* Mon Feb 13 2012 Liu Di <liudidi@gmail.com> - 1.7-2
-- 为 Magic 3.0 重建
+* Thu Sep 13 2012 Rex Dieter <rdieter@fedoraproject.org> 1.8-2
+- taglib.h: fix TAGLIB_MINOR_VERSION
+
+* Thu Sep 06 2012 Rex Dieter <rdieter@fedoraproject.org> 1.8-1
+- taglib-1.8
+
+-* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.7.2-2
+-- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Sat Apr 21 2012 Rex Dieter <rdieter@fedoraproject.org> 1.7.2-1
+- taglib-1.7.2
+
+* Mon Mar 19 2012 Rex Dieter <rdieter@fedoraproject.org> 1.7.1-1
+- taglib-1.7.1
+
+* Tue Feb 28 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.7-4
+- Rebuilt for c++ ABI breakage
+
+* Sat Feb 04 2012 Orcan Ogetbil <oget[dot]fedora[at]gmail[dot]com> - 1.7-3
+- Backported fix for a crash in .ape file parsing RHBZ#700727
+
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.7-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
 * Mon Mar 14 2011 Rex Dieter <rdieter@fedoraproject.org> 1.7-1
 - taglib-1.7 (final)
