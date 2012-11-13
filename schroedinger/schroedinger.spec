@@ -2,7 +2,7 @@
 
 Name:           schroedinger
 Version:        1.0.11
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Portable libraries for the high quality Dirac video codec
 
 Group:          System Environment/Libraries
@@ -83,6 +83,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Tue Nov 13 2012 Liu Di <liudidi@gmail.com> - 1.0.11-2
+- 为 Magic 3.0 重建
+
 * Mon Jan 23 2012 Fabian Deutsch <fabiand@fedoraproject.org> - 1.0.11-1
 - Update to 1.0.11
 
