@@ -1,7 +1,7 @@
 %define tp_glib_ver 0.17.5
 
 Name:           telepathy-mission-control
-Version:        5.12.0
+Version:        5.14.0
 Release:        1%{?dist}
 Epoch:          1
 Summary:        Central control for Telepathy connection manager
@@ -75,7 +75,6 @@ fi
 %{_datadir}/dbus-1/services/*.service
 %{_datadir}/glib-2.0/schemas/im.telepathy.MissionControl.FromEmpathy.gschema.xml
 %{_libdir}/libmission-control-plugins.so.*
-%{_libdir}/libmissioncontrol-server-%{version}.so
 %{_libexecdir}/mission-control-5
 %{_mandir}/man*/*.gz
 
@@ -85,11 +84,28 @@ fi
 %{_includedir}/*
 %{_libdir}/pkgconfig/*.pc
 %{_libdir}/libmission-control-plugins.so
-%{_libdir}/libmissioncontrol-server.so
 %doc %{_datadir}/gtk-doc/html/mission-control-plugins
 
 
 %changelog
+* Wed Oct  3 2012 Brian Pepple <bpepple@fedoraproject.org> - 1:5.14.0-1
+- Update to 5.14.0
+
+* Thu Sep 20 2012 Brian Pepple <bpepple@fedoraproject.org> - 1:5.13.2-1
+- Update to 5.13.2.
+
+* Thu Sep  6 2012 Brian Pepple <bpepple@fedoraproject.org> - 1:5.13.1-1
+- Update to 5.13.1.
+
+* Mon Jul 23 2012 Brian Pepple <bpepple@fedoraproject.org> - 1:5.13.0-1
+- Update to 5.13.0.
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:5.12.1-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Wed Jul 11 2012 Brian Pepple <bpepple@fedoraproject.org> - 1:5.12.1-1
+- Update to 5.12.1.
+
 * Mon Apr  2 2012 Brian Pepple <bpepple@fedoraproject.org> - 1:5.12.0-1
 - Update to 5.12.0.
 
