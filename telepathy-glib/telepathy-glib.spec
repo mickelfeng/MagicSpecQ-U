@@ -1,20 +1,20 @@
-%define	dbus_ver	0.95
-%define	dbus_glib_ver	0.90
-%define	glib_ver	2.30.0
-%define gobj_ver	1.30
-%define vala_ver	0.14.0
+%global	dbus_ver	0.95
+%global	dbus_glib_ver	0.90
+%global	glib_ver	2.32.0
+%global gobj_ver	1.30
+%global vala_ver	0.16.0
 
 Name:           telepathy-glib
-Version:        0.17.6
-Release:        1%{?dist}
+Version:        0.20.0
+Release:        2%{?dist}
 Summary:        GLib bindings for Telepathy
 
 Group:          System Environment/Libraries
 License:        LGPLv2+
 URL:            http://telepathy.freedesktop.org/wiki/FrontPage
 Source0:        http://telepathy.freedesktop.org/releases/%{name}/%{name}-%{version}.tar.gz
-## https://bugzilla.redhat.com/show_bug.cgi?id=436773
-## Patch0:		telepathy-glib-broken-pkgconfig.patch
+Patch0:         0001-base-call-channel-Ignore-transitions-with-the-same-s.patch
+Patch1:         0002-base-call-channel-Don-t-call-set_state-from-set_ring.patch
 
 BuildRequires:  gtk-doc >= 1.17
 BuildRequires:  dbus-devel >= %{dbus_ver}
@@ -62,11 +62,12 @@ developing applications that use %{name}.
 
 %prep
 %setup -q
-#%patch0 -p1 -b .requires
+%patch0 -p1
+%patch1 -p1
 
 
 %check
-#make check
+make check
 
 
 %build
@@ -109,6 +110,57 @@ find $RPM_BUILD_ROOT -name '*.la' -exec rm -f {} ';'
 
 
 %changelog
+* Tue Oct 16 2012 Debarshi Ray <rishi@fedoraproject.org> - 0.20.0-2
+- Fix FD #56044
+
+* Wed Oct  3 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.20.0-1
+- Update to 0.20.0
+
+* Wed Sep 26 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.19.10-1
+- Update to 0.19.10
+
+* Tue Sep 11 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.19.9-1
+- Update to 0.19.9.
+
+* Fri Aug 31 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.19.8-1
+- Update to 0.19.8.
+
+* Tue Aug 28 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.19.7-1
+- Update to 0.19.7.
+
+* Mon Aug  6 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.19.6-1
+- Update to 0.19.6.
+- Use global macro instead of define macro.
+
+* Tue Jul 24 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.19.5-1
+- Update to 0.19.5.
+
+* Thu Jul 19 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.19.4-1
+- Update to 0.19.4.
+
+* Thu Jul  5 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.19.3-1
+- Update to 0.19.3.
+
+* Thu Jun 28 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.19.2-1
+- Update to 0.19.2.
+
+* Wed Jun  6 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.19.1-1
+- Update to 0.19.1.
+- Bump minimum version of vala.
+
+* Thu May 10 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.19.0-1
+- Update to 0.19.0.
+- Bump minimum version of glib2.
+
+* Sat Apr 21 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.18.1-1
+- Update to 0.18.1.
+
+* Mon Apr  2 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.18.0-1
+- Update to 0.18.0.
+
+* Thu Mar 22 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.17.7-1
+- Update to 0.17.7.
+
 * Mon Mar 19 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.17.6-1
 - Update to 0.17.6.
 - Bump minimum version of glib2 and dbus-glib.
