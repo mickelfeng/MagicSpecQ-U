@@ -1,6 +1,12 @@
+%if 0%{?rhel}
+%global run_tests 0
+%else
+%global run_tests 1
+%endif
+
 Name:           telepathy-gabble
-Version:        0.15.3
-Release:        2%{?dist}
+Version:        0.17.1
+Release:        1%{?dist}
 Summary:        A Jabber/XMPP connection manager
 
 Group:          Applications/Communications
@@ -11,19 +17,21 @@ Source0:        http://telepathy.freedesktop.org/releases/%{name}/%{name}-%{vers
 
 BuildRequires:  dbus-devel >= 1.1.0
 BuildRequires:  dbus-glib-devel >= 0.82
-BuildRequires:  telepathy-glib-devel >= 0.17.2
-BuildRequires:  glib2-devel >= 2.24
+BuildRequires:  telepathy-glib-devel >= 0.19.7
+BuildRequires:  glib2-devel >= 2.30
 BuildRequires:	sqlite-devel
 BuildRequires:  libuuid-devel
 BuildRequires:  libsoup-devel
 BuildRequires:	libnice-devel >= 0.0.11
 BuildRequires:	cyrus-sasl-devel
 BuildRequires:  libxslt
+%if %{run_tests}
 # Build Requires needed for tests.
 BuildRequires:  python
 BuildRequires:	python-twisted
 BuildRequires:	dbus-python
 BuildRequires:	pygobject2
+%endif
 
 Requires:       telepathy-mission-control >= 5.5.0
 Requires:       telepathy-filesystem
@@ -37,9 +45,10 @@ chats and voice calls.
 %prep
 %setup -q
 
-
+%if %{run_tests}
 %check
-
+#make check
+%endif
 
 %build
 %configure --enable-static=no
@@ -55,8 +64,13 @@ find $RPM_BUILD_ROOT -name '*.la' -exec rm -f {} ';'
 rm -f $RPM_BUILD_ROOT%{_docdir}/%{name}/*.html
 
 
+%post -p /sbin/ldconfig
+
+
+%postun -p /sbin/ldconfig
+
+
 %files
-%defattr(-,root,root,-)
 %doc COPYING AUTHORS
 %doc docs/*.html
 %{_bindir}/%{name}-xmpp-console
@@ -68,11 +82,50 @@ rm -f $RPM_BUILD_ROOT%{_docdir}/%{name}/*.html
 ## be moved to the tp-filesystem spec file.
 %dir %{_libdir}/telepathy
 %dir %{_libdir}/telepathy/gabble-0
-%{_libdir}/telepathy/gabble-0/gateways.so
-%{_libdir}/telepathy/gabble-0/console.so
+%dir %{_libdir}/telepathy/gabble-0/lib
+%dir %{_libdir}/telepathy/gabble-0/plugins
+%{_libdir}/telepathy/gabble-0/lib/libgabble-plugins-*.so
+%{_libdir}/telepathy/gabble-0/lib/libgabble-plugins.so
+%{_libdir}/telepathy/gabble-0/lib/libwocky-telepathy-gabble-*.so
+%{_libdir}/telepathy/gabble-0/lib/libwocky.so
+%{_libdir}/telepathy/gabble-0/plugins/libconsole.so
+%{_libdir}/telepathy/gabble-0/plugins/libgateways.so
 
 
 %changelog
+* Tue Sep 11 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.17.1-1
+- Update to 0.17.1.
+- Bump minimum version of tp-glib needed.
+
+* Tue Aug 14 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.17.0-1
+- Update to 0.17.0.
+- Bump minimum version of tp-glib needed.
+
+* Tue Aug 14 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.16.2-1
+- Update to 0.16.2.
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.16.1-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Thu Jun 21 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.16.1-1
+- Update to 0.16.1.
+- Bump minimum version of glib2 needed.
+
+* Tue Jun 12 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.16.0-2
+- Make tests conditional. (#831342)
+
+* Tue Apr  3 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.16.0-1
+- Update to 0.16.0.
+- Bump minimum version of tp-glib needed.
+
+* Fri Mar 23 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.15.5-1
+- Update to 0.15.5.
+- Bump minimum version of tp-glib.
+
+* Wed Feb 22 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.15.4-1
+- Update to 0.15.4.
+- Bump minimum version of tp-glib needed.
+
 * Sun Jan 08 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.15.3-2
 - Rebuild for new gcc.
 
@@ -472,4 +525,3 @@ rm -f $RPM_BUILD_ROOT%{_docdir}/%{name}/*.html
 
 * Mon Aug 28 2006 Brian Pepple <bpepple@fedoraproject.org> - 0.3.1-1
 - Initial FE spec.
-
