@@ -1,6 +1,6 @@
 Name:           telepathy-salut
-Version:        0.6.0
-Release:        1%{?dist}
+Version:        0.8.0
+Release:        2%{?dist}
 Summary:        Link-local XMPP telepathy connection manager
 
 Group:          Applications/Communications
@@ -16,7 +16,8 @@ BuildRequires:	openssl-devel
 BuildRequires:	cyrus-sasl-devel
 BuildRequires:	libxslt
 BuildRequires:	libasyncns-devel >= 0.3
-BuildRequires:	telepathy-glib-devel >= 0.13.12
+BuildRequires:	telepathy-glib-devel >= 0.17.1
+BuildRequires:  libuuid-devel
 BuildRequires:	libsoup-devel
 BuildRequires:	sqlite-devel
 BuildRequires:  gtk-doc
@@ -33,17 +34,25 @@ local network using zero-configuration networking.
 
 %prep
 %setup -q
-sed -i 's/glib\/gtypes.h/glib.h/g' lib/ext/wocky/tests/test-resolver.h
 
 %build
-%configure --enable-ssl --enable-olpc
+%configure --enable-ssl --enable-olpc --disable-avahi-tests --enable-static=no
 make %{?_smp_mflags}
 
 
 %install
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
+find $RPM_BUILD_ROOT -name '*.la' -exec rm -f {} ';'
+
+## Don't package html doc to incorrect doc directory
 rm -f $RPM_BUILD_ROOT%{_docdir}/%{name}/*.html
+
+
+%post -p /sbin/ldconfig
+
+
+%postun -p /sbin/ldconfig
 
 
 %files
@@ -53,9 +62,36 @@ rm -f $RPM_BUILD_ROOT%{_docdir}/%{name}/*.html
 %{_datadir}/dbus-1/services/*.service
 %{_datadir}/telepathy/managers/*.manager
 %{_mandir}/man8/%{name}.8.gz
+%dir %{_libdir}/telepathy
+%dir %{_libdir}/telepathy/salut-0
+%dir %{_libdir}/telepathy/salut-0/lib
+%{_libdir}/telepathy/salut-0/lib/libsalut-plugins-0.8.0.so
+%{_libdir}/telepathy/salut-0/lib/libsalut-plugins.so
+%{_libdir}/telepathy/salut-0/lib/libwocky-telepathy-salut-0.8.0.so
+%{_libdir}/telepathy/salut-0/lib/libwocky.so
 
 
 %changelog
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.8.0-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Wed Apr  4 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.8.0-1
+- Update to 0.8.0.
+
+* Mon Mar 26 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.7.2-1
+- Update to 0.7.2.
+- Add BR on libuuid-devel.
+
+* Tue Feb 21 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.7.1-1
+- Update to 0.7.1.
+
+* Sun Jan 08 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.7.0-2
+- Rebuild for new gcc.
+
+* Wed Nov 16 2011 Brian Pepple <bpepple@fedoraproject.org> - 0.7.0-1
+- Update to 0.7.0.
+- Bump minimum version of tp-glib needed.
+
 * Tue Oct 18 2011 Brian Pepple <bpepple@fedoraproject.org> - 0.6.0-1
 - Update to 0.6.0.
 
