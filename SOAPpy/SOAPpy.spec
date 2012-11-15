@@ -4,7 +4,7 @@
 
 Name:           SOAPpy
 Version:        0.11.6
-Release:        13%{?dist}
+Release:        15%{?dist}
 Summary:        Full-featured SOAP library for Python
 
 Group:          Development/Languages
@@ -25,7 +25,6 @@ BuildArch:      noarch
 BuildRequires:  python-devel
 BuildRequires:  python-fpconst >= 0.6.0
 Requires:       python-fpconst >= 0.6.0
-Requires:       PyXML >= 0.8.3
 Requires:       m2crypto
 
 %description
@@ -80,8 +79,14 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
-* Mon Feb 13 2012 Liu Di <liudidi@gmail.com> - 0.11.6-13
-- 为 Magic 3.0 重建
+* Wed Jul 25 2012 Pierre-Yves Chibon <pingou@pingoured.fr> - 0.11.6-15
+- Remove the Requires to PyXML
+
+* Wed Jul 18 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.11.6-14
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Thu Jan 12 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.11.6-13
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
 * Sat Jul 01 2011 Pierre-Yves Chibon <pingou@pingoured.fr> - 0.11.6-12
 - Add m2crypto as R
