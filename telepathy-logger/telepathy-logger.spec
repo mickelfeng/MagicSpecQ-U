@@ -1,6 +1,6 @@
 Name:           telepathy-logger
-Version:        0.2.12
-Release:        1%{?dist}
+Version:        0.6.0
+Release:        2%{?dist}
 Summary:        Telepathy framework logging daemon
 
 Group:          Applications/Communications
@@ -10,7 +10,7 @@ Source0:        http://telepathy.freedesktop.org/releases/%{name}/%{name}-%{vers
 
 BuildRequires:  dbus-devel >= 1.1.0
 BuildRequires:  dbus-glib-devel >= 0.82
-BuildRequires:  telepathy-glib-devel >= 0.15.6
+BuildRequires:  telepathy-glib-devel >= 0.19.2
 BuildRequires:  glib2-devel >= 2.25.11
 BuildRequires:  sqlite-devel
 BuildRequires:  libxml2-devel
@@ -32,9 +32,7 @@ backends to log different sorts of messages, in different formats.
 %package        devel
 Summary:        Development files for %{name}
 Group:          Development/Libraries
-Requires:       %{name} = %{version}-%{release}
-Requires:       pkgconfig
-
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 
 %description devel
 The %{name}-devel package contains libraries and header files for
@@ -44,40 +42,45 @@ developing applications that use %{name}.
 %prep
 %setup -q
 
-
-#%check
-#make check
+# more rpath hacks
+%if "%{_libdir}" != "/usr/lib"
+sed -i.rpath -e 's|"/lib /usr/lib|"/%{_lib} %{_libdir}|' configure
+%endif
 
 
 %build
-%configure --disable-static --enable-introspection=yes --enable-call=no
+%configure --disable-static --enable-introspection=yes
 #sed -i 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
 sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
-make %{?_smp_mflags}
+make %{?_smp_mflags} V=1
 
 
 %install
 make install DESTDIR=$RPM_BUILD_ROOT
 find $RPM_BUILD_ROOT -name '*.la' -exec rm -f {} ';'
+magic_rpm_clean.sh
+
+#check
+#make check
 
 
-%post -p /sbin/ldconfig
+%post -p /usr/sbin/ldconfig
 
 
 %postun
-/sbin/ldconfig
-glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas ||:
+/usr/sbin/ldconfig
+glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas &>/dev/null ||:
 
 
 %posttrans
-glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas ||:
+glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas &>/dev/null ||:
 
 
 %files
 %defattr(-,root,root,-)
 %doc COPYING NEWS README
 %{_libexecdir}/%{name}
-%{_libdir}/libtelepathy-logger*.so.*
+%{_libdir}/libtelepathy-logger.so.3*
 %{_datadir}/glib-2.0/schemas/org.freedesktop.Telepathy.Logger.gschema.xml
 %{_datadir}/telepathy/clients/Logger.client
 %{_datadir}/dbus-1/services/org.freedesktop.Telepathy.Client.Logger.service
@@ -89,13 +92,43 @@ glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas ||:
 %defattr(-,root,root,-)
 %doc %{_datadir}/gtk-doc/html/%{name}/
 %{_libdir}/libtelepathy-logger.so
-%{_libdir}/pkgconfig/%{name}*.pc
+%{_libdir}/pkgconfig/telepathy-logger-0.2.pc
 %dir %{_includedir}/telepathy-logger-0.2
-%{_includedir}/telepathy-logger-0.2/%{name}/
+%{_includedir}/telepathy-logger-0.2/telepathy-logger/
 %{_datadir}/gir-1.0/TelepathyLogger-0.2.gir
 
 
 %changelog
+* Wed Oct 31 2012 Rex Dieter <rdieter@fedoraproject.org> - 0.6.0-2
+- track sonames so bumps aren't a surprise
+- verbose build
+- rpath whack-a-mole
+
+* Tue Oct 30 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.6.0-1
+- Update to 0.6.0
+- Bump minimum version of tp-glib needed.
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.4.0-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Thu Jun 21 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.4.0-3
+- Drop depreciated enable-call option.
+
+* Tue Apr 24 2012 Kalev Lember <kalevlember@gmail.com> - 0.4.0-2
+- Silence rpm scriptlet output
+
+* Thu Apr  5 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.4.0-1
+- Update to 0.4.0.
+
+* Tue Apr  3 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.2.13-1
+- Update to 0.2.13.
+
+* Sun Jan 08 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.2.12-3
+- Rebuild for new gcc.
+
+* Mon Dec 19 2011 Brian Pepple <bpepple@fedoraproject.org> - 0.2.12-2
+- Enable call support again.
+
 * Wed Nov  2 2011 Brian Pepple <bpepple@fedoraproject.org> - 0.2.12-1
 - Update to 0.2.12.
 
