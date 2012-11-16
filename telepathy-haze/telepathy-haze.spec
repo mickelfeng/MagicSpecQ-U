@@ -1,5 +1,5 @@
 Name:		telepathy-haze
-Version:	0.5.0
+Version:	0.6.0
 Release:	2%{?dist}
 Summary:	A multi-protocol Libpurple connection manager for Telepathy
 
@@ -10,7 +10,8 @@ URL:		http://developer.pidgin.im/wiki/Telepathy
 Source0:	http://telepathy.freedesktop.org/releases/%{name}/%{name}-%{version}.tar.gz
 
 BuildRequires:	libpurple-devel >= 2.7
-BuildRequires:	telepathy-glib-devel >= 0.13.9
+BuildRequires:	telepathy-glib-devel >= 0.15.1
+BuildRequires:  libxslt
   
 Requires:	telepathy-filesystem    
 
@@ -46,6 +47,13 @@ rm -f %{buildroot}%{_datadir}/telepathy/managers/haze.manager
 
 
 %changelog
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.6.0-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Wed Apr  4 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.6.0-1
+- Update to 0.6.0.
+- Add BR on libxslt.
+
 * Mon Jan 09 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.5.0-2
 - Rebuild for new gcc.
 
