@@ -1,6 +1,6 @@
 Name:           seed
 Version:        3.2.0
-Release:        1%{?dist}.2
+Release:        3%{?dist}.2
 Summary:        GNOME JavaScript interpreter
 
 Group:          Development/Languages
@@ -73,7 +73,7 @@ sed -i.cflags -e \
 
 %build
 %configure \
-%if 0%{?fedora} > 14
+%if 0%{?fedora} > 14 || 0%{?rhel} > 6
   --with-webkit=3.0
 %else
   --with-webkit=1.0
@@ -91,7 +91,7 @@ find $RPM_BUILD_ROOT -name '*.a' -exec rm -f {} ';'
 mv $RPM_BUILD_ROOT%{_docdir}/seed devdocs
 # remove files already bundled with main package
 rm devdocs/{AUTHORS,COPYING,INSTALL,README}
-
+magic_rpm_clean.sh
 
 %check
 # currently tests the installed version of seed, and requires X
@@ -127,6 +127,12 @@ rm devdocs/{AUTHORS,COPYING,INSTALL,README}
 
 
 %changelog
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.2.0-3.2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.2.0-2.2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
 * Wed Oct 26 2011 Marcela Mašláňová <mmaslano@redhat.com> - 3.2.0-1.2
 - rebuild with new gmp without compat lib
 
