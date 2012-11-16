@@ -1,6 +1,11 @@
+
+%if 0%{?fedora} > 16 || 0%{?rhel} >= 7
+%define farstream 1
+%endif
+
 Name:    telepathy-qt4
-Version: 0.9.1
-Release: 3%{?dist}
+Version: 0.9.3
+Release: 5%{?dist}
 Summary: High-level bindings for Telepathy
 
 License: LGPLv2+
@@ -8,8 +13,8 @@ URL:     http://telepathy.freedesktop.org/wiki/Telepathy-Qt4
 Source0: http://telepathy.freedesktop.org/releases/telepathy-qt/telepathy-qt-%{version}.tar.gz
 
 ## upstreamable patches
-# fix for error: 'intptr_t' was not declared in this scope
-Patch50:  telepathy-qt-0.9.0-gcc47.patch
+# kinda sorta, help find fedora's compat-telepathy-farstream pkg
+Patch50: telepathy-qt-0.9.3-farstream_compat.patch
 
 Provides: telepathy-qt = %{version}-%{release} 
 Provides: telepathy-qt%{?_isa} = %{version}-%{release}
@@ -19,12 +24,23 @@ BuildRequires: dbus-python python2-devel
 BuildRequires: doxygen
 BuildRequires: pkgconfig(gstreamer-interfaces-0.10) 
 BuildRequires: pkgconfig(QtDBus) pkgconfig(QtNetwork) pkgconfig(QtXml)
-%define farstream 1
+%if 0%{?farstream}
+BuildRequires: pkgconfig(farstream-0.1)
+%if 0%{?fedora} > 17
+## make sure to get the *right* telepathy-farstream
+%define compat_telepathy_farstream 1
+BuildRequires: compat-telepathy-farstream-devel
+BuildRequires: pkgconfig(telepathy-farstream-0.4)
+%else
 BuildRequires: pkgconfig(telepathy-farstream)
-# unit tests
-BuildRequires: pkgconfig(telepathy-glib) >= 0.17.2
+%endif
+## unit tests
+%define enable_tests -DENABLE_TESTS:BOOL=ON
+BuildRequires: pkgconfig(telepathy-glib) >= 0.19
 BuildRequires: pkgconfig(gio-2.0)
+%endif
 
+Obsoletes: telepathy-qt4-farsight < 0.9.3
 Requires: telepathy-mission-control
 
 %description
@@ -37,25 +53,22 @@ Summary: Development files for %{name}
 Provides: telepathy-qt-devel = %{version}-%{release}
 Requires: %{name}%{?_isa} = %{version}-%{release}
 Requires: telepathy-filesystem
+%if 0%{?farstream}
 Requires: %{name}-farstream%{?_isa} = %{version}-%{release}
 Obsoletes: telepathy-qt4-farstream-devel < 0.9.1-2
 Provides:  telepathy-qt4-farstream-devel = %{version}-%{release} 
 Provides:  telepathy-qt-farstream-devel = %{version}-%{release}
-
+%endif
+%if 0%{?compat_telepathy_farstream}
+## make sure to get the *right* telepathy-farstream deps
+Requires: compat-telepathy-farstream-devel%{?_isa}
+%endif
 %description devel
-%{summary}.
-
-%package farsight
-Summary: Farsight %{name} bindings
-Requires: %{name}%{?_isa} = %{version}-%{release}
-Provides:  telepathy-qt-farsight = %{version}-%{release}
-%description farsight
 %{summary}.
 
 %package farstream
 Summary: Farstream %{name} bindings
 Requires: %{name}%{?_isa} = %{version}-%{release}
-Obsoletes: telepathy-qt4-farsight < %{version}-%{release}
 Provides:  telepathy-qt-farstream = %{version}-%{release}
 %description farstream 
 %{summary}.
@@ -65,21 +78,33 @@ Provides:  telepathy-qt-farstream = %{version}-%{release}
 %prep
 %setup -q -n telepathy-qt-%{version}
 
-%patch50 -p1 -b .gcc47
+%if 0%{?compat_telepathy_farstream}
+# should be safe to apply this unconditionally, but...
+%patch50 -p1 -b .farstream_compat
+sed -i.farstream_compat \
+  -e 's|telepathy-farstream|telepathy-farstream-0.4|g' \
+  TelepathyQt/Farstream/TelepathyQtFarstream.pc.in \
+  TelepathyQt/Farstream/TelepathyQtFarstream-uninstalled.pc.in
+%endif
 
 
 %build
 mkdir -p %{_target_platform}
 pushd %{_target_platform}
-%{cmake} ..
+%{cmake} \
+  %{?enable_tests}%{!?enable_tests:-DENABLE_TESTS:BOOL=OFF} \
+  %{?farstream:-DENABLE_FARSTREAM:BOOL=ON} \
+  %{!?farstream:-DENABLE_FARSTREAM:BOOL=OFF} \
+  -DENABLE_FARSIGHT:BOOL=OFF \
+  ..
 popd
 
-make %{?_smp_mflags} -C %{_target_platform}
+make %{?_smp_mflags} -C %{_target_platform} -k
 
 
 %install
 make install/fast DESTDIR=%{buildroot} -C %{_target_platform}
-magic_rpm_clean.sh
+
 
 %post -p /sbin/ldconfig
 %postun -p /sbin/ldconfig
@@ -88,11 +113,13 @@ magic_rpm_clean.sh
 %doc COPYING AUTHORS NEWS README ChangeLog
 %{_libdir}/libtelepathy-qt4.so.2*
 
+%if 0%{?farstream}
 %post farstream -p /sbin/ldconfig
 %postun farstream -p /sbin/ldconfig
 
 %files farstream
 %{_libdir}/libtelepathy-qt4-farstream.so.2*
+%endif
 
 %files devel
 %doc HACKING
@@ -102,12 +129,38 @@ magic_rpm_clean.sh
 %{_libdir}/pkgconfig/TelepathyQt4.pc
 %dir %{_libdir}/cmake
 %{_libdir}/cmake/TelepathyQt4/
+%if 0%{?farstream}
 %{_libdir}/libtelepathy-qt4-farstream.so
 %{_libdir}/pkgconfig/TelepathyQt4Farstream.pc
 %{_libdir}/cmake/TelepathyQt4Farstream/
+%endif
 
 
 %changelog
+* Wed Oct 31 2012 Rex Dieter <rdieter@fedoraproject.org> 0.9.3-5
+- fix build for newer compat-telepathy-farstream
+
+* Wed Oct 31 2012 Rex Dieter <rdieter@fedoraproject.org> 0.9.3-4
+- rework spec/macro conditionals a bit
+
+* Tue Oct 09 2012 Rex Dieter <rdieter@fedoraproject.org> 0.9.3-3
+- (Build)Requires: compat-telepathy-farstream-devel (f18+)
+
+* Fri Oct 05 2012 Rex Dieter <rdieter@fedoraproject.org> 0.9.3-2
+- rebuild (farstream)
+
+* Fri Aug 03 2012 Rex Dieter <rdieter@fedoraproject.org> 0.9.3-1.1
+- move Obsoletes: -farsight to main pkg
+
+* Mon Jul 16 2012 Rex Dieter <rdieter@fedoraproject.org> 0.9.3-1
+- telepathy-qt-0.9.3
+
+* Wed Jul 11 2012 Rex Dieter <rdieter@fedoraproject.org> 0.9.2-1
+- 0.9.2
+
+* Tue May 22 2012 Radek Novacek <rnovacek@redhat.com> 0.9.1-4
+- add rhel condition
+
 * Thu Apr 05 2012 Rex Dieter <rdieter@fedoraproject.org> 0.9.1-3
 - -farsight subpkg (f16)
 
