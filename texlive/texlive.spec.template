@@ -1,12 +1,12 @@
-%global source_date 20120926_r27815
+%global source_date 20121111_r28233
 %global tl_version 2012
-%global tl_release 3.%{source_date}
-%global tl_noarch_release %{tl_release}
+%global tl_rel 7
+%global tl_release %{tl_rel}.%{source_date}%{?dist}
+%global tl_noarch_release %{tl_rel}%{?dist}
 %global source_name texlive-%{source_date}-source
 
 %{!?_texdir: %global _texdir %{_datadir}/%{name}}
 %{!?_texmf_var: %global _texmf_var %{_var}/lib/texmf}
-%{!?_texmf_local: %global _texmf_local %{_texdir}/texmf-local}
 
 # don't figure any perl requires
 %global __perl_requires %{nil}
@@ -15,7 +15,7 @@
 
 Name: texlive
 Version: %{tl_version}
-Release: %{tl_release}%{?dist}
+Release: %{tl_release}
 Epoch: 1
 Summary: TeX formatting system
 Group: Applications/Publishing
@@ -40,7 +40,7 @@ Obsoletes: texlive-texmf-errata-east-asian < %{tl_version}, texlive-texmf-errata
 Obsoletes: texlive-texmf-errata-latex < %{tl_version}, texlive-texmf-errata-xetex < %{tl_version}
 Conflicts: texlive-dvips = 2007
 Patch1: tl-kpfix.patch
-Patch2: texlive-badtest.patch
+Patch2: texlive-stdc++11.patch
 Source0: %{source_name}.tar.xz
 Source1: tl2rpm.c
 Source2: texlive.tlpdb
@@ -102,14 +102,14 @@ distribution.
 xz -dc %{SOURCE0} | tar x
 [ -e %{source_name} ] && mv %{source_name} source
 %patch1 -p0
-%patch2 -p0
+%patch2 -p1
 for l in `unxz -c %{SOURCE3} | tar t`; do
 	ln -s %{_texdir}/licenses/$l $l
 done
 
 %build
 export CFLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing"
-export CXXFLAGS="$RPM_OPT_FLAGS"
+export CXXFLAGS="$RPM_OPT_FLAGS -std=c++11"
 cd source
 PREF=`pwd`/inst
 mkdir -p work
@@ -124,7 +124,6 @@ cd work
 --with-system-gd \
 --with-system-t1lib \
 --with-system-teckit \
---with-teckit-includes=/usr/include/teckit \
 --with-system-freetype2 \
 --with-system-poppler \
 --with-system-zziplib \
@@ -139,7 +138,8 @@ cd work
 --disable-t1utils \
 --disable-psutils \
 --disable-biber \
---disable-ptexenc
+--disable-ptexenc \
+--disable-largefile
 
 make world %{?_smp_mflags} STRIPPROG=/bin/true STRIP=/bin/true
 
@@ -150,8 +150,11 @@ rm -rf %{buildroot}
 mkdir -p %{buildroot}%{_texdir}/../texmf
 mkdir -p %{buildroot}%{_texdir}/texmf-config/web2c
 mkdir -p %{buildroot}%{_texmf_var}
-mkdir -p %{buildroot}%{_texmf_local}
 mkdir -p %{buildroot}%{_texdir}/texmf-dist
+mkdir -p %{buildroot}%{_texdir}/texmf-local
+pushd %{buildroot}%{_texdir}/texmf-local
+ln -s ../../texmf texmf-compat
+popd
 %include _mkdirs.spec
 %include _unpack.spec
 # nuke useless tlmgr packaging stuff and doc droppings
@@ -213,7 +216,7 @@ rm -f man
 [ ! -e mfplain ] && ln -s mpost mfplain
 [ ! -e texlua ] && ln -s luatex texlua
 [ ! -e texluac ] && ln -s luatex texluac
-for i in physe phyzzx installfont-tl pdfthumb ppower4 tcdialog dosepsbin mkjobtexmf texdiff texdirflatten; do
+for i in physe phyzzx installfont-tl pdfthumb ppower4 tcdialog dosepsbin mkjobtexmf texdiff texdirflatten adhocfilelist; do
 	rm -f %{buildroot}%{_bindir}/$i
 done
 rm -rf %{buildroot}%{_includedir}/ptexenc
@@ -249,6 +252,9 @@ for i in ctxtools luatools texexec texmfstart; do
   sed -i -e 's|mtxrun|export TEXMF=/usr/share/texlive/texmf-dist; export TEXMFCNF=/usr/share/texlive/texmf/web2c; export TEXMFCACHE=/var/lib/texmf; mtxrun|' %{buildroot}%{_bindir}/$i
 done
 
+# configure texmf-local - make it visible to kpathsea
+sed -i -e 's|^TEXMFLOCAL.*|TEXMFLOCAL\ =\ \$TEXMFROOT/texmf-local|' %{buildroot}/%{_texdir}/texmf/web2c/texmf.cnf
+
 %clean
 rm -rf %{buildroot}
 
@@ -276,7 +282,8 @@ fi
 %dir %{_texdir}/texmf-var
 %dir %{_texdir}/../texmf
 %dir %{_texdir}/licenses
-%dir %{_texmf_local}
+%dir %{_texdir}/texmf-local
+%dir %{_texdir}/texmf-local/texmf-compat
 %include _dirs.spec
 %{_texdir}/licenses/*
 %attr(0644, root, root) %verify(not md5 size mtime) %ghost %{_texdir}/texmf/ls-R
@@ -300,9 +307,36 @@ fi
 %{_libdir}/*.so
 
 %changelog
+* Wed Nov 10 2012 Jindrich Novy <jnovy@redhat.com> 2012-7-20121107
+- run mtxrun only once per transaction (#865650), this considerably
+  speeds up installation time
+
+* Wed Nov  7 2012 Jindrich Novy <jnovy@redhat.com> 2012-6-20121107
+- use -std=c++11 for all C++ apps in texlive to avoid symbol problems
+  (thanks to Jakub Jelinek)
+
+* Sun Nov  4 2012 Jindrich Novy <jnovy@redhat.com> 2012-5-20121024
+- don't conflict with latexmk (#868996)
+- unify versioning for both binary and noarch subpackages
+- remove lcdf-typetools hack for s390(x)
+
+* Wed Oct 24 2012 Jindrich Novy <jnovy@redhat.com> 2012-3-20121024
+- sync with upstream - fixes problem lcdf-typetools tests
+- disable largefile support to fix pdflatex on 32bit arches (#872231)
+- put compatibility TEXMF tree reference into texm-local instead
+  symlinking it to /usr/share/texmf directly
+
+* Fri Oct 19 2012 Jindrich Novy <jnovy@redhat.com> 2012-3-20121019
+- sync with upstream sources
+- make /usr/share/texmf visible to kpathsea, make texmf-local
+  pointing to it (#867656, #864875)
+- fix versioning of binary packages
+
 * Tue Oct  9 2012 Jindrich Novy <jnovy@redhat.com> 2012-3-20120926
 - obsolete chktex (#864211)
 - make config.ps a config file (#441171)
+- fix post/postun scriptlet dependencies
+- all subpackages now have %%dist tag
 
 * Sat Oct  6 2012 Jindrich Novy <jnovy@redhat.com> 2012-2-20120926
 - drop relase subpackage (no more needed as TL is now in Fedora)

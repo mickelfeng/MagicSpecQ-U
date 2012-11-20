@@ -28,7 +28,7 @@
 //#define FEDORA_FONTS
 #define UNPACK "xz"
 #define REQ_POSTTRANS "Requires: "
-#define REQ_POST_POSTUN "Requires: "
+#define REQ_POST_POSTUN "Requires(post,postun): "
 #ifndef TL2010
 #  define CTAN_URL "ftp://ftp.ctex.org/mirrors/CTAN/systems/texlive/tlnet/archive/"
 #else
@@ -1742,7 +1742,7 @@ void solve(char *name) {
 							continue;
 						}
 					}
-					fprintf(fpack, "mkdir -p /var/run/texlive\ntouch /var/run/texlive/run-texhash\n");
+					fprintf(fpack, "mkdir -p /var/run/texlive\ntouch /var/run/texlive/run-texhash\ntouch /var/run/texlive/run-mtxrun\n");
 					if ( run_updmap ) fprintf(fpack, "touch /var/run/texlive/run-updmap\n");
 					if ( run_fmtutil ) fprintf(fpack, "touch /var/run/texlive/run-fmtutil\n");
 					fprintf(fpack, "fi\n:\n\n");
@@ -1754,7 +1754,7 @@ void solve(char *name) {
 					fprintf(fpack, "[ -e /var/run/texlive/run-texhash ] && %%{_bindir}/texhash 2> /dev/null; rm -f /var/run/texlive/run-texhash\n");
 					if ( run_updmap ) fprintf(fpack, "[ -e /var/run/texlive/run-updmap ] && %%{_bindir}/updmap-sys --nohash --quiet &> /dev/null; rm -f /var/run/texlive/run-updmap\n");
 					if ( run_fmtutil ) fprintf(fpack, "[ -e /var/run/texlive/run-fmtutil ] && %%{_bindir}/fmtutil-sys --all &> /dev/null; rm -f /var/run/texlive/run-fmtutil\n");
-					fprintf(fpack, "[ -e /usr/bin/mtxrun ] && export TEXMF=/usr/share/texlive/texmf-dist; export TEXMFCNF=/usr/share/texlive/texmf/web2c; export TEXMFCACHE=/var/lib/texmf; %%{_bindir}/mtxrun --generate &> /dev/null\n");
+					fprintf(fpack, "[ -e /var/run/texlive/run-mtxrun ] && export TEXMF=/usr/share/texlive/texmf-dist; export TEXMFCNF=/usr/share/texlive/texmf/web2c; export TEXMFCACHE=/var/lib/texmf; %%{_bindir}/mtxrun --generate &> /dev/null; rm -f /var/run/texlive/run-mtxrun\n");
 					fprintf(fpack, ":\n\n");
 				} else if ( pkg[i].runfs ) {
 #ifndef SRPMS
@@ -1762,7 +1762,7 @@ void solve(char *name) {
 #else
 					fprintf(fpack, "%%post\n");
 #endif
-					fprintf(fpack, "mkdir -p /var/run/texlive\ntouch /var/run/texlive/run-texhash\n");
+					fprintf(fpack, "mkdir -p /var/run/texlive\ntouch /var/run/texlive/run-texhash\ntouch /var/run/texlive/run-mtxrun\n");
 					if ( pkg[i].has_info ) {
 						int k;
 
@@ -1786,7 +1786,7 @@ void solve(char *name) {
 					fprintf(fpack, "%%posttrans\n");
 #endif
 					fprintf(fpack, "[ -e /var/run/texlive/run-texhash ] && [ -e %%{_bindir}/texhash ] && %%{_bindir}/texhash 2> /dev/null; rm -f /var/run/texlive/run-texhash\n");
-					fprintf(fpack, "[ -e /usr/bin/mtxrun ] && export TEXMF=/usr/share/texlive/texmf-dist; export TEXMFCNF=/usr/share/texlive/texmf/web2c; export TEXMFCACHE=/var/lib/texmf; %%{_bindir}/mtxrun --generate &> /dev/null\n");
+					fprintf(fpack, "[ -e /var/run/texlive/run-mtxrun ] && export TEXMF=/usr/share/texlive/texmf-dist; export TEXMFCNF=/usr/share/texlive/texmf/web2c; export TEXMFCACHE=/var/lib/texmf; %%{_bindir}/mtxrun --generate &> /dev/null; rm -f /var/run/texlive/run-mtxrun\n");
 					fprintf(fpack, ":\n\n");
 				}
 
@@ -2073,13 +2073,10 @@ void solve(char *name) {
 							exit(1);
 						}
 					}
-					if (noarch) {
-						fprintf(fpack, "Release: ");
-						if ( pkg[i].catalogue_version ) fprintf(fpack, "%s.svn%s.%%{tl_release}\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "0.svn%s.%%{tl_release}\n", pkg[i].revision);
+					fprintf(fpack, "Release: ");
+					if ( pkg[i].catalogue_version ) fprintf(fpack, "%s.svn%s.%%{tl_release}\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "0.svn%s.%%{tl_release}\n", pkg[i].revision);
+					if ( noarch ) {
 						fprintf(fpack, "BuildArch: noarch\n");
-					} else {
-						fprintf(fpack, "Release: ");
-						if ( pkg[i].catalogue_version ) fprintf(fpack, "%s.svn%s.%%{tl_release}%%{?dist}\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "0.svn%s.%%{tl_release}%%{?dist}\n", pkg[i].revision);
 					}
 				}
 				fprintf(fpack, "\n%%description %s-bin\n", name);
