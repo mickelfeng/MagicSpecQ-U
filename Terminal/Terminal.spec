@@ -2,7 +2,7 @@
 
 Name:           Terminal
 Version:        0.4.8
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        X Terminal Emulator for the Xfce Desktop environment
 
 Group:          User Interface/Desktops
@@ -86,6 +86,9 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_mandir}/*/man1/Terminal.1.*
 
 %changelog
+* Wed Nov 21 2012 Liu Di <liudidi@gmail.com> - 0.4.8-3
+- 为 Magic 3.0 重建
+
 * Thu Jan 12 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.4.8-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
