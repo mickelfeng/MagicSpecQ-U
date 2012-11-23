@@ -7,7 +7,7 @@
 
 Name: R
 Version: 2.15.0
-Release: 3%{?dist}
+Release: 4%{?dist}
 Summary: A language for data analysis and graphics
 URL: http://www.r-project.org
 Source0: ftp://cran.r-project.org/pub/R/src/base/R-2/R-%{version}.tar.gz
@@ -1008,6 +1008,9 @@ R CMD javareconf \
 %postun -n libRmath -p /usr/sbin/ldconfig
 
 %changelog
+* Fri Nov 23 2012 Liu Di <liudidi@gmail.com> - 2.15.0-4
+- 为 Magic 3.0 重建
+
 * Mon May  7 2012 Tom Callaway <spot@fedoraproject.org> - 2.15.0-3
 - rebuild for new libtiff
 
