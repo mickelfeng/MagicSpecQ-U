@@ -1,16 +1,13 @@
 Name:		totem-pl-parser
-Version:	2.32.6
-Release:	5%{?dist}
+Version:	3.4.3
+Release:	1%{?dist}
 Summary:	Totem Playlist Parser library
 
 Group:		System Environment/Libraries
 License:	LGPLv2+
 Url:		http://www.gnome.org/projects/totem/
-Source0:	http://download.gnome.org/sources/%{name}/2.31/%{name}-%{version}.tar.bz2
+Source0:	http://download.gnome.org/sources/%{name}/3.4/%{name}-%{version}.tar.xz
 Obsoletes:	totem-plparser
-
-Patch0:		totem-pl-parser-quvi-0.4.patch
-Patch1:		totem-pl-parser-glib-2.31.patch
 
 BuildRequires:	glib2-devel
 BuildRequires:	gmime-devel
@@ -32,7 +29,6 @@ Group:          Development/Libraries
 Obsoletes:	totem-devel < 2.21.90
 Requires:       %{name} = %{version}-%{release}
 Requires:	pkgconfig
-Requires:	gtk2-devel
 Requires:	gobject-introspection-devel
 
 %description    devel
@@ -41,8 +37,6 @@ developing applications that use %{name}.
 
 %prep
 %setup -q
-%patch0 -p1
-%patch1 -p1
 
 %build
 %configure --enable-static=no
@@ -73,6 +67,30 @@ find $RPM_BUILD_ROOT -name '*.la' -exec rm -f {} ';'
 %{_datadir}/gir-1.0/*.gir
 
 %changelog
+* Wed Sep 19 2012 Tomas Bzatek <tbzatek@redhat.com> - 3.4.3-1
+- Update to 3.4.3
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.4.2-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Fri May 18 2012 Richard Hughes <hughsient@gmail.com> - 3.4.2-1
+- Update to 3.4.2
+
+* Sat Apr 28 2012 Bastien Nocera <bnocera@redhat.com> 3.4.1-2
+- Remove dependency on gtk2-devel for the devel sub-package
+
+* Mon Apr 16 2012 Richard Hughes <hughsient@gmail.com> - 3.4.1-1
+- Update to 3.4.1
+
+* Tue Mar 27 2012 Richard Hughes <hughsient@gmail.com> - 3.4.0-1
+- Update to 3.4.0
+
+* Tue Mar 20 2012 Kalev Lember <kalevlember@gmail.com> - 3.3.92-1
+- Update to 3.3.92
+
+* Sun Feb 26 2012 Matthias Clasen <mclasen@redhat.com> - 3.2.0-1
+- Update to 3.2.0
+
 * Thu Jan 26 2012 Tomas Bzatek <tbzatek@redhat.com> - 2.32.6-5
 - Rebuilt for new libarchive
 
