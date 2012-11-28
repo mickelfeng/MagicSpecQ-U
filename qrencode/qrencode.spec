@@ -1,9 +1,9 @@
 Name:           qrencode
-Version:        3.2.0
-Release:        1%{?dist}
+Version:        3.3.1
+Release:        4%{?dist}
 Summary:        Generate QR 2D barcodes
+Summary(fr):    Génère les code-barres en 2D QR
 
-Group:          Applications/Engineering
 License:        LGPLv2+
 URL:            http://megaui.net/fukuchi/works/qrencode/index.en.html
 Source0:        http://megaui.net/fukuchi/works/qrencode/%{name}-%{version}.tar.gz
@@ -15,14 +15,37 @@ BuildRequires:  libpng-devel chrpath
 Qrencode is a utility software using libqrencode to encode string data in
 a QR Code and save as a PNG image.
 
+%description -l fr
+Qrencode est un logiciel utilitaire utilisant libqrencode pour encoder
+les données dans un QR Code et sauvegarde dans une image PNG.
+
+
 %package        devel
 Summary:        QR Code encoding library - Development files
-Group:          Development/Libraries
-Requires:       %{name} = %{version}-%{release}
+Summary(fr):    Bibliothèque d'encodage QR Code - Fichiers de développement
+Requires:       %{name}-libs%{?_isa} = %{version}-%{release}
 
 %description    devel
 The qrencode-devel package contains libraries and header files for developing
 applications that use qrencode.
+
+%description    devel -l fr
+Le paquet qrencode-devel contient les bibliothèques et les fichiers d'en-tête
+pour le développement d'applications utilisant qrencode.
+
+
+%package        libs
+Summary:        QR Code encoding library - Shared libraries
+Summary(fr):    Bibliothèque d'encodage QR Code - Bibliothèque partagée
+
+%description    libs
+The qrencode-libs package contains the shared libraries and header files for
+applications that use qrencode.
+
+%description    libs -l fr
+Le paquet qrencode-libs contient les bibliothèques partagées et les fichiers
+d'en-tête pour les applications utilisant qrencode.
+
 
 %prep
 %setup -q
@@ -38,20 +61,23 @@ make install DESTDIR=$RPM_BUILD_ROOT INSTALL="install -p"
 rm -rf $RPM_BUILD_ROOT%{_libdir}/libqrencode.la
 chrpath --delete $RPM_BUILD_ROOT%{_bindir}/qrencode
 
+
 %check
 cd ./tests
 sh test_all.sh
 
 
-%post -p /sbin/ldconfig
+%post libs -p /sbin/ldconfig
 
-%postun -p /sbin/ldconfig
+%postun libs -p /sbin/ldconfig
 
 
 %files
-%doc ChangeLog COPYING NEWS README TODO
 %{_bindir}/qrencode
-%{_mandir}/man1/qrencode.1.*
+%{_mandir}/man1/qrencode.1*
+
+%files libs
+%doc ChangeLog COPYING NEWS README TODO
 %{_libdir}/libqrencode.so.*
 
 %files devel
@@ -61,6 +87,32 @@ sh test_all.sh
 
 
 %changelog
+* Fri Sep 21 2012 Matthieu Saulnier <fantom@fedoraproject.org> - 3.3.1-4
+- Add libs subpackage (fix RHBZ #856808)
+
+* Thu Aug 16 2012 Matthieu Saulnier <fantom@fedoraproject.org> - 3.3.1-3
+- Add French translation in spec file
+- Fix incomplete removing Group tags in spec file
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.3.1-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Sat Jun 23 2012 Matthieu Saulnier <fantom@fedoraproject.org> - 3.3.1-1
+- update to 3.3.1
+- remove "Group" tag in spec file
+- fix manfile suffix
+- remove patch to fix improper LIBPTHREAD macro in the pkgconfig file:
+  - upstream issue
+
+* Sat Feb 25 2012 Peter Gordon <peter@thecodergeek.com> - 3.2.0-3
+- Fix applying the LIBPTHREAD patch. (Thanks to Matthieu Saulnier.)
+
+* Thu Feb 23 2012 Peter Gordon <peter@thecodergeek.com> - 3.2.0-2
+- Add patch to fix improper LIBPTHREAD macro in the pkgconfig file:
+  + fix-LIBPTHREAD-macro.patch
+- Resolves: #795582 (qrencode-devel: Malformed pkgconfig file causes build to
+  fail ("@LIBPTHREAD@: No such file or directory"))
+
 * Sun Jan 15 2012 Matthieu Saulnier <fantom@fedoraproject.org> - 3.2.0-1
 - update to 3.2.0
 - remove BuildRoot tag in spec file
