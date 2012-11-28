@@ -1,33 +1,55 @@
 #global gitcommit e7aee75
 
+%global _hardened_build 1
+
+# We ship a .pc file but don't want to have a dep on pkg-config. We
+# strip the automatically generated dep here and instead co-own the
+# directory.
+%global __requires_exclude pkg-config
+
 Name:           systemd
 Url:            http://www.freedesktop.org/wiki/Software/systemd
-Version:        187
-Release:        1%{?gitcommit:.git%{gitcommit}}%{?dist}
+
+# Hey, you! So you are preparing an update for a Fedora version that
+# is not yet released, but is already forked off Rawhide? If so,
+# please think twice before commiting this also into Rawhide. In
+# almost all cases we simply let Koji do the work for us and let the
+# build system inherit the currently developed version into Rawhide,
+# and do not do this via explicit git cherry picks. Thank you very
+# much.
+
+# AGAIN: DO NOT BLINDLY UPDATE RAWHIDE PACKAGES TOO WHEN YOU UPDATE
+# THIS PACKAGE FOR A NON-RAWHIDE DEVELOPMENT DISTRIBUTION!
+
+Version:        195
+Release:        6%{?gitcommit:.git%{gitcommit}}%{?dist}
 # For a breakdown of the licensing, see README
 License:        LGPLv2+ and MIT and GPLv2+
-Group:          System Environment/Base
 Summary:        A System and Service Manager
 BuildRequires:  libcap-devel
 BuildRequires:  tcp_wrappers-devel
 BuildRequires:  pam-devel
 BuildRequires:  cryptsetup-luks-devel
 BuildRequires:  dbus-devel
-BuildRequires:  libxslt
-BuildRequires:  docbook-style-xsl
-BuildRequires:  pkgconfig
 BuildRequires:  libacl-devel
 BuildRequires:  pciutils-devel
 BuildRequires:  glib2-devel
-BuildRequires:  hwdata
 BuildRequires:  gobject-introspection-devel >= 0.6.2
-BuildRequires:  usbutils >= 0.82
 BuildRequires:  libblkid-devel >= 2.20
-BuildRequires:  intltool >= 0.40.0
-BuildRequires:  gperf
 BuildRequires:  xz-devel
 BuildRequires:  kmod-devel >= 5
+BuildRequires:  libgcrypt-devel
+BuildRequires:  qrencode-devel
+BuildRequires:  libmicrohttpd-devel
+BuildRequires:  hwdata
+BuildRequires:  libxslt
+BuildRequires:  docbook-style-xsl
+BuildRequires:  pkgconfig
+BuildRequires:  usbutils >= 0.82
+BuildRequires:  intltool >= 0.40.0
+BuildRequires:  gperf
 BuildRequires:  gtk-doc
+BuildRequires:  python2-devel
 %if %{defined gitcommit}
 BuildRequires:  automake
 BuildRequires:  autoconf
@@ -35,12 +57,15 @@ BuildRequires:  libtool
 %endif
 Requires(post): coreutils
 Requires(post): gawk
+Requires(post): sed
 Requires(pre):  coreutils
-Requires(pre):  /usr/bin/getent /usr/sbin/groupadd
+Requires(pre):  /usr/bin/getent
+Requires(pre):  /usr/sbin/groupadd
 Requires:       dbus
 Requires:       hwdata
 Requires:       filesystem >= 3
 Requires:       nss-myhostname
+Requires:       %{name}-libs = %{version}-%{release}
 %if %{defined gitcommit}
 # Snapshot tarball can be created using: ./make-git-shapshot.sh [gitcommit]
 Source0:        %{name}-git%{gitcommit}.tar.xz
@@ -48,13 +73,19 @@ Source0:        %{name}-git%{gitcommit}.tar.xz
 Source0:        http://www.freedesktop.org/software/systemd/%{name}-%{version}.tar.xz
 %endif
 # Fedora's default preset policy
-Source1:        99-default.preset
+Source1:        90-default.preset
+Source5:        90-display-manager.preset
 # Feodora's SysV convert script. meh.
 Source2:        systemd-sysv-convert
 # Stop-gap, just to ensure things work out-of-the-box for this driver.
 Source3:        udlfb.conf
 # Stop-gap, just to ensure things work fine with rsyslog without having to change the package right-away
 Source4:        listen.conf
+# Prevent accidental removal of the systemd package
+Source6:        yum-protect-systemd.conf
+
+# Temporary workaround for build error https://bugzilla.redhat.com/show_bug.cgi?id=872638
+Patch0:         disable-broken-test-build.patch
 
 Obsoletes:      SysVinit < 2.86-24, sysvinit < 2.86-24
 Provides:       SysVinit = 2.86-24, sysvinit = 2.86-24
@@ -76,6 +107,9 @@ Conflicts:      dracut < 020-57
 Conflicts:      plymouth < 0.8.5.1
 Obsoletes:      systemd < 185-4
 Conflicts:      systemd < 185-4
+Obsoletes:      system-setup-keyboard < 0.9
+Provides:       system-setup-keyboard = 0.9
+Provides:       syslog
 
 %description
 systemd is a system and service manager for Linux, compatible with
@@ -88,7 +122,6 @@ elaborate transactional dependency-based service control logic. It can
 work as a drop-in replacement for sysvinit.
 
 %package libs
-Group:          System Environment/Base
 Summary:        systemd libraries
 License:        LGPLv2+ and MIT
 Obsoletes:      libudev < 183
@@ -96,10 +129,9 @@ Obsoletes:      systemd < 185-4
 Conflicts:      systemd < 185-4
 
 %description libs
-Libraries for systemd and udev. systemd PAM module.
+Libraries for systemd and udev, as well as the systemd PAM module.
 
 %package devel
-Group:          System Environment/Base
 Summary:        Development headers for systemd
 License:        LGPLv2+ and MIT
 Requires:       %{name} = %{version}-%{release}
@@ -110,7 +142,6 @@ Obsoletes:      libudev-devel < 183
 Development headers and auxiliary files for developing applications for systemd.
 
 %package sysv
-Group:          System Environment/Base
 Summary:        SysV tools for systemd
 License:        LGPLv2+
 Requires:       %{name} = %{version}-%{release}
@@ -119,7 +150,6 @@ Requires:       %{name} = %{version}-%{release}
 SysV compatibility tools for systemd
 
 %package analyze
-Group:          System Environment/Base
 Summary:        Tool for processing systemd profiling information
 License:        LGPLv2+
 Requires:       %{name} = %{version}-%{release}
@@ -134,11 +164,19 @@ initialization at boot.
 'systemd-analyze plot' renders an SVG visualizing the parallel start of units
 at boot.
 
+%package python
+Summary:        Python Bindings for systemd
+License:        LGPLv2+
+Requires:       %{name} = %{version}-%{release}
+
+%description python
+This package contains python binds for systemd APIs
+
 %package -n libgudev1
 Summary:        Libraries for adding libudev support to applications that use glib
-Group:          Development/Libraries
 Conflicts:      filesystem < 3
 License:        LGPLv2+
+Requires:       %{name} = %{version}-%{release}
 
 %description -n libgudev1
 This package contains the libraries that make it easier to use libudev
@@ -146,7 +184,6 @@ functionality from applications that use glib.
 
 %package -n libgudev1-devel
 Summary:        Header files for adding libudev support to applications that use glib
-Group:          Development/Libraries
 Requires:       libgudev1 = %{version}-%{release}
 License:        LGPLv2+
 
@@ -156,116 +193,161 @@ glib-based applications using libudev functionality.
 
 %prep
 %setup -q %{?gitcommit:-n %{name}-git%{gitcommit}}
+%patch0 -p1
 
 %build
 %{?gitcommit: ./autogen.sh }
 %configure \
-  --with-distro=fedora \
-  --disable-plymouth \
-  --libexecdir=%{_prefix}/lib \
-  --enable-gtk-doc \
-  --disable-static
-make %{?_smp_mflags}
+        --with-distro=fedora \
+        --libexecdir=%{_prefix}/lib \
+        --enable-gtk-doc \
+        --disable-static
+/usr/bin/make %{?_smp_mflags}
 
 %install
-make DESTDIR=%{buildroot} install
-find %{buildroot} \( -name '*.a' -o -name '*.la' \) -exec rm {} \;
-mkdir -p %{buildroot}/%{_sbindir}
-ln -sf ../bin/udevadm %{buildroot}%{_sbindir}/udevadm
-mkdir -p %{buildroot}%{_prefix}/lib/firmware/updates
+%make_install
+/usr/bin/find %{buildroot} \( -name '*.a' -o -name '*.la' \) -exec rm {} \;
+
+# udev links
+/usr/bin/mkdir -p %{buildroot}/%{_sbindir}
+/usr/bin/ln -sf ../bin/udevadm %{buildroot}%{_sbindir}/udevadm
+/usr/bin/mkdir -p %{buildroot}%{_prefix}/lib/firmware/updates
 
 # Create SysV compatibility symlinks. systemctl/systemd are smart
 # enough to detect in which way they are called.
-ln -s ../lib/systemd/systemd %{buildroot}%{_sbindir}/init
-ln -s ../lib/systemd/systemd %{buildroot}%{_bindir}/systemd
-ln -s ../bin/systemctl %{buildroot}%{_sbindir}/reboot
-ln -s ../bin/systemctl %{buildroot}%{_sbindir}/halt
-ln -s ../bin/systemctl %{buildroot}%{_sbindir}/poweroff
-ln -s ../bin/systemctl %{buildroot}%{_sbindir}/shutdown
-ln -s ../bin/systemctl %{buildroot}%{_sbindir}/telinit
-ln -s ../bin/systemctl %{buildroot}%{_sbindir}/runlevel
+/usr/bin/ln -s ../lib/systemd/systemd %{buildroot}%{_sbindir}/init
+/usr/bin/ln -s ../lib/systemd/systemd %{buildroot}%{_bindir}/systemd
+/usr/bin/ln -s ../bin/systemctl %{buildroot}%{_sbindir}/reboot
+/usr/bin/ln -s ../bin/systemctl %{buildroot}%{_sbindir}/halt
+/usr/bin/ln -s ../bin/systemctl %{buildroot}%{_sbindir}/poweroff
+/usr/bin/ln -s ../bin/systemctl %{buildroot}%{_sbindir}/shutdown
+/usr/bin/ln -s ../bin/systemctl %{buildroot}%{_sbindir}/telinit
+/usr/bin/ln -s ../bin/systemctl %{buildroot}%{_sbindir}/runlevel
 
-ln -s loginctl %{buildroot}%{_bindir}/systemd-loginctl
+# legacy links
+/usr/bin/ln -s loginctl %{buildroot}%{_bindir}/systemd-loginctl
 
 # We create all wants links manually at installation time to make sure
 # they are not owned and hence overriden by rpm after the used deleted
 # them.
-rm -r %{buildroot}%{_sysconfdir}/systemd/system/*.target.wants
+/usr/bin/rm -r %{buildroot}%{_sysconfdir}/systemd/system/*.target.wants
 
 # Make sure the ghost-ing below works
-touch %{buildroot}%{_sysconfdir}/systemd/system/runlevel2.target
-touch %{buildroot}%{_sysconfdir}/systemd/system/runlevel3.target
-touch %{buildroot}%{_sysconfdir}/systemd/system/runlevel4.target
-touch %{buildroot}%{_sysconfdir}/systemd/system/runlevel5.target
+/usr/bin/touch %{buildroot}%{_sysconfdir}/systemd/system/runlevel2.target
+/usr/bin/touch %{buildroot}%{_sysconfdir}/systemd/system/runlevel3.target
+/usr/bin/touch %{buildroot}%{_sysconfdir}/systemd/system/runlevel4.target
+/usr/bin/touch %{buildroot}%{_sysconfdir}/systemd/system/runlevel5.target
 
 # Make sure these directories are properly owned
-mkdir -p %{buildroot}%{_prefix}/lib/systemd/system/basic.target.wants
-mkdir -p %{buildroot}%{_prefix}/lib/systemd/system/default.target.wants
-mkdir -p %{buildroot}%{_prefix}/lib/systemd/system/dbus.target.wants
-mkdir -p %{buildroot}%{_prefix}/lib/systemd/system/syslog.target.wants
+/usr/bin/mkdir -p %{buildroot}%{_prefix}/lib/systemd/system/basic.target.wants
+/usr/bin/mkdir -p %{buildroot}%{_prefix}/lib/systemd/system/default.target.wants
+/usr/bin/mkdir -p %{buildroot}%{_prefix}/lib/systemd/system/dbus.target.wants
+/usr/bin/mkdir -p %{buildroot}%{_prefix}/lib/systemd/system/syslog.target.wants
 
 # Make sure the user generators dir exists too
-mkdir -p %{buildroot}%{_prefix}/lib/systemd/system-generators
-mkdir -p %{buildroot}%{_prefix}/lib/systemd/user-generators
+/usr/bin/mkdir -p %{buildroot}%{_prefix}/lib/systemd/system-generators
+/usr/bin/mkdir -p %{buildroot}%{_prefix}/lib/systemd/user-generators
 
 # Create new-style configuration files so that we can ghost-own them
-touch %{buildroot}%{_sysconfdir}/hostname
-touch %{buildroot}%{_sysconfdir}/vconsole.conf
-touch %{buildroot}%{_sysconfdir}/locale.conf
-touch %{buildroot}%{_sysconfdir}/machine-id
-touch %{buildroot}%{_sysconfdir}/machine-info
-touch %{buildroot}%{_sysconfdir}/timezone
-mkdir -p %{buildroot}%{_sysconfdir}/X11/xorg.conf.d
-touch %{buildroot}%{_sysconfdir}/X11/xorg.conf.d/00-keyboard.conf
+/usr/bin/touch %{buildroot}%{_sysconfdir}/hostname
+/usr/bin/touch %{buildroot}%{_sysconfdir}/vconsole.conf
+/usr/bin/touch %{buildroot}%{_sysconfdir}/locale.conf
+/usr/bin/touch %{buildroot}%{_sysconfdir}/machine-id
+/usr/bin/touch %{buildroot}%{_sysconfdir}/machine-info
+/usr/bin/touch %{buildroot}%{_sysconfdir}/localtime
+/usr/bin/mkdir -p %{buildroot}%{_sysconfdir}/X11/xorg.conf.d
+/usr/bin/touch %{buildroot}%{_sysconfdir}/X11/xorg.conf.d/00-keyboard.conf
 
 # Install Fedora default preset policy
-mkdir -p %{buildroot}%{_prefix}/lib/systemd/system-preset/
-mkdir -p %{buildroot}%{_prefix}/lib/systemd/user-preset/
-install -m 0644 %{SOURCE1} %{buildroot}%{_prefix}/lib/systemd/system-preset/
+/usr/bin/mkdir -p %{buildroot}%{_prefix}/lib/systemd/system-preset/
+/usr/bin/mkdir -p %{buildroot}%{_prefix}/lib/systemd/user-preset/
+/usr/bin/install -m 0644 %{SOURCE1} %{buildroot}%{_prefix}/lib/systemd/system-preset/
+/usr/bin/install -m 0644 %{SOURCE5} %{buildroot}%{_prefix}/lib/systemd/system-preset/
 
 # Make sure the shutdown/sleep drop-in dirs exist
-mkdir -p %{buildroot}%{_prefix}/lib/systemd/system-shutdown/
-mkdir -p %{buildroot}%{_prefix}/lib/systemd/system-sleep/
+/usr/bin/mkdir -p %{buildroot}%{_prefix}/lib/systemd/system-shutdown/
+/usr/bin/mkdir -p %{buildroot}%{_prefix}/lib/systemd/system-sleep/
 
 # Make sure the NTP units dir exists
-mkdir -p %{buildroot}%{_prefix}/lib/systemd/ntp-units.d/
+/usr/bin/mkdir -p %{buildroot}%{_prefix}/lib/systemd/ntp-units.d/
 
 # Install SysV conversion tool for systemd
-install -m 0755 %{SOURCE2} %{buildroot}%{_bindir}/
+/usr/bin/install -m 0755 %{SOURCE2} %{buildroot}%{_bindir}/
 
 # Install modprobe fragment
-mkdir -p %{buildroot}%{_sysconfdir}/modprobe.d/
-install -m 0644 %{SOURCE3} %{buildroot}%{_sysconfdir}/modprobe.d/
+/usr/bin/mkdir -p %{buildroot}%{_sysconfdir}/modprobe.d/
+/usr/bin/install -m 0644 %{SOURCE3} %{buildroot}%{_sysconfdir}/modprobe.d/
 
 # Install rsyslog fragment
-mkdir -p %{buildroot}%{_sysconfdir}/rsyslog.d/
-install -m 0644 %{SOURCE4} %{buildroot}%{_sysconfdir}/rsyslog.d/
+/usr/bin/mkdir -p %{buildroot}%{_sysconfdir}/rsyslog.d/
+/usr/bin/install -m 0644 %{SOURCE4} %{buildroot}%{_sysconfdir}/rsyslog.d/
+
+# Install yum protection fragment
+/usr/bin/mkdir -p %{buildroot}%{_sysconfdir}/yum/protected.d/
+/usr/bin/install -m 0644 %{SOURCE6} %{buildroot}%{_sysconfdir}/yum/protected.d/systemd.conf
 
 # To avoid making life hard for Rawhide-using developers, don't package the
 # kernel.core_pattern setting until systemd-coredump is a part of an actual
 # systemd release and it's made clear how to get the core dumps out of the
 # journal.
-rm -f %{buildroot}%{_prefix}/lib/sysctl.d/coredump.conf
+/usr/bin/rm -f %{buildroot}%{_prefix}/lib/sysctl.d/coredump.conf
 
-magic_rpm_clean.sh
+# For now remove /var/log/README since we are not enabling persistant
+# logging yet.
+/usr/bin/rm -f %{buildroot}%{_localstatedir}/log/README
 
 %pre
-getent group cdrom >/dev/null || /usr/sbin/groupadd -g 11 cdrom || :
-getent group tape >/dev/null || /usr/sbin/groupadd -g 33 tape || :
-getent group dialout >/dev/null || /usr/sbin/groupadd -g 18 dialout || :
-getent group floppy >/dev/null || /usr/sbin/groupadd -g 19 floppy || :
-systemctl stop systemd-udev.service systemd-udev-control.socket systemd-udev-kernel.socket >/dev/null 2>&1 || :
+/usr/bin/getent group cdrom >/dev/null 2>&1 || /usr/sbin/groupadd -r -g 11 cdrom >/dev/null 2>&1 || :
+/usr/bin/getent group tape >/dev/null 2>&1 || /usr/sbin/groupadd -r -g 33 tape >/dev/null 2>&1 || :
+/usr/bin/getent group dialout >/dev/null 2>&1 || /usr/sbin/groupadd -r -g 18 dialout >/dev/null 2>&1 || :
+/usr/bin/getent group floppy >/dev/null 2>&1 || /usr/sbin/groupadd -r -g 19 floppy >/dev/null 2>&1 || :
+/usr/bin/systemctl stop systemd-udevd-control.socket systemd-udevd-kernel.socket systemd-udevd.service >/dev/null 2>&1 || :
 
 # Rename configuration files that changed their names
 /usr/bin/mv -n %{_sysconfdir}/systemd/systemd-logind.conf %{_sysconfdir}/systemd/logind.conf >/dev/null 2>&1 || :
 /usr/bin/mv -n %{_sysconfdir}/systemd/systemd-journald.conf %{_sysconfdir}/systemd/journald.conf >/dev/null 2>&1 || :
 
+%pretrans -p <lua>
+--# Migrate away from systemd-timedated-ntp.target.
+--# Take note which ntp services, if any, were pulled in by it.
+--# We'll enable them the usual way in %%post.
+--# Remove this after upgrades from F17 are no longer supported.
+function migrate_ntp()
+    --# Are we upgrading from a version that had systemd-timedated-ntp.target?
+    t = posix.stat("/usr/lib/systemd/system/systemd-timedated-ntp.target", "type")
+    if t ~= "regular" then return end
+
+    --# Was the target enabled?
+    t = posix.stat("/etc/systemd/system/multi-user.target.wants/systemd-timedated-ntp.target", "type")
+    if t ~= "link" then return end
+
+    --# filesystem provides /var/lib/rpm-state since F17 GA
+    r,msg,errno = posix.mkdir("/var/lib/rpm-state/systemd")
+    if r == nil and errno ~= 17 then return end  --# EEXIST is fine.
+
+    --# Save the list of ntp services pulled by the target.
+    f = io.open("/var/lib/rpm-state/systemd/ntp-units", "w")
+    if f == nil then return end
+
+    files = posix.dir("/usr/lib/systemd/system/systemd-timedated-ntp.target.wants")
+    for i,name in ipairs(files) do
+        if name ~= "." and name ~= ".." then
+            s = string.format("%s\n", name)
+            f:write(s)
+        end
+    end
+
+    f:close()
+end
+
+migrate_ntp()
+return 0
+
 %post
-/usr/sbin/ldconfig
 /usr/bin/systemd-machine-id-setup > /dev/null 2>&1 || :
 /usr/lib/systemd/systemd-random-seed save > /dev/null 2>&1 || :
 /usr/bin/systemctl daemon-reexec > /dev/null 2>&1 || :
-/usr/bin/systemctl start systemd-udev.service >/dev/null 2>&1 || :
+/usr/bin/systemctl start systemd-udevd.service >/dev/null 2>&1 || :
 
 # Stop-gap until rsyslog.rpm does this on its own. (This is supposed
 # to fail when the link already exists)
@@ -273,7 +355,7 @@ systemctl stop systemd-udev.service systemd-udev-control.socket systemd-udev-ker
 
 if [ $1 -eq 1 ] ; then
         # Try to read default runlevel from the old inittab if it exists
-        runlevel=$(/bin/awk -F ':' '$3 == "initdefault" && $1 !~ "^#" { print $2 }' /etc/inittab 2> /dev/null)
+        runlevel=$(/usr/bin/awk -F ':' '$3 == "initdefault" && $1 !~ "^#" { print $2 }' /etc/inittab 2> /dev/null)
         if [ -z "$runlevel" ] ; then
                 target="/usr/lib/systemd/system/graphical.target"
         else
@@ -281,10 +363,10 @@ if [ $1 -eq 1 ] ; then
         fi
 
         # And symlink what we found to the new-style default.target
-        /bin/ln -sf "$target" /etc/systemd/system/default.target >/dev/null 2>&1 || :
+        /usr/bin/ln -sf "$target" /etc/systemd/system/default.target >/dev/null 2>&1 || :
 
         # Enable the services we install by default.
-        /bin/systemctl enable \
+        /usr/bin/systemctl enable \
                 getty@.service \
                 remote-fs.target \
                 systemd-readahead-replay.service \
@@ -292,37 +374,144 @@ if [ $1 -eq 1 ] ; then
 else
         # This systemd service does not exist anymore, we now do it
         # internally in PID 1
-        /bin/rm -f /etc/systemd/system/sysinit.target.wants/hwclock-load.service >/dev/null 2>&1 || :
+        /usr/bin/rm -f /etc/systemd/system/sysinit.target.wants/hwclock-load.service >/dev/null 2>&1 || :
+
+        # This systemd target does not exist anymore. It's been replaced
+        # by ntp-units.d.
+        /usr/bin/rm -f /etc/systemd/system/multi-user.target.wants/systemd-timedated-ntp.target >/dev/null 2>&1 || :
+
+        # Enable the units recorded by %%pretrans
+        if [ -e /var/lib/rpm-state/systemd/ntp-units ] ; then
+                while read service; do
+                        /usr/bin/systemctl enable "$service" >/dev/null 2>&1 || :
+                done < /var/lib/rpm-state/systemd/ntp-units
+                /usr/bin/rm -r /var/lib/rpm-state/systemd/ntp-units
+        fi
+fi
+
+# Migrate /etc/sysconfig/clock
+if [ ! -L /etc/localtime -a -e /etc/sysconfig/clock ] ; then
+       . /etc/sysconfig/clock 2>&1 || :
+       if [ -n "$ZONE" -a -e "/usr/share/zoneinfo/$ZONE" ] ; then
+              /usr/bin/ln -sf "../usr/share/zoneinfo/$ZONE" /etc/localtime >/dev/null 2>&1 || :
+       fi
+fi
+/usr/bin/rm -f /etc/sysconfig/clock >/dev/null 2>&1 || :
+
+# Migrate /etc/sysconfig/i18n
+if [ -e /etc/sysconfig/i18n -a ! -e /etc/locale.conf ]; then
+        unset LANG
+        unset LC_CTYPE
+        unset LC_NUMERIC
+        unset LC_TIME
+        unset LC_COLLATE
+        unset LC_MONETARY
+        unset LC_MESSAGES
+        unset LC_PAPER
+        unset LC_NAME
+        unset LC_ADDRESS
+        unset LC_TELEPHONE
+        unset LC_MEASUREMENT
+        unset LC_IDENTIFICATION
+        . /etc/sysconfig/i18n 2>&1 || :
+        [ -n "$LANG" ] && echo LANG=$LANG > /etc/locale.conf 2>&1 || :
+        [ -n "$LC_CTYPE" ] && echo LC_CTYPE=$LC_CTYPE >> /etc/locale.conf 2>&1 || :
+        [ -n "$LC_NUMERIC" ] && echo LC_NUMERIC=$LC_NUMERIC >> /etc/locale.conf 2>&1 || :
+        [ -n "$LC_TIME" ] && echo LC_TIME=$LC_TIME >> /etc/locale.conf 2>&1 || :
+        [ -n "$LC_COLLATE" ] && echo LC_COLLATE=$LC_COLLATE >> /etc/locale.conf 2>&1 || :
+        [ -n "$LC_MONETARY" ] && echo LC_MONETARY=$LC_MONETARY >> /etc/locale.conf 2>&1 || :
+        [ -n "$LC_MESSAGES" ] && echo LC_MESSAGES=$LC_MESSAGES >> /etc/locale.conf 2>&1 || :
+        [ -n "$LC_PAPER" ] && echo LC_PAPER=$LC_PAPER >> /etc/locale.conf 2>&1 || :
+        [ -n "$LC_NAME" ] && echo LC_NAME=$LC_NAME >> /etc/locale.conf 2>&1 || :
+        [ -n "$LC_ADDRESS" ] && echo LC_ADDRESS=$LC_ADDRESS >> /etc/locale.conf 2>&1 || :
+        [ -n "$LC_TELEPHONE" ] && echo LC_TELEPHONE=$LC_TELEPHONE >> /etc/locale.conf 2>&1 || :
+        [ -n "$LC_MEASUREMENT" ] && echo LC_MEASUREMENT=$LC_MEASUREMENT >> /etc/locale.conf 2>&1 || :
+        [ -n "$LC_IDENTIFICATION" ] && echo LC_IDENTIFICATION=$LC_IDENTIFICATION >> /etc/locale.conf 2>&1 || :
+fi
+
+# Migrate /etc/sysconfig/keyboard
+if [ -e /etc/sysconfig/keyboard -a ! -e /etc/vconsole.conf ]; then
+        unset SYSFONT
+        unset SYSFONTACM
+        unset UNIMAP
+        unset KEYMAP
+        [ -e /etc/sysconfig/i18n ] && . /etc/sysconfig/i18n 2>&1 || :
+        . /etc/sysconfig/keyboard 2>&1 || :
+        [ -n "$SYSFONT" ] && echo FONT=$SYSFONT > /etc/vconsole.conf 2>&1 || :
+        [ -n "$SYSFONTACM" ] && echo FONT_MAP=$SYSFONTACM >> /etc/vconsole.conf 2>&1 || :
+        [ -n "$UNIMAP" ] && echo FONT_UNIMAP=$UNIMAP >> /etc/vconsole.conf 2>&1 || :
+        [ -n "$KEYTABLE" ] && echo KEYMAP=$KEYTABLE >> /etc/vconsole.conf 2>&1 || :
+fi
+/usr/bin/rm -f /etc/sysconfig/i18n >/dev/null 2>&1 || :
+/usr/bin/rm -f /etc/sysconfig/keyboard >/dev/null 2>&1 || :
+
+# Migrate HOSTNAME= from /etc/sysconfig/network
+if [ -e /etc/sysconfig/network -a ! -e /etc/hostname ]; then
+        unset HOSTNAME
+        . /etc/sysconfig/network 2>&1 || :
+        [ -n "$HOSTNAME" ] && echo $HOSTNAME > /etc/hostname 2>&1 || :
+fi
+/usr/bin/sed -i '/^HOSTNAME=/d' /etc/sysconfig/network 2>&1 || :
+
+%posttrans
+# Convert old /etc/sysconfig/desktop settings
+preferred=
+if [ -f /etc/sysconfig/desktop ]; then
+        . /etc/sysconfig/desktop
+        if [ "$DISPLAYMANAGER" = GNOME ]; then
+                preferred=gdm
+        elif [ "$DISPLAYMANAGER" = KDE ]; then
+                preferred=kdm
+        elif [ "$DISPLAYMANAGER" = WDM ]; then
+                preferred=wdm
+        elif [ "$DISPLAYMANAGER" = XDM ]; then
+                preferred=xdm
+        elif [ -n "$DISPLAYMANAGER" ]; then
+                preferred=${DISPLAYMANAGER##*/}
+        fi
+fi
+if [ -z "$preferred" ]; then
+        if [ -x /usr/sbin/gdm ]; then
+                preferred=gdm
+        elif [ -x /usr/bin/kdm ]; then
+                preferred=kdm
+        fi
+fi
+if [ -n "$preferred" -a -r "/usr/lib/systemd/system/$preferred.service" ]; then
+        # This is supposed to fail when the symlink already exists
+        /usr/bin/ln -s "/usr/lib/systemd/system/$preferred.service" /etc/systemd/system/display-manager.service >/dev/null 2>&1 || :
 fi
 
 %postun
-/usr/sbin/ldconfig
 if [ $1 -ge 1 ] ; then
-        /bin/systemctl daemon-reload > /dev/null 2>&1 || :
-        /bin/systemctl try-restart systemd-logind.service >/dev/null 2>&1 || :
+        /usr/bin/systemctl daemon-reload > /dev/null 2>&1 || :
+        /usr/bin/systemctl try-restart systemd-logind.service >/dev/null 2>&1 || :
 fi
 
 %preun
 if [ $1 -eq 0 ] ; then
-        /bin/systemctl disable \
+        /usr/bin/systemctl disable \
                 getty@.service \
                 remote-fs.target \
                 systemd-readahead-replay.service \
                 systemd-readahead-collect.service >/dev/null 2>&1 || :
 
-        /bin/rm -f /etc/systemd/system/default.target >/dev/null 2>&1 || :
+        /usr/bin/rm -f /etc/systemd/system/default.target >/dev/null 2>&1 || :
 fi
 
 %triggerun -- systemd-units < 38-5
-mv /etc/systemd/system/default.target /etc/systemd/system/default.target.save >/dev/null 2>&1 || :
+/usr/bin/mv /etc/systemd/system/default.target /etc/systemd/system/default.target.save >/dev/null 2>&1 || :
 
 %triggerpostun -- systemd-units < 38-5
-mv /etc/systemd/system/default.target.save /etc/systemd/system/default.target >/dev/null 2>&1
+/usr/bin/mv /etc/systemd/system/default.target.save /etc/systemd/system/default.target >/dev/null 2>&1
 /usr/bin/systemctl enable \
         getty@.service \
         remote-fs.target \
         systemd-readahead-replay.service \
         systemd-readahead-collect.service
+
+%post libs -p /sbin/ldconfig
+%postun libs -p /sbin/ldconfig
 
 %post -n libgudev1 -p /sbin/ldconfig
 %postun -n libgudev1 -p /sbin/ldconfig
@@ -353,6 +542,7 @@ mv /etc/systemd/system/default.target.save /etc/systemd/system/default.target >/
 %dir %{_prefix}/lib/firmware
 %dir %{_prefix}/lib/firmware/updates
 %dir %{_datadir}/systemd
+%dir %{_datadir}/pkgconfig
 %config(noreplace) %{_sysconfdir}/dbus-1/system.d/org.freedesktop.systemd1.conf
 %config(noreplace) %{_sysconfdir}/dbus-1/system.d/org.freedesktop.hostname1.conf
 %config(noreplace) %{_sysconfdir}/dbus-1/system.d/org.freedesktop.login1.conf
@@ -365,15 +555,17 @@ mv /etc/systemd/system/default.target.save /etc/systemd/system/default.target >/
 %config(noreplace) %{_sysconfdir}/udev/udev.conf
 %config(noreplace) %{_sysconfdir}/rsyslog.d/listen.conf
 %config(noreplace) %{_sysconfdir}/modprobe.d/udlfb.conf
+%config(noreplace) %{_sysconfdir}/yum/protected.d/systemd.conf
 %{_sysconfdir}/bash_completion.d/systemd-bash-completion.sh
 %{_sysconfdir}/rpm/macros.systemd
 %{_sysconfdir}/xdg/systemd
+%{_sysconfdir}/rc.d/init.d/README
 %ghost %config(noreplace) %{_sysconfdir}/hostname
+%ghost %config(noreplace) %{_sysconfdir}/localtime
 %ghost %config(noreplace) %{_sysconfdir}/vconsole.conf
 %ghost %config(noreplace) %{_sysconfdir}/locale.conf
 %ghost %config(noreplace) %{_sysconfdir}/machine-id
 %ghost %config(noreplace) %{_sysconfdir}/machine-info
-%ghost %config(noreplace) %{_sysconfdir}/timezone
 %ghost %config(noreplace) %{_sysconfdir}/X11/xorg.conf.d/00-keyboard.conf
 %{_bindir}/systemd
 %{_bindir}/systemctl
@@ -391,8 +583,12 @@ mv /etc/systemd/system/default.target.save /etc/systemd/system/default.target >/
 %{_bindir}/systemd-cgls
 %{_bindir}/systemd-cgtop
 %{_bindir}/systemd-delta
-%{_bindir}/systemd-detect-virt
+%caps(cap_dac_override,cap_sys_ptrace=pe) %{_bindir}/systemd-detect-virt
 %{_bindir}/systemd-inhibit
+%{_bindir}/hostnamectl
+%{_bindir}/localectl
+%{_bindir}/timedatectl
+%{_bindir}/systemd-coredumpctl
 %{_bindir}/udevadm
 %{_prefix}/lib/systemd/systemd
 %{_prefix}/lib/systemd/system
@@ -408,7 +604,8 @@ mv /etc/systemd/system/default.target.save /etc/systemd/system/default.target >/
 %{_prefix}/lib/tmpfiles.d/x11.conf
 %{_prefix}/lib/tmpfiles.d/legacy.conf
 %{_prefix}/lib/tmpfiles.d/tmp.conf
-%{_prefix}/lib/systemd/system-preset/99-default.preset
+%{_prefix}/lib/systemd/system-preset/90-default.preset
+%{_prefix}/lib/systemd/system-preset/90-display-manager.preset
 %{_sbindir}/init
 %{_sbindir}/reboot
 %{_sbindir}/halt
@@ -439,6 +636,7 @@ mv /etc/systemd/system/default.target.save /etc/systemd/system/default.target >/
 %{_datadir}/polkit-1/actions/org.freedesktop.timedate1.policy
 %{_datadir}/pkgconfig/systemd.pc
 %{_datadir}/pkgconfig/udev.pc
+%{_datadir}/systemd/gatewayd/browse.html
 
 # Make sure we don't remove runlevel targets from F14 alpha installs,
 # but make sure we don't create then anew.
@@ -475,7 +673,7 @@ mv /etc/systemd/system/default.target.save /etc/systemd/system/default.target >/
 %{_libdir}/pkgconfig/libudev.pc
 %{_mandir}/man3/*
 %dir %{_datadir}/gtk-doc/html/libudev
-%attr(0644,root,root) %{_datadir}/gtk-doc/html/libudev/*
+%{_datadir}/gtk-doc/html/libudev/*
 
 %files sysv
 %{_bindir}/systemd-sysv-convert
@@ -483,21 +681,164 @@ mv /etc/systemd/system/default.target.save /etc/systemd/system/default.target >/
 %files analyze
 %{_bindir}/systemd-analyze
 
+%files python
+%{python_sitearch}/systemd/__init__.py
+%{python_sitearch}/systemd/__init__.pyc
+%{python_sitearch}/systemd/__init__.pyo
+%{python_sitearch}/systemd/_journal.so
+%{python_sitearch}/systemd/journal.py
+%{python_sitearch}/systemd/journal.pyc
+%{python_sitearch}/systemd/journal.pyo
+
 %files -n libgudev1
-%attr(0755,root,root) %{_libdir}/libgudev-1.0.so.*
-%attr(0644,root,root) %{_libdir}/girepository-1.0/GUdev-1.0.typelib
+%{_libdir}/libgudev-1.0.so.*
+%{_libdir}/girepository-1.0/GUdev-1.0.typelib
 
 %files -n libgudev1-devel
-%attr(0755,root,root) %{_libdir}/libgudev-1.0.so
-%dir %attr(0755,root,root) %{_includedir}/gudev-1.0
-%dir %attr(0755,root,root) %{_includedir}/gudev-1.0/gudev
-%attr(0644,root,root) %{_includedir}/gudev-1.0/gudev/*.h
-%attr(0644,root,root) %{_datadir}/gir-1.0/GUdev-1.0.gir
+%{_libdir}/libgudev-1.0.so
+%dir %{_includedir}/gudev-1.0
+%dir %{_includedir}/gudev-1.0/gudev
+%{_includedir}/gudev-1.0/gudev/*.h
+%{_datadir}/gir-1.0/GUdev-1.0.gir
 %dir %{_datadir}/gtk-doc/html/gudev
-%attr(0644,root,root) %{_datadir}/gtk-doc/html/gudev/*
-%attr(0644,root,root) %{_libdir}/pkgconfig/gudev-1.0*
+%{_datadir}/gtk-doc/html/gudev/*
+%{_libdir}/pkgconfig/gudev-1.0*
 
 %changelog
+* Fri Nov 09 2012 Michal Schmidt <mschmidt@redhat.com> - 195-6
+- Fix cyclical dep between systemd and systemd-libs.
+- Avoid broken build of test-journal-syslog.
+- https://bugzilla.redhat.com/show_bug.cgi?id=873387
+- https://bugzilla.redhat.com/show_bug.cgi?id=872638
+
+* Thu Oct 25 2012 Kay Sievers <kay@redhat.com> - 195-5
+- require 'sed', limit HOSTNAME= match
+
+* Wed Oct 24 2012 Michal Schmidt <mschmidt@redhat.com> - 195-4
+- add dmraid-activation.service to the default preset
+- add yum protected.d fragment
+- https://bugzilla.redhat.com/show_bug.cgi?id=869619
+- https://bugzilla.redhat.com/show_bug.cgi?id=869717
+
+* Wed Oct 24 2012 Kay Sievers <kay@redhat.com> - 195-3
+- Migrate /etc/sysconfig/ i18n, keyboard, network files/variables to
+  systemd native files
+
+* Tue Oct 23 2012 Lennart Poettering <lpoetter@redhat.com> - 195-2
+- Provide syslog because the journal is fine as a syslog implementation
+
+* Tue Oct 23 2012 Lennart Poettering <lpoetter@redhat.com> - 195-1
+- New upstream release
+- https://bugzilla.redhat.com/show_bug.cgi?id=831665
+- https://bugzilla.redhat.com/show_bug.cgi?id=847720
+- https://bugzilla.redhat.com/show_bug.cgi?id=858693
+- https://bugzilla.redhat.com/show_bug.cgi?id=863481
+- https://bugzilla.redhat.com/show_bug.cgi?id=864629
+- https://bugzilla.redhat.com/show_bug.cgi?id=864672
+- https://bugzilla.redhat.com/show_bug.cgi?id=864674
+- https://bugzilla.redhat.com/show_bug.cgi?id=865128
+- https://bugzilla.redhat.com/show_bug.cgi?id=866346
+- https://bugzilla.redhat.com/show_bug.cgi?id=867407
+- https://bugzilla.redhat.com/show_bug.cgi?id=868603
+
+* Wed Oct 10 2012 Michal Schmidt <mschmidt@redhat.com> - 194-2
+- Add scriptlets for migration away from systemd-timedated-ntp.target
+
+* Wed Oct  3 2012 Lennart Poettering <lpoetter@redhat.com> - 194-1
+- New upstream release
+- https://bugzilla.redhat.com/show_bug.cgi?id=859614
+- https://bugzilla.redhat.com/show_bug.cgi?id=859655
+
+* Fri Sep 28 2012 Lennart Poettering <lpoetter@redhat.com> - 193-1
+- New upstream release
+
+* Tue Sep 25 2012 Lennart Poettering <lpoetter@redhat.com> - 192-1
+- New upstream release
+
+* Fri Sep 21 2012 Lennart Poettering <lpoetter@redhat.com> - 191-2
+- Fix journal mmap header prototype definition to fix compilation on 32bit
+
+* Fri Sep 21 2012 Lennart Poettering <lpoetter@redhat.com> - 191-1
+- New upstream release
+- Enable all display managers by default, as discussed with Adam Williamson
+
+* Thu Sep 20 2012 Lennart Poettering <lpoetter@redhat.com> - 190-1
+- New upstream release
+- Take possession of /etc/localtime, and remove /etc/sysconfig/clock
+- https://bugzilla.redhat.com/show_bug.cgi?id=858780
+- https://bugzilla.redhat.com/show_bug.cgi?id=858787
+- https://bugzilla.redhat.com/show_bug.cgi?id=858771
+- https://bugzilla.redhat.com/show_bug.cgi?id=858754
+- https://bugzilla.redhat.com/show_bug.cgi?id=858746
+- https://bugzilla.redhat.com/show_bug.cgi?id=858266
+- https://bugzilla.redhat.com/show_bug.cgi?id=858224
+- https://bugzilla.redhat.com/show_bug.cgi?id=857670
+- https://bugzilla.redhat.com/show_bug.cgi?id=856975
+- https://bugzilla.redhat.com/show_bug.cgi?id=855863
+- https://bugzilla.redhat.com/show_bug.cgi?id=851970
+- https://bugzilla.redhat.com/show_bug.cgi?id=851275
+- https://bugzilla.redhat.com/show_bug.cgi?id=851131
+- https://bugzilla.redhat.com/show_bug.cgi?id=847472
+- https://bugzilla.redhat.com/show_bug.cgi?id=847207
+- https://bugzilla.redhat.com/show_bug.cgi?id=846483
+- https://bugzilla.redhat.com/show_bug.cgi?id=846085
+- https://bugzilla.redhat.com/show_bug.cgi?id=845973
+- https://bugzilla.redhat.com/show_bug.cgi?id=845194
+- https://bugzilla.redhat.com/show_bug.cgi?id=845028
+- https://bugzilla.redhat.com/show_bug.cgi?id=844630
+- https://bugzilla.redhat.com/show_bug.cgi?id=839736
+- https://bugzilla.redhat.com/show_bug.cgi?id=835848
+- https://bugzilla.redhat.com/show_bug.cgi?id=831740
+- https://bugzilla.redhat.com/show_bug.cgi?id=823485
+- https://bugzilla.redhat.com/show_bug.cgi?id=821813
+- https://bugzilla.redhat.com/show_bug.cgi?id=807886
+- https://bugzilla.redhat.com/show_bug.cgi?id=802198
+- https://bugzilla.redhat.com/show_bug.cgi?id=767795
+- https://bugzilla.redhat.com/show_bug.cgi?id=767561
+- https://bugzilla.redhat.com/show_bug.cgi?id=752774
+- https://bugzilla.redhat.com/show_bug.cgi?id=732874
+- https://bugzilla.redhat.com/show_bug.cgi?id=858735
+
+* Thu Sep 13 2012 Lennart Poettering <lpoetter@redhat.com> - 189-4
+- Don't pull in pkg-config as dep
+- https://bugzilla.redhat.com/show_bug.cgi?id=852828
+
+* Wed Sep 12 2012 Lennart Poettering <lpoetter@redhat.com> - 189-3
+- Update preset policy
+- Rename preset policy file from 99-default.preset to 90-default.preset so that people can order their own stuff after the Fedora default policy if they wish
+
+* Thu Aug 23 2012 Lennart Poettering <lpoetter@redhat.com> - 189-2
+- Update preset policy
+- https://bugzilla.redhat.com/show_bug.cgi?id=850814
+
+* Thu Aug 23 2012 Lennart Poettering <lpoetter@redhat.com> - 189-1
+- New upstream release
+
+* Thu Aug 16 2012 Ray Strode <rstrode@redhat.com> 188-4
+- more scriptlet fixes
+  (move dm migration logic to %posttrans so the service
+   files it's looking for are available at the time
+   the logic is run)
+
+* Sat Aug 11 2012 Lennart Poettering <lpoetter@redhat.com> - 188-3
+- Remount file systems MS_PRIVATE before switching roots
+- https://bugzilla.redhat.com/show_bug.cgi?id=847418
+
+* Wed Aug 08 2012 Rex Dieter <rdieter@fedoraproject.org> - 188-2
+- fix scriptlets
+
+* Wed Aug  8 2012 Lennart Poettering <lpoetter@redhat.com> - 188-1
+- New upstream release
+- Enable gdm and avahi by default via the preset file
+- Convert /etc/sysconfig/desktop to display-manager.service symlink
+- Enable hardened build
+
+* Mon Jul 30 2012 Kay Sievers <kay@redhat.com> - 187-3
+- Obsolete: system-setup-keyboard
+
+* Wed Jul 25 2012 Kalev Lember <kalevlember@gmail.com> - 187-2
+- Run ldconfig for the new -libs subpackage
+
 * Thu Jul 19 2012 Lennart Poettering <lpoetter@redhat.com> - 187-1
 - New upstream release
 
