@@ -1,19 +1,23 @@
 %{!?tcl:%define tcl 1}
 %{!?guile:%define guile 1}
 
+%if 0%{?rhel}
+%{!?octave:%define octave 0}
+%else
+%{!?octave:%define octave 1}
+%endif
+
 Summary: Connects C/C++/Objective C to some high-level programming languages
 Name: swig
-Version: 2.0.4
-Release: 5%{?dist}
+Version: 2.0.8
+Release: 1%{?dist}
 License: GPLv3+ and BSD
 Group: Development/Tools
 URL: http://swig.sourceforge.net/
 Source: http://downloads.sourceforge.net/project/swig/swig/swig-%{version}/swig-%{version}.tar.gz
-Patch1: swig-1.3.23-pylib.patch
 Patch4: swig203-rh706140.patch
-Patch5: swig204-rh753321.patch
 Patch6: swig204-rh752054.patch
-Patch7: swig204-rh679948.patch
+Patch9: swig207-setools.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: perl, python-devel, pcre-devel
@@ -23,7 +27,10 @@ BuildRequires: tcl-devel
 %if %{guile}
 BuildRequires: guile-devel
 %endif
-BuildRequires: autoconf, automake, gawk, dos2unix, octave-devel
+BuildRequires: autoconf, automake, gawk, dos2unix
+%if %{octave}
+BuildRequires: octave-devel
+%endif
 
 %description
 Simplified Wrapper and Interface Generator (SWIG) is a software
@@ -45,12 +52,11 @@ This package contains documentation for SWIG and useful examples
 
 %prep
 %setup -q -n swig-%{version}
-%patch1 -p1 -b .pylib
 %patch4 -p1 -b .rh706140
-%patch5 -p0 -b .rh753321
 # Apply patch 6 when guile2 gets into distro
 #%patch6 -p1 -b .rh752054
-%patch7 -p0 -b .rh679948
+
+%patch9 -p1 -b .setools
 
 # as written on https://fedoraproject.org/wiki/Packaging_talk:Perl, section 2
 # (specific req/prov filtering). Before you remove this hack make sure you don't
@@ -79,7 +85,11 @@ done
 
 %build
 ./autogen.sh
-%configure --with-octave=/usr/bin/octave
+%configure \
+%if %{octave}
+  --with-octave=/usr/bin/octave \
+%endif
+;
 make %{?_smp_mflags}
 
 # Test suite is currently broken
@@ -122,8 +132,44 @@ rm -rf %{buildroot}
 %doc Doc Examples LICENSE LICENSE-GPL LICENSE-UNIVERSITIES COPYRIGHT
 
 %changelog
-* Sun Mar 11 2012 Liu Di <liudidi@gmail.com> - 2.0.4-5
-- 为 Magic 3.0 重建
+* Wed Sep 12 2012 Adam Tkac <atkac redhat com> 2.0.8-1
+- update to 2.0.8 (#851364)
+- swig207-rh830660.patch merged
+- swig207-r13128.patch merged
+- swig-rh841245.patch merged
+
+* Thu Jul 19 2012 Adam Tkac <atkac redhat com> 2.0.7-4
+- don't clean "bool" definition in PERL 5 environment (#841245)
+
+* Wed Jun 27 2012 Adam Tkac <atkac redhat com> 2.0.7-3
+- fix building of setools package
+
+* Tue Jun 12 2012 Adam Tkac <atkac redhat com> 2.0.7-2
+- fix generating of python3 wrappers (#830660)
+- don't crash when attepmting to warn about wrong descructor (#830249)
+
+* Thu Jun 07 2012 Adam Tkac <atkac redhat com> 2.0.7-1
+- update to 2.0.7
+- swig-1.3.23-pylib.patch is no longer needed
+
+* Thu May 10 2012 Adam Tkac <atkac redhat com> 2.0.6-1
+- update to 2.0.6
+
+* Mon Apr 23 2012 Adam Tkac <atkac redhat com> 2.0.5-1
+- update to 2.0.5
+- patches merged
+  - swig204-rh753321.patch
+  - swig204-rh679948.patch
+  - swig204-rh770696.patch
+
+* Thu Apr 19 2012 Adam Tkac <atkac redhat com> - 2.0.4-7
+- drop Octave support on RHEL
+
+* Fri Feb 10 2012 Petr Pisar <ppisar@redhat.com> - 2.0.4-6
+- Rebuild against PCRE 8.30
+
+* Thu Jan 05 2012 Adam Tkac <atkac redhat com> 2.0.4-5
+- fix for PHP 5.4 bindings (#770696)
 
 * Tue Nov 15 2011 Adam Tkac <atkac redhat com> 2.0.4-4
 - don't apply patch for #752054 till guile2 gets into distro
