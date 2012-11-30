@@ -1,10 +1,10 @@
 %define majorver 8.5
-%define vers %{majorver}.11
+%define vers %{majorver}.13
 
 Summary: The graphical toolkit for the Tcl scripting language
 Name: tk
 Version: %{vers}
-Release: 3%{?dist}
+Release: 1%{?dist}
 Epoch:   1
 License: TCL
 Group: Development/Languages
@@ -119,8 +119,16 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/%{name}%{majorver}/tkAppInit.c
 
 %changelog
-* Sun Mar 11 2012 Liu Di <liudidi@gmail.com> - 1:8.5.11-3
-- 为 Magic 3.0 重建
+* Mon Nov 12 2012 Jaroslav Škarvada <jskarvad@redhat.com> - 1:8.5.13-1
+- New version
+  Resolves: rhbz#875830
+
+* Mon Jul 30 2012 Jaroslav Škarvada <jskarvad@redhat.com> - 1:8.5.12-1
+- New version
+  Resolves: rhbz#843902
+
+* Fri Jul 27 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:8.5.11-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:8.5.11-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
