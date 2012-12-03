@@ -1,11 +1,10 @@
 Summary: A general purpose sound file conversion tool
 Name: sox
-Version: 14.3.2
-Release: 2%{?dist}
+Version: 14.4.0
+Release: 3%{?dist}
 License: GPLv2+ and LGPLv2+
 Group: Applications/Multimedia
-Source: http://prdownloads.sourceforge.net/sox/sox-%{version}.tar.gz
-Patch1:	sox-14.3.2-ffmpeg.patch
+Source: http://downloads.sourceforge.net/%{name}/%{name}-%{version}.tar.gz
 URL: http://sox.sourceforge.net/
 BuildRequires: libvorbis-devel
 BuildRequires: alsa-lib-devel, libtool-ltdl-devel, libsamplerate-devel
@@ -13,7 +12,6 @@ BuildRequires: gsm-devel, wavpack-devel, ladspa-devel, libpng-devel
 BuildRequires: flac-devel, libao-devel, libsndfile-devel, libid3tag-devel
 BuildRequires: pulseaudio-libs-devel
 BuildRequires: libtool
-Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
 SoX (Sound eXchange) is a sound file format converter SoX can convert
@@ -32,29 +30,23 @@ which will use the SoX sound file format converter.
 
 %prep
 %setup -q
-%patch1 -p1
 
 %build
-CFLAGS="$RPM_OPT_FLAGS -D_FILE_OFFSET_BITS=64" %configure --with-dyn-default --with-gsm --includedir=%{_includedir}/sox --disable-static --with-distro=Fedora
+CFLAGS="$RPM_OPT_FLAGS -D_FILE_OFFSET_BITS=64" %configure --with-dyn-default --with-gsm --includedir=%{_includedir}/sox --disable-static --with-distro=Magic
 make %{?_smp_mflags}
 
 %install
-rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT
 rm -f $RPM_BUILD_ROOT/%{_libdir}/libsox.la
 rm -f $RPM_BUILD_ROOT/%{_libdir}/sox/*.la
 rm -f $RPM_BUILD_ROOT/%{_libdir}/sox/*.a
 
 
-%clean
-rm -rf $RPM_BUILD_ROOT
-
 %post -p /sbin/ldconfig
 
 %postun -p /sbin/ldconfig
 
 %files
-%defattr(-,root,root,-)
 %doc AUTHORS ChangeLog COPYING README
 %{_bindir}/play
 %{_bindir}/rec
@@ -67,7 +59,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man7/*
 
 %files -n sox-devel
-%defattr(-,root,root,-)
 %{_includedir}/sox
 %{_libdir}/libsox.so
 %{_libdir}/pkgconfig/sox.pc
@@ -75,8 +66,20 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
-* Wed Feb 08 2012 Liu Di <liudidi@gmail.com> - 14.3.2-2
-- 为 Magic 3.0 重建
+* Tue Sep 18 2012 Honza Horak <hhorak@redhat.com> - 14.4.0-3
+- Minor spec file fixes
+ 
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 14.4.0-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Fri Mar 09 2012 Honza Horak <hhorak@redhat.com> - 14.4.0-1
+- updated to upstream version 14.4.0
+
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 14.3.2-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
+* Mon Nov 07 2011 Adam Jackson <ajax@redhat.com> 14.3.2-2
+- Rebuild for libpng 1.5
 
 * Sat Mar 19 2011 Felix Kaechele <heffer@fedoraproject.org> - 14.3.2-1
 - 14.3.2
