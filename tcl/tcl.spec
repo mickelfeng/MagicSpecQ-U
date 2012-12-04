@@ -1,11 +1,11 @@
 %define majorver 8.5
-%define	vers %{majorver}.11
+%define	vers %{majorver}.13
 %{!?sdt:%define sdt 1}
 
 Summary: Tool Command Language, pronounced tickle
 Name: tcl
 Version: %{vers}
-Release: 2%{?dist}
+Release: 1%{?dist}
 Epoch: 1
 License: TCL
 Group: Development/Languages
@@ -18,7 +18,7 @@ Obsoletes: tcl-tcldict <= %{vers}
 Provides: tcl-tcldict = %{vers}
 Patch0: tcl-8.5.1-autopath.patch
 Patch1: tcl-8.5.10-conf.patch
-Patch2: tcl-8.5.9-hidden.patch
+Patch2: tcl-8.5.12-hidden.patch
 
 %if %sdt
 BuildRequires: systemtap-sdt-devel
@@ -68,16 +68,15 @@ autoconf
 --enable-symbols \
 --enable-shared
 
-make %{?_smp_mflags} CFLAGS="$RPM_OPT_FLAGS -DTCL_NO_STACK_CHECK=1" \
-TCL_LIBRARY=%{_datadir}/%{name}%{majorver}
+make %{?_smp_mflags} CFLAGS="$RPM_OPT_FLAGS" TCL_LIBRARY=%{_datadir}/%{name}%{majorver}
 
 %check
-# don't run "make test" by default
-%{?_without_check: %define _without_check 0}
-%{!?_without_check: %define _without_check 1}
+%{?_without_check: %define _without_check 1}
+%{!?_without_check: %define _without_check 0}
 
 %if ! %{_without_check}
-#  make test
+  cd unix
+  make test
 %endif
 
 %install
@@ -138,6 +137,24 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/%{name}%{majorver}/tclAppInit.c
 
 %changelog
+* Mon Nov 12 2012 Jaroslav Škarvada <jskarvad@redhat.com> - 1:8.5.13-1
+- New version
+  Resolves: rhbz#875830
+
+* Tue Aug 21 2012 Jaroslav Škarvada <jskarvad@redhat.com> - 1:8.5.12-3
+- Removed pic patch
+
+* Fri Aug 10 2012 Jaroslav Škarvada <jskarvad@redhat.com> - 1:8.5.12-2
+- Enabled upstream test suite
+- Enabled stack checking
+
+* Mon Jul 30 2012 Jaroslav Škarvada <jskarvad@redhat.com> - 1:8.5.12-1
+- New version
+  Resolves: rhbz#843902
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:8.5.11-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:8.5.11-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
