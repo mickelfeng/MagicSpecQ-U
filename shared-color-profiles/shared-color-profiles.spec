@@ -1,7 +1,7 @@
 Summary: Shared color profiles are used in color management aware applications
 Name: shared-color-profiles
 Version: 0.1.5
-Release: 1%{?dist}
+Release: 2%{?dist}
 URL: http://github.com/hughsie/shared-color-profiles
 Source0: http://people.freedesktop.org/~hughsient/releases/%{name}-%{version}.tar.gz
 License: GPLv2+ and Public Domain and zlib and MIT
@@ -72,6 +72,9 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %{_datadir}/shared-color-profiles/Oysonar/*
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.1.5-2
+- 为 Magic 3.0 重建
+
 * Tue Nov 01 2011 Richard Hughes <rhughes@redhat.com> - 0.1.5-1
 - New upstream release.
 - More metadata added to profiles to make client programs better.
