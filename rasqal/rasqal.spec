@@ -1,6 +1,6 @@
 Name:           rasqal
 Version:        0.9.29
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        RDF Query Library
 
 Group:          System Environment/Libraries
@@ -97,6 +97,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.9.29-3
+- 为 Magic 3.0 重建
+
 * Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.9.29-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
