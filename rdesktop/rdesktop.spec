@@ -2,7 +2,7 @@ Summary: X client for remote desktop into Windows Terminal Server
 Summary(zh_CN.UTF-8): 在 X 中显示 Windows 终端服务器桌面
 Name: rdesktop
 Version: 1.7.1
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL
 Group: User Interface/Desktops
 Group(zh_CN.UTF-8): 用户界面/桌面
@@ -49,6 +49,9 @@ Citrix ICA 不同，它不要求任何服务器扩展。
 %{_datadir}/rdesktop/
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.7.1-2
+- 为 Magic 3.0 重建
+
 * Sun Feb 05 2006 liudi <liudidi@gmail.com>
 - Build for Magiclinux 2.0 rc3
 * Fri May 27 2005 Dag Wieers <dag@wieers.com> - 1.4.1-0 - 3663/dries
