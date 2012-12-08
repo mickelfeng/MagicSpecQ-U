@@ -21,7 +21,7 @@
 Summary:	Rspec-2 runner and formatters
 Name:		rubygem-%{gemname}
 Version:	%{majorver}
-Release:	%{?preminorver:0.}%{fedorarel}%{?preminorver:%{rpmminorver}}%{?dist}
+Release:	%{?preminorver:0.}%{fedorarel}%{?preminorver:%{rpmminorver}}%{?dist}.1
 
 Group:		Development/Languages
 License:	MIT
@@ -150,6 +150,9 @@ ruby -rubygems -Ilib/ -S exe/rspec \
 %{geminstdir}/spec/
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 2.11.1-1.1
+- 为 Magic 3.0 重建
+
 * Thu Oct 11 2012 Mamoru Tasaka <mtasaka@fedoraproject.org> - 2.11.1-1
 - 2.11.1
 - Drop dependency for mocks and expectations
