@@ -1,6 +1,6 @@
 Name:           shntool
 Version:        3.0.10
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        A multi-purpose WAVE data processing and reporting utility
 
 Group:          Applications/Multimedia
@@ -42,6 +42,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 3.0.10-5
+- 为 Magic 3.0 重建
+
 * Mon Feb 06 2012 Liu Di <liudidi@gmail.com> - 3.0.10-4
 - 为 Magic 3.0 重建
 
