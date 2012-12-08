@@ -1,7 +1,7 @@
 Summary: A set of system configuration and setup files
 Name: setup
 Version: 2.8.47
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: Public Domain
 Group: System Environment/Base
 URL: https://fedorahosted.org/setup/
@@ -89,6 +89,9 @@ end
 %ghost %verify(not md5 size mtime) %config(noreplace,missingok) /etc/fstab
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 2.8.47-2
+- 为 Magic 3.0 重建
+
 * Tue Jan 10 2012 Ondrej Vasik <ovasik@redhat.com> 2.8.47-1
 - reserve 181:181 uidgid pair for wallaby (#772747)
 
