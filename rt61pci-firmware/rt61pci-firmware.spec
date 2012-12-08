@@ -1,6 +1,6 @@
 Name:		rt61pci-firmware
 Version:	1.2
-Release:	5%{?dist}
+Release:	6%{?dist}
 Summary:	Firmware for Ralink庐 RT2561/RT2661 A/B/G network adaptors
 Summary(zh_CN.UTF-8): Ralink RT2561/RT2661 A/B/G 网卡的固件
 Group:		System Environment/Kernel
@@ -46,6 +46,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.2-6
+- 为 Magic 3.0 重建
+
 * Sun Feb 05 2012 Liu Di <liudidi@gmail.com> - 1.2-5
 - 为 Magic 3.0 重建
 
