@@ -1,6 +1,6 @@
 Name: reiserfs-utils
 Version: 3.6.21
-Release: 5%{?dist}
+Release: 6%{?dist}
 Summary: Tools for creating, repairing, and debugging ReiserFS filesystems
 #URL: http://www.namesys.com/
 URL: http://ftp.kernel.org/pub/linux/utils/fs/reiserfs/
@@ -63,6 +63,9 @@ install -m644 mkreiserfs/mkreiserfs.8 $RPM_BUILD_ROOT%{_mandir}/man8
 rm -rf $RPM_BUILD_ROOT
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 2:3.6.21-6
+- 为 Magic 3.0 重建
+
 * Fri Feb 03 2012 Liu Di <liudidi@gmail.com> - 2:3.6.21-5
 - 为 Magic 3.0 重建
 
