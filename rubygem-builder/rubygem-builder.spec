@@ -4,7 +4,7 @@
 Summary: Builders for MarkUp
 Name: rubygem-%{gem_name}
 Version: 3.1.4
-Release: 1%{?dist}
+Release: 2%{?dist}
 Group: Development/Languages
 License: MIT
 URL: http://onestepback.org
@@ -84,6 +84,9 @@ popd
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 3.1.4-2
+- 为 Magic 3.0 重建
+
 * Wed Oct 17 2012 Vít Ondruch <vondruch@redhat.com> - 3.1.4-1
 - Update to Builder 3.1.4.
 
