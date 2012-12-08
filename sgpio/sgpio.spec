@@ -1,7 +1,7 @@
 Summary: SGPIO captive backplane tool
 Name: sgpio
 Version: 1.2.0.10
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 URL: http://sources.redhat.com/lvm2/wiki/DMRAID_Eventing
@@ -40,6 +40,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/sgpio.*
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.2.0.10-7
+- 为 Magic 3.0 重建
+
 * Mon Feb 06 2012 Liu Di <liudidi@gmail.com> - 1.2.0.10-6
 - 为 Magic 3.0 重建
 
