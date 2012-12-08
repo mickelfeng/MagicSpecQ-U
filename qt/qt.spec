@@ -43,7 +43,7 @@ Summary: The shared library for the Qt GUI toolkit.
 Summary(zh_CN.UTF-8): Qt GUI 工具包的共享库。
 Name: 	 qt
 Version: %{ver}
-Release: 5%{?dist}
+Release: 6%{?dist}
 %if %{cvs}
 Source0: ftp://ftp.troll.no/qt/source/qt-copy-%{cvsdate}.tar.gz
 %else
@@ -904,6 +904,9 @@ exit 0
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 3.3.8d-6
+- 为 Magic 3.0 重建
+
 * Fri Nov 02 2012 Liu Di <liudidi@gmail.com> - 3.3.8d-5
 - 为 Magic 3.0 重建
 
