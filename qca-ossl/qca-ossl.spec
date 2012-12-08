@@ -2,7 +2,7 @@
 
 Name:       qca-ossl
 Version:    2.0.0
-Release:    0.16.beta%{beta}%{?dist}
+Release:    0.17.beta%{beta}%{?dist}
 
 Summary:    OpenSSL plugin for the Qt Cryptographic Architecture v2
 License:    LGPLv2+
@@ -55,6 +55,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 2.0.0-0.17.beta3
+- 为 Magic 3.0 重建
+
 * Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.0.0-0.16.beta3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
