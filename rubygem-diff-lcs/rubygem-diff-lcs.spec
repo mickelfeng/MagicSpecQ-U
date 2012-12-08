@@ -4,7 +4,7 @@
 Summary: Provide a list of changes between two sequenced collections
 Name: rubygem-%{gem_name}
 Version: 1.1.3
-Release: 1%{?dist}
+Release: 2%{?dist}
 Group: Development/Languages
 License: GPLv2+ or Ruby or Artistic
 URL: http://rubyforge.org/projects/ruwiki/
@@ -97,6 +97,9 @@ popd
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.1.3-2
+- 为 Magic 3.0 重建
+
 * Fri Aug 17 2012 Vít Ondruch <vondruch@redhat.com> - 1.1.3-1
 - Update to diff-lcs 1.1.3.
 
