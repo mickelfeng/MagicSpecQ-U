@@ -1,7 +1,7 @@
 Summary: Conversion between character sets and surfaces
 Name: recode
 Version: 3.6
-Release: 31%{?dist}
+Release: 32%{?dist}
 License: GPLv2+
 Group: Applications/File
 Source: http://recode.progiciels-bpi.ca/archives/recode-%{version}.tar.gz
@@ -99,6 +99,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 3.6-32
+- 为 Magic 3.0 重建
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.6-31
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
