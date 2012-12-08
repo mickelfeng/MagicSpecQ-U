@@ -1,7 +1,7 @@
 Summary: The shared library for the S-Lang extension language
 Name: slang
 Version: 2.2.4
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Libraries
 Source: ftp://space.mit.edu/pub/davis/slang/v2.2/%{name}-%{version}.tar.bz2
@@ -117,6 +117,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_libdir}/libslang*.a
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 2.2.4-3
+- 为 Magic 3.0 重建
+
 * Mon Feb 06 2012 Liu Di <liudidi@gmail.com> - 2.2.4-2
 - 为 Magic 3.0 重建
 
