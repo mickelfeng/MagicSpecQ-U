@@ -1,7 +1,7 @@
 Summary: A library for editing typed command lines
 Name: readline
 Version: 6.2
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv3+
 Group: System Environment/Libraries
 URL: http://cnswww.cns.cwru.edu/php/chet/readline/rltop.html
@@ -132,6 +132,9 @@ fi
 %{_libdir}/lib*.a
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 6.2-5
+- 为 Magic 3.0 重建
+
 * Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 6.2-4
 - 为 Magic 3.0 重建
 
