@@ -1,6 +1,6 @@
 Name:           seed
 Version:        3.2.0
-Release:        3%{?dist}.2
+Release:        4%{?dist}.2
 Summary:        GNOME JavaScript interpreter
 
 Group:          Development/Languages
@@ -127,6 +127,9 @@ magic_rpm_clean.sh
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 3.2.0-4.2
+- 为 Magic 3.0 重建
+
 * Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.2.0-3.2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
