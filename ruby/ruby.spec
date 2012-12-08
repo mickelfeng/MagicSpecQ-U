@@ -56,7 +56,7 @@
 Summary: An interpreter of object-oriented scripting language
 Name: ruby
 Version: %{ruby_version_patch_level}
-Release: 4%{?dist}
+Release: 5%{?dist}
 Group: Development/Languages
 License: Ruby or BSD
 URL: http://ruby-lang.org/
@@ -715,6 +715,9 @@ make check TESTS="-v -x test_pathname.rb -x test_drbssl.rb -x test_parse.rb -x t
 %{ruby_libdir}/tkextlib
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.9.3.125-5
+- 为 Magic 3.0 重建
+
 * Wed Apr 18 2012 Liu Di <liudidi@gmail.com> - 1.9.3.125-4
 - 为 Magic 3.0 重建
 
