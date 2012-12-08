@@ -2,7 +2,7 @@ Summary: Compatibility version of Qt Assistant
 Summary(zh_CN.UTF-8): Qt Assistant 兼容版本
 Name:    qt-assistant-adp
 Version: 4.6.3
-Release: 2%{?dist}
+Release: 3%{?dist}
 
 # See LGPL_EXCEPTIONS.txt, LICENSE.GPL3, respectively, for exception details
 License: LGPLv2 with exceptions or GPLv3 with exceptions
@@ -148,6 +148,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 4.6.3-3
+- 为 Magic 3.0 重建
+
 * Mon Jan 30 2012 Liu Di <liudidi@gmail.com> - 4.6.3-2
 - 为 Magic 3.0 重建
 
