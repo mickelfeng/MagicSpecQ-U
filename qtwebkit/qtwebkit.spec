@@ -1,7 +1,7 @@
 
 Name: qtwebkit
 Version: 2.2.1
-Release: 4%{?dist}
+Release: 5%{?dist}
 Summary: Qt WebKit bindings
 Group: System Environment/Libraries
 License: LGPLv2 with exceptions or GPLv3 with exceptions
@@ -145,6 +145,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 2.2.1-5
+- 为 Magic 3.0 重建
+
 * Tue Jan 24 2012 Than Ngo <than@redhat.com> - 2.2.1-4
 - gcc doesn't support flag -fuse-ld=gold yet
 - fix build failure with gcc-4.7 
