@@ -4,7 +4,7 @@ Summary: A great front-end for MPlayer
 Summary(zh_CN.UTF-8): MPlayer 的一个很棒的前端
 Name: smplayer
 Version: 0.5.21
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPL
 Group: Applications/Multimedia
 Group(zh_CN.UTF-8): 应用程序/多媒体
@@ -60,6 +60,9 @@ magic_rpm_clean.sh
 %exclude %{_prefix}/src
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.5.21-5
+- 为 Magic 3.0 重建
+
 * Mon Aug 6 2007 kde <athena_star {at} 163 {dot} com> - 0.5.21-2mgc
 - modify the spec file
 
