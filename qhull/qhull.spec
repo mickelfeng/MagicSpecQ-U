@@ -1,7 +1,7 @@
 Summary: General dimension convex hull programs
 Name: qhull
 Version: 2011.1
-Release: 15%{?dist}
+Release: 16%{?dist}
 License: Qhull
 Group: System Environment/Libraries
 Source0: http://www.qhull.org/download/qhull-%{version}-src.tgz
@@ -73,6 +73,9 @@ rm -rf $RPM_BUILD_ROOT
 %_includedir/*
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 2011.1-16
+- 为 Magic 3.0 重建
+
 * Tue Feb 08 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2003.1-15
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 
