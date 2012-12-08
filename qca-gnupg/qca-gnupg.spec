@@ -2,7 +2,7 @@
 
 Name:       qca-gnupg
 Version:    2.0.0
-Release:    0.7.beta%{beta}%{?dist}
+Release:    0.8.beta%{beta}%{?dist}
 
 Summary:    GnuPG plugin for the Qt Cryptographic Architecture v2
 License:    LGPLv2+
@@ -56,6 +56,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 2.0.0-0.8.beta3
+- 为 Magic 3.0 重建
+
 * Sun Jan 29 2012 Liu Di <liudidi@gmail.com> - 2.0.0-0.7.beta3
 - 为 Magic 3.0 重建
 
