@@ -1,6 +1,6 @@
 Name:      scim
 Version:   1.4.14
-Release:   2%{?dist}
+Release:   3%{?dist}
 Summary:   Smart Common Input Method platform
 
 License:   LGPLv2+
@@ -247,6 +247,9 @@ fi
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.4.14-3
+- 为 Magic 3.0 重建
+
 * Fri Jun 29 2012  Peng Wu <pwu@redhat.com> - 1.4.14-2
 - Use gtk2 for setup ui
 
