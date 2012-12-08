@@ -1,5 +1,5 @@
 %define version 3.6.0
-%define release 2%{dist}
+%define release 3%{dist}
 
 Name: shorten
 Summary: Audio file lossless compress/uncompress utility
@@ -45,5 +45,8 @@ rm -rf %{buildroot} %{_builddir}/%{buildsubdir}
 %{_mandir}
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 3.6.0-3
+- 为 Magic 3.0 重建
+
 * Sat Sep 22 2007 kde <athena_star@163.com> - 3.6.0-1mgc
 - init the spec file
