@@ -4,7 +4,7 @@
 Summary:        Mocking and stubbing library
 Name:           rubygem-%{gem_name}
 Version:        0.12.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 Group:          Development/Languages
 License:        MIT and Ruby
 URL:            http://mocha.rubyforge.org
@@ -74,6 +74,9 @@ popd
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.12.1-2
+- 为 Magic 3.0 重建
+
 * Mon Jul 23 2012 Bohuslav Kabrda <bkabrda@redhat.com> - 0.12.1-1
 - Update to Mocha 0.12.1, as this version is needed by ActionPack 3.2.6 tests.
 
