@@ -1,6 +1,6 @@
 Name:           seabios
 Version:        0.6.2
-Release:        5%{?dist}
+Release:        6%{?dist}
 Summary:        Open-source legacy BIOS implementation
 
 Group:          Applications/Emulators
@@ -82,6 +82,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.6.2-6
+- 为 Magic 3.0 重建
+
 * Mon Feb 06 2012 Liu Di <liudidi@gmail.com> - 0.6.2-5
 - 为 Magic 3.0 重建
 
