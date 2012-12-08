@@ -5,7 +5,7 @@ Name: quota
 Summary: System administration tools for monitoring users' disk usage
 Epoch: 1
 Version: 4.00
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: BSD and GPLv2+
 URL: http://sourceforge.net/projects/linuxquota/
 Group: System Environment/Base
@@ -236,6 +236,9 @@ echo '  systemd-sysv-convert --apply quota_nld'
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1:4.00-4
+- 为 Magic 3.0 重建
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:4.00-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
