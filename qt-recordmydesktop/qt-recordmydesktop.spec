@@ -2,7 +2,7 @@
 
 Name:           qt-recordmydesktop
 Version:        0.3.8
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        KDE Desktop session recorder with audio and video
 Summary(zh_CN.UTF-8): recordmydesktop 的 KDE 前端
 
@@ -63,6 +63,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/pixmaps/*
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.3.8-2
+- 为 Magic 3.0 重建
+
 * Wed Feb 25 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.3.7.2-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_11_Mass_Rebuild
 
