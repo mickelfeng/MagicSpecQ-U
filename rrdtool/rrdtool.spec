@@ -18,7 +18,7 @@
 Summary: Round Robin Database Tool to store and display time-series data
 Name: rrdtool
 Version: 1.4.7
-Release: 2%{?dist}
+Release: 4%{?dist}
 License: GPLv2+ with exceptions
 Group: Applications/Databases
 URL: http://oss.oetiker.ch/rrdtool/
@@ -290,6 +290,7 @@ find examples/ -type f -exec chmod 0644 {} \;
         $RPM_BUILD_ROOT%{perl_archlib}/perllocal.pod \
         $RPM_BUILD_ROOT%{_datadir}/%{name}/examples \
         $RPM_BUILD_ROOT%{perl_vendorarch}/auto/*/{.packlist,*.bs}
+magic_rpm_clean.sh
 
 %check
 # minimal load test for the PHP extension
@@ -374,6 +375,12 @@ LD_LIBRARY_PATH=%{buildroot}%{_libdir} php -n \
 %endif
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.4.7-4
+- 为 Magic 3.0 重建
+
+* Thu Oct 18 2012 Liu Di <liudidi@gmail.com> - 1.4.7-3
+- 为 Magic 3.0 重建
+
 * Thu Apr 05 2012 Liu Di <liudidi@gmail.com> - 1.4.7-2
 - 为 Magic 3.0 重建
 
