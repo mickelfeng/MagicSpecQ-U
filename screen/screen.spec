@@ -3,7 +3,7 @@
 Summary: A screen manager that supports multiple logins on one terminal
 Name: screen
 Version: 4.1.0
-Release: 0.7.20110819git450e8f%{?dist}
+Release: 0.8.20110819git450e8f%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: http://www.gnu.org/software/screen
@@ -140,6 +140,9 @@ fi
 %endif
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 4.1.0-0.8.20110819git450e8f
+- 为 Magic 3.0 重建
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.1.0-0.7.20110819git450e8f
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
