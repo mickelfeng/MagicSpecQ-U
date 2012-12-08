@@ -7,7 +7,7 @@
 Summary: A program for synchronizing files over a network
 Name: rsync
 Version: 3.0.9
-Release: 2%{?prerelease}%{?dist}
+Release: 3%{?prerelease}%{?dist}
 Group: Applications/Internet
 URL: http://rsync.samba.org/
 
@@ -77,6 +77,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man5/rsyncd.conf.5*
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 3.0.9-3
+- 为 Magic 3.0 重建
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.0.9-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
