@@ -21,7 +21,7 @@
 Summary: The RPM package management system
 Name: rpm
 Version: %{rpmver}
-Release: %{?snapver:0.%{snapver}.}3%{?dist}
+Release: %{?snapver:0.%{snapver}.}3%{?dist}.1
 Group: System Environment/Base
 Url: http://www.rpm.org/
 Source0: http://rpm.org/releases/rpm-4.10.x/%{name}-%{srcver}.tar.bz2
@@ -449,6 +449,9 @@ exit 0
 %doc COPYING doc/librpm/html/*
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 4.10.1-3.1
+- 为 Magic 3.0 重建
+
 * Thu Oct 11 2012 Panu Matilainen <pmatilai@redhat.com> - 4.10.1-3
 - fix noarch __isa_* macro filter in installplatform (#865436)
 
