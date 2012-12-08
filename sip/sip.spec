@@ -1,5 +1,6 @@
-
+%if 0%{?fedora} > 12
 %global with_python3 1
+%endif
 
 %if 0%{?with_python3}
 %{!?python3_inc:%global python3_inc %(%{__python3} -c "from distutils.sysconfig import get_python_inc; print(get_python_inc(1))")}
@@ -9,25 +10,27 @@
 
 Summary: SIP - Python/C++ Bindings Generator
 Name: sip
-Version: 4.13.2
-Release: 1%{?dist}
+Version: 4.14
+Release: 2%{?dist}
+
 # sipgen/parser.{c.h} is GPLv3+ with exceptions (bison)
 License: GPLv2 or GPLv3 and (GPLv3+ with exceptions)
 Group: Development/Tools
 Url: http://www.riverbankcomputing.com/software/sip/intro 
-Source0: http://www.riverbankcomputing.com/static/Downloads/sip4/sip-%{version}%{?snap:-snapshot-%{snap}}.tar.gz
+#URL: http://sourceforge.net/projects/pyqt/
+Source0:  http://downloads.sourceforge.net/pyqt/sip-%{version}%{?snap:-snapshot-%{snap}}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 ## upstreamable patches
 # make install should not strip (by default), kills -debuginfo
 Patch50: sip-4.12.1-no_strip.patch
 # try not to rpath the world
-Patch51: sip-4.13.1-no_rpath.patch
+Patch51: sip-4.13.3-no_rpath.patch
 
 # extracted from sip.h, SIP_API_MAJOR_NR SIP_API_MINOR_NR defines
 Source1: macros.sip
-%global _sip_api_major 8
-%global _sip_api_minor 1
+%global _sip_api_major 9
+%global _sip_api_minor 0 
 %global _sip_api %{_sip_api_major}.%{_sip_api_minor}
 
 Provides: sip-api(%{_sip_api_major}) = %{_sip_api}
@@ -127,7 +130,7 @@ popd
 %{__python} configure.py -d %{python_sitearch} CXXFLAGS="%{optflags}" CFLAGS="%{optflags}"
 
 make %{?_smp_mflags}
-
+magic_rpm_clean.sh
 
 %install
 rm -rf %{buildroot}
@@ -186,6 +189,28 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 4.14-2
+- 为 Magic 3.0 重建
+
+* Mon Oct 01 2012 Rex Dieter <rdieter@fedoraproject.org> - 4.14-1
+- sip-4.14
+- sip-api(9) = 9.0
+
+* Sat Aug 04 2012 David Malcolm <dmalcolm@redhat.com> - 4.13.3-4
+- rebuild for https://fedoraproject.org/wiki/Features/Python_3.3
+
+* Fri Aug  3 2012 David Malcolm <dmalcolm@redhat.com> - 4.13.3-3
+- make with_python3 be conditional on fedora
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.13.3-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Fri Jun 22 2012 Rex Dieter <rdieter@fedoraproject.org> 4.13.3-1
+- 4.13.3
+
+* Sat Feb 11 2012 Rex Dieter <rdieter@fedoraproject.org> 4.13.2-1
+- 4.13.2
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.13.1-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
