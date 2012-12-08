@@ -1,6 +1,6 @@
 Name: sane-frontends
 Version: 1.0.14
-Release: 13%{?dist}
+Release: 14%{?dist}
 Summary: Graphical frontend to SANE
 URL: http://www.sane-project.org
 Source0: ftp://ftp.sane-project.org/pub/sane/%{name}-%{version}/%{name}-%{version}.tar.gz
@@ -48,6 +48,9 @@ rm -rf %buildroot
 # intended to be used from the command line
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.0.14-14
+- 为 Magic 3.0 重建
+
 * Tue Jan 10 2012 Nils Philippsen <nils@redhat.com> - 1.0.14-13
 - rebuild for gcc 4.7
 
