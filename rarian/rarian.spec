@@ -2,7 +2,7 @@
 
 Name: rarian
 Version: 0.8.1
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: LGPLv2+
 Group: System Environment/Base
 Group(zh_CN.UTF-8): 系统环境/基本
@@ -139,6 +139,9 @@ fi
 %{_libdir}/pkgconfig/rarian.pc
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.8.1-5
+- 为 Magic 3.0 重建
+
 * Fri Oct 26 2012 Liu Di <liudidi@gmail.com> - 0.8.1-4
 - 为 Magic 3.0 重建
 
