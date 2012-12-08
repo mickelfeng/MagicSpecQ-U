@@ -1,7 +1,7 @@
 Summary: Graphical effect and filter library
 Name:    qimageblitz
 Version: 0.0.6
-Release: 3%{?dist}
+Release: 4%{?dist}
 
 Group:   System Environment/Libraries
 License: BSD and ImageMagick
@@ -86,6 +86,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.0.6-4
+- 为 Magic 3.0 重建
+
 * Sun Jan 29 2012 Liu Di <liudidi@gmail.com> - 0.0.6-3
 - 为 Magic 3.0 重建
 
