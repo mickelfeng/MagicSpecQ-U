@@ -6,7 +6,7 @@
 Summary: Infiniband/iWARP Kernel Module Initializer
 Name: rdma
 Version: 1.0
-Release: 12%{?dist}
+Release: 13%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source0: rdma.conf
@@ -61,6 +61,9 @@ fi
 %{_sysconfdir}/sysconfig/network-scripts/*
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.0-13
+- 为 Magic 3.0 重建
+
 * Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.0-12
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
