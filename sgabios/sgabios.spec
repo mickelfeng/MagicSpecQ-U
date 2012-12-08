@@ -1,6 +1,6 @@
 Name:           sgabios
 Version:        0
-Release:        0.20110623SVN%{?dist}
+Release:        0.20110624SVN%{?dist}
 Summary:        Open-source serial graphics BIOS option rom
 
 Group:          Applications/Emulators
@@ -74,6 +74,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0-0.20110624SVN
+- 为 Magic 3.0 重建
+
 * Mon Feb 06 2012 Liu Di <liudidi@gmail.com> - 0-0.20110623SVN
 - 为 Magic 3.0 重建
 
