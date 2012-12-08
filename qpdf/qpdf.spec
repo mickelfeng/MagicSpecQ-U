@@ -1,7 +1,7 @@
 Summary: Command-line tools and library for transforming PDF files
 Name:    qpdf
 Version: 3.0.2
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: Artistic 2.0
 Group:   System Environment/Base
 URL:     http://qpdf.sourceforge.net/
@@ -102,6 +102,9 @@ make check
 %doc __doc/*
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 3.0.2-2
+- 为 Magic 3.0 重建
+
 * Fri Sep 07 2012 Jiri Popelka <jpopelka@redhat.com> 3.0.2-1
 - 3.0.2
 
