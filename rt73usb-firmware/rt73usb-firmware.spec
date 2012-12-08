@@ -1,6 +1,6 @@
 Name:		rt73usb-firmware
 Version:	1.8
-Release:	9%{?dist}
+Release:	10%{?dist}
 Summary:	Firmware for Ralink® RT2571W/RT2671 A/B/G network adaptors
 Group:		System Environment/Kernel
 License:	Redistributable, no modification permitted
@@ -42,6 +42,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.8-10
+- 为 Magic 3.0 重建
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.8-9
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
