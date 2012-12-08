@@ -1,6 +1,6 @@
 Name:           qrencode
 Version:        3.3.1
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        Generate QR 2D barcodes
 Summary(fr):    Génère les code-barres en 2D QR
 
@@ -87,6 +87,9 @@ sh test_all.sh
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 3.3.1-5
+- 为 Magic 3.0 重建
+
 * Fri Sep 21 2012 Matthieu Saulnier <fantom@fedoraproject.org> - 3.3.1-4
 - Add libs subpackage (fix RHBZ #856808)
 
