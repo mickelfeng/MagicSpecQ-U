@@ -4,7 +4,7 @@
 Summary: A GNU stream text editor
 Name: sed
 Version: 4.2.1
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv3+
 Group: Applications/Text
 URL: http://sed.sourceforge.net/
@@ -76,6 +76,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_mandir}/man*/*
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 4.2.1-10
+- 为 Magic 3.0 重建
+
 * Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 4.2.1-9
 - 为 Magic 3.0 重建
 
