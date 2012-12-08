@@ -7,7 +7,7 @@
 
 Name:           smplayer-qt4
 Version:        0.7.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        A graphical frontend for mplayer
 Summary(zh_CN.UTF-8):	mplayer 的图形化前端
 
@@ -160,6 +160,9 @@ update-desktop-database &> /dev/null || :
 %{_datadir}/kde4/services/ServiceMenus/smplayer_enqueue.desktop
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.7.0-2
+- 为 Magic 3.0 重建
+
 * Sun May 30 2010 Liu Songhe <athena_star {at} 163 {dot} com> - 0.6.9_svn_r3541-0.1%{?dist}
 - 更新至 0.6.9_svn_r3541
 
