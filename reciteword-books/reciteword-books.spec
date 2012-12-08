@@ -6,7 +6,7 @@ Summary: reciteword's book files
 Summary(zh_CN.UTF-8): 轻轻松松背单词的书籍文件
 Name: reciteword-books
 Version: %ver
-Release: %rel
+Release: %rel.1
 License: GPL
 Group: Applications/Productivity
 Group(zh_CN.UTF-8): 应用程序/生产力
@@ -44,3 +44,6 @@ rm -rf $RPM_BUILD_ROOT
 %{prefix}/share/reciteword/books
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.8.4-1.1
+- 为 Magic 3.0 重建
+
