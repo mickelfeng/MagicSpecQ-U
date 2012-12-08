@@ -1,6 +1,6 @@
 Name:       scim-pinyin
 Version:    0.5.91
-Release:    30%{?dist}
+Release:    31%{?dist}
 Summary:    Smart Pinyin IMEngine for Smart Common Input Method platform
 
 License:    GPLv2
@@ -68,6 +68,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.5.91-31
+- 为 Magic 3.0 重建
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.5.91-30
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
