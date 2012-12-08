@@ -2,7 +2,7 @@ Summary:TLS Plugin for Qt Cryptographic Architecture
 Summary(zh_CN.UTF-8): Qt密码体系的TLS插件
 Name: qca-tls
 Version: 1.0
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: LGPL 2.1
 Group: Development/Libraries
 Group(zh_CN.UTF-8): 开发/库
@@ -49,5 +49,8 @@ ldconfig
 %{_libdir}/qt-3.3/include/qca*.h
   
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.0-7
+- 为 Magic 3.0 重建
+
 * Sat Aug 27 2005 sejishikong <sejishikong@263.net>
 - First Build of qca-tls
