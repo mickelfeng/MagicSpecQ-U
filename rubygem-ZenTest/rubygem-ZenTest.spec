@@ -9,7 +9,7 @@
 Summary: Automated test scaffolding for Ruby
 Name: rubygem-%{gemname}
 Version: 4.6.2
-Release: 3%{?dist}
+Release: 4%{?dist}
 Group: Development/Languages
 License: MIT
 URL: http://www.zenspider.com/ZSS/Products/ZenTest/
@@ -106,6 +106,9 @@ popd
 %{gemdir}/doc/%{gemname}-%{version}
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 4.6.2-4
+- 为 Magic 3.0 重建
+
 * Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.6.2-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
