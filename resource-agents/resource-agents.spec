@@ -33,7 +33,7 @@
 Name:		resource-agents
 Summary:	Open Source HA Reusable Cluster Resource Scripts
 Version:	3.9.2
-Release:	3%{?rcver:%{rcver}}%{?numcomm:.%{numcomm}}%{?alphatag:.%{alphatag}}%{?dirty:.%{dirty}}%{?dist}.3
+Release:	3%{?rcver:%{rcver}}%{?numcomm:.%{numcomm}}%{?alphatag:.%{alphatag}}%{?dirty:.%{dirty}}%{?dist}.4
 License:	GPLv2+ and LGPLv2+
 URL:		http://to.be.defined.com/
 %if 0%{?fedora} || 0%{?centos_version} || 0%{?rhel}
@@ -297,6 +297,9 @@ ccs_update_schema > /dev/null 2>&1 ||:
 %endif
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 3.9.2-3.4
+- 为 Magic 3.0 重建
+
 * Tue Apr 04 2012 Jon Ciesla <limburgher@gmail.com> - 3.9.2-3.3
 - Rebuilt to fix rawhide dependency issues (caused by move of fsck from
   /sbin to /usr/sbin).
