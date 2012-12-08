@@ -1,6 +1,6 @@
 Name: sound-theme-freedesktop
 Version: 0.7
-Release: 4%{?dist}
+Release: 5%{?dist}
 Summary: freedesktop.org sound theme
 Group: User Interface/Desktops
 Source0: http://people.freedesktop.org/~mccann/dist/sound-theme-freedesktop-%{version}.tar.bz2
@@ -49,6 +49,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/sounds/freedesktop/stereo/*.oga
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.7-5
+- 为 Magic 3.0 重建
+
 * Wed Feb 08 2012 Liu Di <liudidi@gmail.com> - 0.7-4
 - 为 Magic 3.0 重建
 
