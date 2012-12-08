@@ -1,6 +1,6 @@
 Name:           qtsoap
 Version:        2.7
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        The Simple Object Access Protocol Qt-based client side library
 
 Group:          System Environment/Libraries
@@ -71,6 +71,9 @@ rm -rf %{buildroot}
 %{_qt4_headerdir}/QtSoap/
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 2.7-4
+- 为 Magic 3.0 重建
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.7-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
