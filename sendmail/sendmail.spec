@@ -23,7 +23,7 @@
 Summary: A widely used Mail Transport Agent (MTA)
 Name: sendmail
 Version: 8.14.5
-Release: 14%{?dist}
+Release: 16%{?dist}
 License: Sendmail
 Group: System Environment/Daemons
 URL: http://www.sendmail.org/
@@ -721,6 +721,12 @@ fi
 %{_initrddir}/sendmail
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 8.14.5-16
+- 为 Magic 3.0 重建
+
+* Thu Oct 18 2012 Liu Di <liudidi@gmail.com> - 8.14.5-15
+- 为 Magic 3.0 重建
+
 * Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 8.14.5-14
 - 为 Magic 3.0 重建
 
