@@ -6,7 +6,7 @@
 
 Name:    qt-mobility
 Version: 1.2.2
-Release: 0.2.%{snap}%{?dist}
+Release: 0.3.%{snap}%{?dist}
 Summary: Qt Mobility Framework
 Group:   System Environment/Libraries
 License: LGPLv2 with exceptions
@@ -246,6 +246,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.2.2-0.3.20120224git
+- 为 Magic 3.0 重建
+
 * Fri Jul 06 2012 Liu Di <liudidi@gmail.com> - 1.2.2-0.2.20120224git
 - 为 Magic 3.0 重建
 
