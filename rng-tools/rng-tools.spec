@@ -1,7 +1,7 @@
 Summary:        Random number generator related utilities
 Name:           rng-tools
 Version:        3
-Release:        4%{?dist}
+Release:        5%{?dist}
 Group:          System Environment/Base
 License:        GPLv2+
 URL:            http://sourceforge.net/projects/gkernel/
@@ -74,6 +74,9 @@ fi
 %attr(0644,root,root)   %{_unitdir}/rngd.service
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 3-5
+- 为 Magic 3.0 重建
+
 * Thu Jan 12 2012 Jiri Popelka <jpopelka@redhat.com> - 3-4
 - 2 patches from RHEL-6
 - systemd service
