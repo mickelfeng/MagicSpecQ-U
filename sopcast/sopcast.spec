@@ -4,7 +4,7 @@ Name:		sopcast
 Group:		Applications/Internet
 Group(zh_CN.UTF-8):   应用程序/互联网
 Version:	3.2.6
-Release:	1%{?dist}
+Release:	2%{?dist}
 License:	GPL
 Summary:	A P2P Stream program
 Summary(zh_CN.UTF-8): P2P流媒体程序
@@ -54,4 +54,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/*
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 3.2.6-2
+- 为 Magic 3.0 重建
+
 
