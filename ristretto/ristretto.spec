@@ -6,7 +6,7 @@
 
 Name:           ristretto
 Version:        0.3.4
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Image-viewer for the Xfce desktop environment
 Summary(de):    Bildbetrachter für die Xfce Desktop-Umgebung
 
@@ -90,6 +90,9 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.3.4-2
+- 为 Magic 3.0 重建
+
 * Sat Jan 28 2012 Christoph Wickert <cwickert@fedoraproject.org> - 0.3.4-1
 - Update to 0.3.4
 
