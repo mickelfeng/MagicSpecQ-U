@@ -8,7 +8,7 @@
 Summary: Next generation package handling tool
 Name: smart
 Version: 1.3.1
-Release: 68%{?dist}
+Release: 69%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: http://labix.org/smart/
@@ -213,6 +213,9 @@ rm -rf %{buildroot}
 %endif
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.3.1-69
+- 为 Magic 3.0 重建
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.3.1-68
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
