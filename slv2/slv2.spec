@@ -1,7 +1,7 @@
 Name:			slv2
 Summary:		LV2 host library
 Version:		0.6.6
-Release:		8%{?dist}
+Release:		9%{?dist}
 License:		GPLv2+
 Group:			System Environment/Libraries
 Source0:		http://download.drobilla.net/%{name}-%{version}.tar.bz2
@@ -95,6 +95,9 @@ rm -rf %{buildroot}
 %{_mandir}/man3/%{name}*
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.6.6-9
+- 为 Magic 3.0 重建
+
 * Mon Feb 06 2012 Liu Di <liudidi@gmail.com> - 0.6.6-8
 - 为 Magic 3.0 重建
 
