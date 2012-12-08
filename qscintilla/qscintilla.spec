@@ -6,7 +6,7 @@
 
 Name:    qscintilla
 Version: 2.6.2
-Release: 3%{?dist}
+Release: 4%{?dist}
 Summary: A Scintilla port to Qt
 
 # matches up (pretty much) with qt4
@@ -149,6 +149,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 2.6.2-4
+- 为 Magic 3.0 重建
+
 * Mon Oct 01 2012 Rex Dieter <rdieter@fedoraproject.org> 2.6.2-3
 - rebuild (sip)
 
