@@ -3,7 +3,7 @@
 
 Name:           qzion
 Version:        0.4.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        An canvas abstraction
 Summary(zh_CN.UTF-8): 一个图形抽象层
 
@@ -127,6 +127,9 @@ rm -rf %{buildroot} %{_builddir}/%{buildsubdir}
 %{_datadir}/sip/%{name}
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.4.0-4
+- 为 Magic 3.0 重建
+
 * Tue Jan 31 2012 Liu Di <liudidi@gmail.com> - 0.4.0-3
 - 为 Magic 3.0 重建
 
