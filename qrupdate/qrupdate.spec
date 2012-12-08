@@ -1,6 +1,6 @@
 Name:		qrupdate
 Version:	1.1.2
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	A Fortran library for fast updates of QR and Cholesky decompositions
 Group:		Development/Libraries
 License:	GPLv3+
@@ -60,6 +60,9 @@ make test FC=gfortran FFLAGS="%{optflags} -fimplicit-none -funroll-loops"
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.1.2-2
+- 为 Magic 3.0 重建
+
 * Tue Feb 07 2012 Jussi Lehtola <jussilehtola@fedoraproject.org> - 1.1.2-1
 - Update to 1.1.2.
 
