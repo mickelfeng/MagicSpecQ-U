@@ -1,6 +1,6 @@
 Name:          rest
 Version:       0.7.12
-Release:       1%{?dist}
+Release:       2%{?dist}
 Summary:       A library for access to RESTful web services
 
 Group:         System Environment/Libraries
@@ -73,6 +73,9 @@ find %{buildroot} -name '*.la' -exec rm -f {} ';'
 %{_datadir}/gir-1.0/RestExtras-0.7.gir
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.7.12-2
+- 为 Magic 3.0 重建
+
 * Thu Nov 10 2011 Peter Robinson <pbrobinson@fedoraproject.org> 0.7.12-1
 - Release 0.7.12. Fixes CVE-2011-4129 RHBZ 752022
 
