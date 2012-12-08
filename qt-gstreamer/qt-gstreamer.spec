@@ -1,6 +1,6 @@
 Name:           qt-gstreamer
 Version:        0.10.2
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        C++ bindings for GStreamer with a Qt-style API
 
 Group:          System Environment/Libraries
@@ -83,6 +83,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.10.2-3
+- 为 Magic 3.0 重建
+
 * Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.10.2-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
