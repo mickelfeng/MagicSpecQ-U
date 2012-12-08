@@ -1,6 +1,6 @@
 Name: rekonq
 Version: 0.8.71
-Release: 1%{?dist}
+Release: 2%{?dist}
 Group: Applications/Internet
 Group(zh_CN.UTF-8):  应用程序/互联网
 License: GPLv2+
@@ -87,6 +87,9 @@ rm -rf %{buildroot} %{_builddir}/%{buildsubdir}
 %{kde4_localedir}/*
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.8.71-2
+- 为 Magic 3.0 重建
+
 * Sat Jan 16 2010 Ni Hui <shuizhuyuanluo@126.com> - 0.3.0-1mgc
 - 首次生成 RPM 包
 - 修正 rekonq 配置对话框左侧目录文字乱码
