@@ -1,6 +1,6 @@
 Name:           rpmlint
 Version:        1.4
-Release:        11%{?dist}
+Release:        12%{?dist}
 Summary:        Tool for checking common errors in RPM packages
 
 Group:          Development/Tools
@@ -110,6 +110,9 @@ make check
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.4-12
+- 为 Magic 3.0 重建
+
 * Tue Nov  6 2012 Tom Callaway <spot@fedoraproject.org> - 1.4-11
 - add Requires: %{_bindir}/groff for man page checks (bz 873448)
 
