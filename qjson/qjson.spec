@@ -1,6 +1,6 @@
 Name:           qjson
 Version:        0.7.1
-Release:        9%{?dist}
+Release:        10%{?dist}
 Summary:        A qt-based library that maps JSON data to QVariant objects
 
 Group:          Development/Languages
@@ -80,6 +80,9 @@ rm -rf %{buildroot}
 %{_datadir}/cmake/Modules/FindQJSON.cmake
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.7.1-10
+- 为 Magic 3.0 重建
+
 * Thu Aug 09 2012 Rex Dieter <rdieter@fedoraproject.org> - 0.7.1-9
 - rebuild
 
