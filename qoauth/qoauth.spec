@@ -4,7 +4,7 @@
 
 Name:		qoauth
 Version:	1.0.1
-Release:	4%{?posttag}%{?dist}
+Release:	5%{?posttag}%{?dist}
 Summary:	Qt-based C++ library for OAuth authorization scheme
 Group:		System Environment/Libraries
 License:	LGPLv2+
@@ -75,6 +75,9 @@ rm -rf %{buildroot}
 %{_includedir}/*
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.0.1-5
+- 为 Magic 3.0 重建
+
 * Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.0.1-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
