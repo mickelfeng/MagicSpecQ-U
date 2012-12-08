@@ -9,13 +9,18 @@
 Summary: RAR archiver to create and manage RAR archives
 Summary(zh_CN.UTF-8): 建立和管理RAR档案
 Name: rar
-Version: 4.1.0
-Release: 1%{?dist}
+Version: 4.2.0
+Release: 2%{?dist}
 License: Shareware
 Group: Applications/Archiving
 Group(zh_CN.UTF-8): 应用程序/归档
 URL: http://www.rarlabs.com/
-Source: http://www.rarlabs.com/rar/rarlinux-%{version}.tar.gz
+%ifarch %{ix86}
+Source0: http://www.rarlabs.com/rar/rarlinux-%{version}.tar.gz
+%endif
+%ifarch x86_64
+Source0: http://www.rarlabs.com/rar/rarlinux-x64-%{version}.tar.gz
+%endif
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch: i686
 
@@ -31,7 +36,6 @@ RAR是一个强力工具，它允许你管理和控制归档。控制台RAR只�
 %prep
 %setup -n %{name}
 
-
 %install
 %{__rm} -rf %{buildroot}
 %{__install} -D -p -m 0755 rar %{buildroot}%{_bindir}/rar
@@ -39,6 +43,8 @@ RAR是一个强力工具，它允许你管理和控制归档。控制台RAR只�
 %{__install} -D -p -m 0755 rar_static %{buildroot}%{_bindir}/rar_static
 %{__install} -D -p -m 0644 rarfiles.lst %{buildroot}%{_sysconfdir}/rarfiles.lst
 %{__install} -D -p -m 0755 default.sfx %{buildroot}%{_libdir}/default.sfx
+
+magic_rpm_clean.sh
 
 %clean
 %{__rm} -rf %{buildroot}
@@ -48,11 +54,14 @@ RAR是一个强力工具，它允许你管理和控制归档。控制台RAR只�
 %defattr(-, root, root, 0755)
 %doc *.txt
 %{_sysconfdir}/rarfiles.lst
-%{_bindir}/
+%{_bindir}/*
 %{_libdir}/default.sfx
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 4.2.0-2
+- 为 Magic 3.0 重建
+
 * Tue Oct 10 2006 Liu Di <liudidi@gmail.com> - 3.6.0-1mgc
 - update to 3.6.0(aka 3.60)
 
