@@ -1,6 +1,6 @@
 Name:           radeontool
 Version:        1.5
-Release:        5%{?dist}
+Release:        6%{?dist}
 Summary:        Backlight and video output configuration tool for radeon cards
 Summary(zh_CN.UTF-8): radeon 显卡的背光和视频输出配置工具
 
@@ -55,6 +55,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.5-6
+- 为 Magic 3.0 重建
+
 * Tue Jan 31 2012 Liu Di <liudidi@gmail.com> - 1.5-5
 - 为 Magic 3.0 重建
 
