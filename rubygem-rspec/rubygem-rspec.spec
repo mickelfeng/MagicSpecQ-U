@@ -3,7 +3,7 @@
 Summary: Behaviour driven development (BDD) framework for Ruby
 Name: rubygem-%{gem_name}
 Version: 2.11.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 Group: Development/Languages
 License: MIT
 URL: http://rspec.info
@@ -45,6 +45,9 @@ cp -a .%{gem_dir}/* %{buildroot}%{gem_dir}
 %{gem_spec}
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 2.11.0-2
+- 为 Magic 3.0 重建
+
 * Thu Oct 11 2012 Mamoru Tasaka <mtasaka@fedoraproject.org> - 2.11.0-1
 - Update to Rspec 2.11.0
 
