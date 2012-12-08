@@ -1,7 +1,7 @@
 %define rversion %{kde4_kdelibs_version}
 Name: smokegen
 Version: %{rversion}
-Release: 1%{?dist}
+Release: 2%{?dist}
 Summary: Smoke Generator
 
 License: LGPLv2 and GPLv2+
@@ -72,6 +72,9 @@ magic_rpm_clean.sh
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 4.9.3-2
+- 为 Magic 3.0 重建
+
 * Mon Mar 05 2012 Liu Di <liudidi@gmail.com> - 4.8.0-3
 - 为 Magic 3.0 重建
 
