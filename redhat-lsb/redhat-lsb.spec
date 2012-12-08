@@ -43,7 +43,7 @@
 Summary: Implementation of Linux Standard Base specification
 Name: redhat-lsb
 Version: 4.1
-Release: 6%{?dist}
+Release: 7%{?dist}
 URL: http://www.linuxfoundation.org/collaborate/workgroups/lsb
 Source0: https://fedorahosted.org/releases/r/e/redhat-lsb/%{name}-%{version}-%{srcrelease}.tar.bz2
 Patch0: lsb-release-3.1-update-init-functions.patch
@@ -723,6 +723,9 @@ os.remove("%{_datadir}/lsb")
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 4.1-7
+- 为 Magic 3.0 重建
+
 * Mon Nov 05 2012 Parag <pnemade AT redhat DOT com> - 4.1-6
 - Resolves:rh#873066 - missing dependency /bin/su moved to /usr/bin/su
 
