@@ -1,6 +1,6 @@
 Name: setuptool
 Version: 1.19.11
-Release: 4%{?dist}
+Release: 5%{?dist}
 Summary: A text mode system configuration tool
 License: GPLv2+
 Group: Applications/System
@@ -45,6 +45,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/setup.1.gz
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.19.11-5
+- 为 Magic 3.0 重建
+
 * Mon Feb 06 2012 Liu Di <liudidi@gmail.com> - 1.19.11-4
 - 为 Magic 3.0 重建
 
