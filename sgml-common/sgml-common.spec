@@ -1,6 +1,6 @@
 Name: sgml-common
 Version: 0.6.3
-Release: 36%{?dist}
+Release: 37%{?dist}
 Group: Applications/Text
 
 Summary: Common SGML catalog and DTD files
@@ -139,6 +139,9 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_datadir}/xml
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.6.3-37
+- 为 Magic 3.0 重建
+
 * Mon Feb 06 2012 Liu Di <liudidi@gmail.com> - 0.6.3-36
 - 为 Magic 3.0 重建
 
