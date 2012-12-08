@@ -6,7 +6,7 @@ Summary: Utilities for managing accounts and shadow password files
 Summary(zh_CN.UTF-8): 用来管理帐号和屏蔽口令文件的工具
 Name: shadow-utils
 Version: 4.1.4.3
-Release: 1%{?dist}
+Release: 2%{?dist}
 Epoch: 2
 URL: http://pkg-shadow.alioth.debian.org/
 Source0: ftp://pkg-shadow.alioth.debian.org/pub/pkg-shadow/shadow-%{version}.tar.bz2
@@ -205,4 +205,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man8/vigr.8*
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 2:4.1.4.3-2
+- 为 Magic 3.0 重建
+
 
