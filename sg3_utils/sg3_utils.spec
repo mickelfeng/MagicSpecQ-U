@@ -4,7 +4,7 @@
 Summary: Utilities for devices that use SCSI command sets
 Name: sg3_utils
 Version: 1.34
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+ and BSD
 Group: Applications/System
 Source0: http://sg.danny.cz/sg/p/sg3_utils-%{version}.tgz
@@ -100,6 +100,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.34-2
+- 为 Magic 3.0 重建
+
 * Thu Oct 18 2012 Dan Horák <dan@danny.cz> - 1.34-1
 - update to version 1.34
 
