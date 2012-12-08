@@ -1,7 +1,7 @@
 Summary: A toolkit for RTMP streams
 Name: rtmpdump
 Version: 2.3
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2
 Group: System Environment/Libraries
 URL: http://rtmpdump.mplayerhq.hu/
@@ -98,6 +98,9 @@ rm -rf %{buildroot}
 %{_libdir}/pkgconfig/*.pc
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 2.3-3
+- 为 Magic 3.0 重建
+
 * Sun Feb 05 2012 Liu Di <liudidi@gmail.com> - 2.3-2
 - 为 Magic 3.0 重建
 
