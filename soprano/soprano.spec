@@ -8,7 +8,7 @@
 Summary: Qt wrapper API to different RDF storage solutions
 Name:    soprano
 Version: 2.8.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 
 Group:   System Environment/Libraries
 License: LGPLv2+
@@ -232,6 +232,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 2.8.0-2
+- 为 Magic 3.0 重建
+
 * Tue Mar 06 2012 Rex Dieter <rdieter@fedoraproject.org> 2.7.5-1
 - 2.7.5
 - include our own 'installdox' script (doxygen-1.8+ no longer provides it)
