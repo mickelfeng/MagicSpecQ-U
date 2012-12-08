@@ -2,7 +2,7 @@ Summary: Clients for remote access commands (rsh, rlogin, rcp).
 Summary(zh_CN.UTF-8): 远程访问 (rsh, rlogin, rcp) 的客户端
 Name: rsh
 Version: 0.17
-Release: 53%{?dist}
+Release: 54%{?dist}
 License: BSD
 Group: Applications/Internet
 Group(zh_CN.UTF-8): 应用程序/互联网
@@ -204,6 +204,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_mandir}/man8/*.8*
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.17-54
+- 为 Magic 3.0 重建
+
 * Sat Feb 04 2012 Liu Di <liudidi@gmail.com> - 0.17-53
 - 为 Magic 3.0 重建
 
