@@ -2,7 +2,7 @@
 Name:	 qwt
 Summary: Qt Widgets for Technical Applications
 Version: 5.2.2
-Release: 2%{?dist}
+Release: 3%{?dist}
 
 License: LGPLv2 with exceptions
 URL:     http://qwt.sourceforge.net
@@ -98,6 +98,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 5.2.2-3
+- 为 Magic 3.0 重建
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 5.2.2-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
