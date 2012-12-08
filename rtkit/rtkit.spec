@@ -1,6 +1,6 @@
 Name:             rtkit
 Version:          0.10
-Release:          2%{?dist}
+Release:          3%{?dist}
 Summary:          Realtime Policy and Watchdog Daemon
 Group:            System Environment/Base
 # The daemon itself is GPLv3+, the reference implementation for the client BSD
@@ -84,6 +84,9 @@ fi
 %{_mandir}/man8/*
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.10-3
+- 为 Magic 3.0 重建
+
 * Sun Feb 05 2012 Liu Di <liudidi@gmail.com> - 0.10-2
 - 为 Magic 3.0 重建
 
