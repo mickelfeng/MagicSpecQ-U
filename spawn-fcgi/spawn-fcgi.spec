@@ -1,7 +1,7 @@
 Summary: Simple program for spawning FastCGI processes
 Name: spawn-fcgi
 Version: 1.6.3
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: BSD
 Group: System Environment/Daemons
 URL: http://redmine.lighttpd.net/projects/spawn-fcgi/
@@ -60,6 +60,9 @@ fi
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.6.3-3
+- 为 Magic 3.0 重建
+
 * Wed Feb 09 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.6.3-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 
