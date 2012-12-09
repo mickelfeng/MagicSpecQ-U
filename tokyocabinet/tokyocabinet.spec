@@ -1,7 +1,7 @@
 Summary:	A modern implementation of a DBM
 Name:		tokyocabinet
 Version:	1.4.47
-Release:	5%{?dist}
+Release:	6%{?dist}
 License:	LGPLv2+
 Group:		Development/Libraries
 URL:		http://fallabs.com/tokyocabinet/
@@ -76,6 +76,9 @@ make check
 %doc doc/*
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.4.47-6
+- 为 Magic 3.0 重建
+
 * Tue Sep 18 2012 Honza Horak <hhorak@redhat.com> - 1.4.47-5
 - Split devel documentation files into new sub-package tokyocabinet-devel-doc
 
