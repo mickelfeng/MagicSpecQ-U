@@ -11,7 +11,7 @@
 Name: ucommon
 Summary: Portable C++ framework for threads and sockets
 Version: 5.4.2
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: LGPLv3+
 URL: http://www.gnu.org/software/commoncpp
 Source0: http://www.gnutelephony.org/dist/tarballs/ucommon-%{version}.tar.gz
@@ -124,6 +124,9 @@ magic_rpm_clean.sh
 %postun -p /sbin/ldconfig
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 5.4.2-2
+- 为 Magic 3.0 重建
+
 * Wed Jun 27 2012 David Sugar <dyfet@gnutelephony.org> - 5.4.2-1
 - upstream fixes for zrtp issues in commoncpp host address
 - upstream fix for ConditionalAccess
