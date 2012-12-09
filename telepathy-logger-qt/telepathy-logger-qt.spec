@@ -1,6 +1,6 @@
 Name:    telepathy-logger-qt
 Version: 0.5.1
-Release: 2%{?dist}
+Release: 3%{?dist}
 Summary: Telepathy Logging for Qt 
 
 License: LGPLv2+
@@ -66,6 +66,9 @@ make install/fast DESTDIR=%{buildroot} -C %{_target_platform}
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.5.1-3
+- 为 Magic 3.0 重建
+
 * Wed Oct 31 2012 Rex Dieter <rdieter@fedoraproject.org> 0.5.1-2
 - rebuild (telepathy-logger)
 
