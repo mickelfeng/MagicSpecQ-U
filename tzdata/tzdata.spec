@@ -5,7 +5,7 @@ Name: tzdata
 Version: 2011n
 %define tzdata_version %{version}
 %define tzcode_version 2009e
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: Public Domain
 Group: System Environment/Base
 Group(zh_CN.UTF-8): 系统环境/基本
@@ -131,4 +131,7 @@ rm -rf %{buildroot}
 %endif
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 2011n-3
+- 为 Magic 3.0 重建
+
 
