@@ -1,6 +1,6 @@
 Name:        SDL_console
 Version:     2.1
-Release:     2%{?dist}
+Release:     3%{?dist}
 Summary:     Text console for SDL
 Summary(zh_CN.UTF-8): SDL的文本控制台
 License:   LGPL
@@ -80,6 +80,9 @@ rm -rf %{_builddir}/sdlconsole-%{version}
 /usr/include/SDL_console/internal.h
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 2.1-3
+- 为 Magic 3.0 重建
+
 * Mon Jan 30 2006 kde <jack@linux.net.cn> 2.1-1mgc
 - port to Magic Linux 2.0
 
