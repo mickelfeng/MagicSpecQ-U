@@ -1,6 +1,6 @@
 Name: usbutils
 Version: 005
-Release: 1%{?dist}
+Release: 2%{?dist}
 Source:	%{name}-%{version}.tar.gz
 URL: http://www.linux-usb.org/
 License: GPLv2+
@@ -47,6 +47,9 @@ magic_rpm_clean.sh
 rm -rf $RPM_BUILD_ROOT
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 005-2
+- 为 Magic 3.0 重建
+
 * Thu Apr 19 2012 Lukas Nykryn <lnykryn@redhat.com> 005-1
 - new upstream release
 
