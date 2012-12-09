@@ -1,6 +1,6 @@
 Name:           swfdec-gnome
 Version:        2.28.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Programs to integrate Flash into the GNOME desktop
 Summary(zh_CN): 集成 Flash 到 GNOME 桌面的程序
 
@@ -104,4 +104,7 @@ fi
 %{_datadir}/icons/hicolor/scalable/apps/%{name}.svg
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 2.28.0-2
+- 为 Magic 3.0 重建
+
 
