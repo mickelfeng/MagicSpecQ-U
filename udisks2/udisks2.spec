@@ -8,7 +8,7 @@
 Summary: Disk Manager
 Name: udisks2
 Version: 1.93.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Libraries
 URL: http://www.freedesktop.org/wiki/Software/udisks
@@ -137,6 +137,9 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/*.a
 
 # Note: please don't forget the %{?dist} in the changelog. Thanks
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.93.0-2
+- 为 Magic 3.0 重建
+
 * Mon Mar 05 2012 David Zeuthen <davidz@redhat.com> - 1.93.0-1%{?dist}
 - Update to release 1.93.0
 
