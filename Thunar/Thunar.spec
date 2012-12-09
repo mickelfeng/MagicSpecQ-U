@@ -2,7 +2,7 @@
 
 Name:           Thunar
 Version:        1.4.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Thunar File Manager
 
 Group:          User Interface/Desktops
@@ -204,6 +204,9 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.4.0-3
+- 为 Magic 3.0 重建
+
 * Wed Jul 18 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.4.0-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
