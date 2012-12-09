@@ -6,7 +6,7 @@
 Name:    tidy
 Summary: Utility to clean up and pretty print HTML/XHTML/XML
 Version: 0.99.0
-Release: 23.%{snap}%{?dist}
+Release: 24.%{snap}%{?dist}
 
 Group:   Applications/Text
 License: W3C
@@ -115,6 +115,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.99.0-24.20091203
+- 为 Magic 3.0 重建
+
 * Fri Nov 16 2012 Liu Di <liudidi@gmail.com> - 0.99.0-23.20091203
 - 为 Magic 3.0 重建
 
