@@ -1,6 +1,6 @@
 Name:		SDL_mixer
 Version:	1.2.12
-Release: 	2%{?dist}
+Release: 	3%{?dist}
 Summary:	Simple DirectMedia Layer - Sample Mixer Library
 
 Group:		System Environment/Libraries
@@ -77,6 +77,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/SDL
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.2.12-3
+- 为 Magic 3.0 重建
+
 * Sat Apr 07 2012 Liu Di <liudidi@gmail.com> - 1.2.12-2
 - 为 Magic 3.0 重建
 
