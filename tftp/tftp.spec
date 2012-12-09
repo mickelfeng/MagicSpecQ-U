@@ -1,7 +1,7 @@
 Summary: The client for the Trivial File Transfer Protocol (TFTP)
 Name: tftp
 Version: 5.2
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: BSD
 Group: Applications/Internet
 Source0: http://www.kernel.org/pub/software/network/tftp/tftp-hpa-%{version}.tar.bz2
@@ -96,6 +96,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_mandir}/man8/*
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 5.2-3
+- 为 Magic 3.0 重建
+
 * Wed Jan 04 2012 Jiri Skala <jskala@redhat.com> - 5.2-2
 - fixes #739534 - TFTP to an IP alias of FC15 tftp server failed
 
