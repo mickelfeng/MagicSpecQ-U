@@ -71,7 +71,7 @@
 
 Name:        torque
 Version:     3.0.4
-Release:     1%{?dist}
+Release:     2%{?dist}
 Summary:     Tera-scale Open-source Resource and QUEue manager
 Source0:     http://www.clusterresources.com/downloads/%{name}/%{name}-%{version}.tar.gz
 Source2:     xpbs.desktop
@@ -791,6 +791,9 @@ fi
 %endif
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 3.0.4-2
+- 为 Magic 3.0 重建
+
 * Sun Feb 5 2012 Steve Traylen <steve.traylen@cern.ch> - 3.0.4-1
 - New upstream.
 
