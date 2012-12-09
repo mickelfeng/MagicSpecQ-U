@@ -3,7 +3,7 @@
 
 Name:           thunar-archive-plugin
 Version:        0.3.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        Archive plugin for the Thunar file manager
 
 Group:          User Interface/Desktops
@@ -76,6 +76,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.3.0-4
+- 为 Magic 3.0 重建
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.3.0-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
