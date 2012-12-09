@@ -1,6 +1,6 @@
 Name:           spice-protocol
 Version:        0.10.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Spice protocol header files
 Group:          Development/Libraries
 # Main headers are BSD, controller / foreign menu are LGPL
@@ -34,6 +34,9 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.10.1-2
+- 为 Magic 3.0 重建
+
 * Mon Jan 16 2012 Hans de Goede <hdegoede@redhat.com> - 0.10.1-1
 - Update to 0.10.1
 
