@@ -2,7 +2,7 @@
 
 Name: tre
 Version: 0.8.0
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: BSD
 Group: System Environment/Libraries
 Source0: http://laurikari.net/tre/%{name}-%{version}.tar.bz2
@@ -112,6 +112,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/agrep.1*
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.8.0-6
+- 为 Magic 3.0 重建
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.8.0-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
