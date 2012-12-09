@@ -8,7 +8,7 @@
 Summary: Validating, recursive, and caching DNS(SEC) resolver
 Name: unbound
 Version: 1.4.16
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: BSD
 Url: http://www.nlnetlabs.nl/unbound/
 Source: http://www.unbound.net/downloads/%{name}-%{version}.tar.gz
@@ -219,6 +219,9 @@ fi
 /bin/systemctl try-restart unbound-keygen.service >/dev/null 2>&1 || :
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.4.16-2
+- 为 Magic 3.0 重建
+
 * Thu Feb 02 2012 Paul Wouters <paul@nohats.ca> - 1.4.16-1
 - Upgraded to 1.4.16, which was relesed due to the soname
   and some DNSSEC validation failures
