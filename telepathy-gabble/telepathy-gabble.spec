@@ -6,7 +6,7 @@
 
 Name:           telepathy-gabble
 Version:        0.17.1
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        A Jabber/XMPP connection manager
 
 Group:          Applications/Communications
@@ -93,6 +93,9 @@ rm -f $RPM_BUILD_ROOT%{_docdir}/%{name}/*.html
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.17.1-2
+- 为 Magic 3.0 重建
+
 * Tue Sep 11 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.17.1-1
 - Update to 0.17.1.
 - Bump minimum version of tp-glib needed.
