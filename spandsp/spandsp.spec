@@ -3,7 +3,7 @@
 Summary: A DSP library for telephony
 Name: spandsp
 Version: 0.0.6
-Release: 0.5%{?pre:.pre%{pre}}%{?dist}
+Release: 0.6%{?pre:.pre%{pre}}%{?dist}
 License: LGPLv2 and GPLv2
 Group: System Environment/Libraries
 URL: http://www.soft-switch.org/
@@ -97,6 +97,9 @@ rm -rf %{buildroot}
 %postun -p /sbin/ldconfig
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.0.6-0.6.pre18
+- 为 Magic 3.0 重建
+
 * Tue Dec 27 2011 Rex Dieter <rdieter@fedoraproject.org> 0.0.6-0.5.pre18
 - use of brackets confuses autotools (#691039)
 
