@@ -1,7 +1,7 @@
 Summary: Library for tracking application startup
 Name: startup-notification
 Version: 0.12
-Release: 3%{?dist}
+Release: 4%{?dist}
 URL: http://www.freedesktop.org/software/startup-notification/
 #VCS: git:git://git.freedesktop.org/git/startup-notification
 Source0: http://www.freedesktop.org/software/startup-notification/releases/%{name}-%{version}.tar.gz
@@ -62,6 +62,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.12-4
+- 为 Magic 3.0 重建
+
 * Fri Feb 24 2012 Liu Di <liudidi@gmail.com> - 0.12-3
 - 为 Magic 3.0 重建
 
