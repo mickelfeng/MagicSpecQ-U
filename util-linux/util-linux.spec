@@ -2,7 +2,7 @@
 Summary: A collection of basic system utilities
 Name: util-linux
 Version: 2.21.2
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2 and GPLv2+ and GPLv3+ and LGPLv2+ and BSD with advertising and Public Domain
 Group: System Environment/Base
 URL: http://kernel.org/~kzak/util-linux/
@@ -706,6 +706,9 @@ fi
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 2.21.2-3
+- 为 Magic 3.0 重建
+
 * Wed Jun 13 2012 Karel Zak <kzak@redhat.com> 2.21.2-2
 - replace udev dependenceis with systemd
 
