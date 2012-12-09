@@ -2,7 +2,7 @@ Summary: A network traffic monitoring tool
 Name: tcpdump
 Epoch: 14
 Version: 4.2.1
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: BSD with advertising
 URL: http://www.tcpdump.org
 Group: Applications/Internet
@@ -93,6 +93,9 @@ exit 0
 %{_mandir}/man8/tcpdump.8*
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 14:4.2.1-3
+- 为 Magic 3.0 重建
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 14:4.2.1-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
