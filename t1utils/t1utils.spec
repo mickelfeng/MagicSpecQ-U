@@ -1,6 +1,6 @@
 Name:		t1utils
 Version:	1.37
-Release:	2%{?dist}
+Release:	3%{?dist}
 
 Summary:	Collection of Type 1 and 2 font manipulation utilities
 
@@ -45,6 +45,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.37-3
+- 为 Magic 3.0 重建
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.37-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
