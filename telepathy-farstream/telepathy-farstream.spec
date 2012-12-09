@@ -1,6 +1,6 @@
 Name:           telepathy-farstream
 Version:        0.6.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Telepathy client library to handle Call channels
 
 Group:          System Environment/Libraries
@@ -85,6 +85,9 @@ find $RPM_BUILD_ROOT -name '*.la' -exec rm -f {} ';'
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.6.0-2
+- 为 Magic 3.0 重建
+
 * Wed Oct  3 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.6.0-1
 - Update to 0.6.0
 - Drop python subpackage. gobject-introspection is used now.
