@@ -1,7 +1,7 @@
 Summary: Utility for converting FIG files (made by xfig) to other formats
 Name: transfig
 Version: 3.2.5d
-Release: 3%{?dist}
+Release: 5%{?dist}
 Epoch: 1
 License: MIT
 URL: http://www.xfig.org/
@@ -62,6 +62,7 @@ make DESTDIR=%{buildroot} install install.man
 # fig2ps2tex{,.sh} are equivalent, use the sh one
 mv %{buildroot}%{_bindir}/fig2ps2tex.sh %{buildroot}%{_bindir}/fig2ps2tex
 ln -s fig2ps2tex %{buildroot}%{_bindir}/fig2ps2tex.sh
+magic_rpm_clean.sh
 
 %clean
 rm -rf %{buildroot}
@@ -79,6 +80,12 @@ rm -rf %{buildroot}
 %{_datadir}/fig2dev
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1:3.2.5d-5
+- 为 Magic 3.0 重建
+
+* Fri Jul 27 2012 Liu Di <liudidi@gmail.com> - 1:3.2.5d-4
+- 为 Magic 3.0 重建
+
 * Tue Aug 09 2011 Kamil Dudka <kdudka@redhat.com> - 1:3.2.5d-3
 - fix crash of fig2dev on a failure of ghostscript (#728825)
 
