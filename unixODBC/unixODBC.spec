@@ -1,7 +1,7 @@
 Summary: A complete ODBC driver manager for Linux
 Name: unixODBC
 Version: 2.3.1
-Release: 1%{?dist}
+Release: 2%{?dist}
 Group: System Environment/Libraries
 URL: http://www.unixODBC.org/
 # Programs are GPL, libraries are LGPL, except News Server library is GPL.
@@ -149,6 +149,9 @@ rm -rf $RPM_BUILD_ROOT
 %postun -p /sbin/ldconfig
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 2.3.1-2
+- 为 Magic 3.0 重建
+
 * Tue Jan 10 2012 Tom Lane <tgl@redhat.com> 2.3.1-1
 - Update to version 2.3.1.  The main externally-visible change is that the
   GUI programs are not part of the unixODBC tarball anymore, so they are no
