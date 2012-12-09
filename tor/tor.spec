@@ -30,7 +30,7 @@ test "$1" = "0" || /bin/systemctl try-restart %2 >/dev/null 2>&1 || :\
 
 Name:		tor
 Version:	0.2.2.35
-Release:	%release_func 1702
+Release:	%release_func 1703
 Group:		System Environment/Daemons
 License:	BSD
 Summary:	Anonymizing overlay network for TCP (The onion router)
@@ -244,6 +244,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.2.2.35-1703
+- 为 Magic 3.0 重建
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.2.2.35-1702
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
