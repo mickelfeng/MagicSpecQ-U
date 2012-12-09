@@ -1,6 +1,6 @@
 Name:           usbredir
 Version:        0.3.3
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        USB network redirection protocol libraries
 Group:          System Environment/Libraries
 License:        LGPLv2+
@@ -82,6 +82,9 @@ rm $RPM_BUILD_ROOT%{_libdir}/libusbredir*.la
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.3.3-2
+- 为 Magic 3.0 重建
+
 * Thu Jan 12 2012 Hans de Goede <hdegoede@redhat.com> - 0.3.3-1
 - Update to upstream 0.3.3 release
 
