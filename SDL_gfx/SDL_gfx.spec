@@ -1,7 +1,7 @@
 Summary: SDL graphics drawing primitives and other support functions
 Name: SDL_gfx
 Version: 2.0.22
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: LGPLv2
 Group: System Environment/Libraries
 URL: http://www.ferzkopp.net/Software/SDL_gfx-2.0/
@@ -70,6 +70,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 2.0.22-3
+- 为 Magic 3.0 重建
+
 * Mon Feb 13 2012 Liu Di <liudidi@gmail.com> - 2.0.22-2
 - 为 Magic 3.0 重建
 
