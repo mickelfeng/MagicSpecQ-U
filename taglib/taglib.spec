@@ -12,7 +12,7 @@
 
 Name:       taglib	
 Version:    1.8
-Release:    2%{?dist}
+Release:    3%{?dist}
 Summary:    Audio Meta-Data Library
 
 Group: 	    System Environment/Libraries
@@ -150,6 +150,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.8-3
+- 为 Magic 3.0 重建
+
 * Thu Sep 13 2012 Rex Dieter <rdieter@fedoraproject.org> 1.8-2
 - taglib.h: fix TAGLIB_MINOR_VERSION
 
