@@ -1,7 +1,7 @@
 Summary: Rendering of internationalized text for SDL (Simple DirectMedia Layer)
 Name: SDL_Pango
 Version: 0.1.2
-Release: 12%{?dist}
+Release: 13%{?dist}
 License: LGPLv2+
 Group: System Environment/Libraries
 URL: http://sdlpango.sourceforge.net/
@@ -79,6 +79,9 @@ libtoolize --copy --force
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.1.2-13
+- 为 Magic 3.0 重建
+
 * Mon Feb 07 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.1.2-12
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 
