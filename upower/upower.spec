@@ -1,7 +1,7 @@
 Summary:        Power Management Service
 Name:           upower
 Version:        0.9.15
-Release:        4%{?dist}
+Release:        5%{?dist}
 License:        GPLv2+
 Group:          System Environment/Libraries
 URL:            http://hal.freedesktop.org/releases/
@@ -101,6 +101,9 @@ magic_rpm_clean.sh
 %{_includedir}/libupower-glib/upower.h
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.9.15-5
+- 为 Magic 3.0 重建
+
 * Mon Apr 23 2012 Liu Di <liudidi@gmail.com> - 0.9.15-4
 - 为 Magic 3.0 重建
 
