@@ -1,6 +1,6 @@
 Name:		svgalib
 Version:	1.9.25
-Release:	7%{?dist}
+Release:	8%{?dist}
 Summary:	Low-level fullscreen SVGA graphics library
 Summary(zh_CN.UTF-8): 低级全屏 SVGA 图形库
 Group:		System Environment/Libraries
@@ -142,6 +142,9 @@ rm -fr $RPM_BUILD_ROOT
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.9.25-8
+- 为 Magic 3.0 重建
+
 * Fri Feb 10 2012 Liu Di <liudidi@gmail.com> - 1.9.25-7
 - 为 Magic 3.0 重建
 
