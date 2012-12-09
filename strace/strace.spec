@@ -1,7 +1,7 @@
 Summary: Tracks and displays system calls associated with a running process
 Name: strace
 Version: 4.6
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: BSD
 Group: Development/Debuggers
 URL: http://sourceforge.net/projects/strace/
@@ -85,6 +85,9 @@ rm -rf %{buildroot}
 %endif
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 4.6-3
+- 为 Magic 3.0 重建
+
 * Fri Feb 10 2012 Liu Di <liudidi@gmail.com> - 4.6-2
 - 为 Magic 3.0 重建
 
