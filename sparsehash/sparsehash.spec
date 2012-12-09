@@ -3,7 +3,7 @@
 
 Name:           sparsehash
 Version:        1.12
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Extremely memory-efficient C++ hash_map implementation
 
 Group:          Development/Libraries
@@ -52,6 +52,9 @@ make check
 %{_libdir}/pkgconfig/libsparsehash.pc
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.12-3
+- 为 Magic 3.0 重建
+
 * Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.12-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
