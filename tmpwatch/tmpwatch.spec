@@ -1,7 +1,7 @@
 Summary: A utility for removing files based on when they were last accessed
 Name: tmpwatch
 Version: 2.10.3
-Release: 2%{?dist}
+Release: 3%{?dist}
 URL: https://fedorahosted.org/tmpwatch/
 Source0: https://fedorahosted.org/releases/t/m/tmpwatch/tmpwatch-%{version}.tar.bz2
 Source1: tmpwatch.daily
@@ -51,6 +51,9 @@ rm -rf %{buildroot}
 %config(noreplace) /etc/cron.daily/tmpwatch
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 2.10.3-3
+- 为 Magic 3.0 重建
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.10.3-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
