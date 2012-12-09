@@ -1,7 +1,7 @@
 Summary: An enhanced version of csh, the C shell
 Name: tcsh
 Version: 6.17
-Release: 17%{?dist}
+Release: 18%{?dist}
 License: BSD
 Group: System Environment/Shells
 Source: ftp://ftp.astron.com/pub/tcsh/%{name}-%{version}.00.tar.gz
@@ -140,6 +140,9 @@ fi
 %{_mandir}/man1/*.1*
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 6.17-18
+- 为 Magic 3.0 重建
+
 * Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 6.17-17
 - 为 Magic 3.0 重建
 
