@@ -6,7 +6,7 @@
 
 Name:           telepathy-glib
 Version:        0.20.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        GLib bindings for Telepathy
 
 Group:          System Environment/Libraries
@@ -110,6 +110,9 @@ find $RPM_BUILD_ROOT -name '*.la' -exec rm -f {} ';'
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.20.0-3
+- 为 Magic 3.0 重建
+
 * Tue Oct 16 2012 Debarshi Ray <rishi@fedoraproject.org> - 0.20.0-2
 - Fix FD #56044
 
