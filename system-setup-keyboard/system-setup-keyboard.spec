@@ -1,6 +1,6 @@
 Name:		system-setup-keyboard
 Version:	0.8.8
-Release:	4%{?dist}
+Release:	5%{?dist}
 Summary:	xorg.conf keyboard layout callout
 
 Group:		Applications/System
@@ -81,6 +81,9 @@ fi
 %doc COPYING
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.8.8-5
+- 为 Magic 3.0 重建
+
 * Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 0.8.8-4
 - 为 Magic 3.0 重建
 
