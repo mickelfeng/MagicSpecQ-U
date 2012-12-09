@@ -2,7 +2,7 @@
 Summary: Programs which control basic system processes
 Name: sysvinit
 Version: 2.88
-Release: 7.dsf%{?dist}
+Release: 8.dsf%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: http://download.savannah.gnu.org/releases/sysvinit/sysvinit-%{version}dsf.tar.bz2
@@ -151,6 +151,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man8/sulogin*
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 2.88-8.dsf
+- 为 Magic 3.0 重建
+
 * Fri Jul 27 2012 Liu Di <liudidi@gmail.com> - 2.88-7.dsf
 - 为 Magic 3.0 重建
 
