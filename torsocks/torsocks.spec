@@ -2,7 +2,7 @@ Name: torsocks
 Summary: Use socks-friendly applications with Tor
 Summary(zh_CN.UTF-8): 使用 tor 处理 socks 代理程序
 Version: 1.2
-Release: 1%{?dist}
+Release: 2%{?dist}
 Group: Applications/Internet
 Group(zh_CN.UTF-8): 应用程序/互联网
 License: GPL
@@ -69,6 +69,9 @@ rm -rf %{buildroot} %{_builddir}/%{buildsubdir}
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.2-2
+- 为 Magic 3.0 重建
+
 * Sun Aug 5 2007 kde <athena_star {at} 163 {dot} com> - 0.18-1mgc
 - update to 0.18
 - modify the spec file
