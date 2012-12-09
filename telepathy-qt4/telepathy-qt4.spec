@@ -5,7 +5,7 @@
 
 Name:    telepathy-qt4
 Version: 0.9.3
-Release: 5%{?dist}
+Release: 6%{?dist}
 Summary: High-level bindings for Telepathy
 
 License: LGPLv2+
@@ -137,6 +137,9 @@ make install/fast DESTDIR=%{buildroot} -C %{_target_platform}
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.9.3-6
+- 为 Magic 3.0 重建
+
 * Wed Oct 31 2012 Rex Dieter <rdieter@fedoraproject.org> 0.9.3-5
 - fix build for newer compat-telepathy-farstream
 
