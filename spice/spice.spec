@@ -1,6 +1,6 @@
 Name:           spice
 Version:        0.10.1
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Implements the SPICE protocol
 Group:          User Interface/Desktops
 License:        LGPLv2+
@@ -110,6 +110,9 @@ fi
 %{_libdir}/pkgconfig/spice-server.pc
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.10.1-3
+- 为 Magic 3.0 重建
+
 * Wed Feb 22 2012 Liu Di <liudidi@gmail.com> - 0.10.1-2
 - 为 Magic 3.0 重建
 
