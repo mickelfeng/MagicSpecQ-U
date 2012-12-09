@@ -2,7 +2,7 @@ Summary: A utility which maintains a system's symbolic links
 Name: symlinks
 URL: ftp://metalab.unc.edu/pub/Linux/utils/file/
 Version: 1.4
-Release: 5%{?dist}
+Release: 6%{?dist}
 Group: Applications/System
 License: Copyright only
 Source0: http://ibiblio.org/pub/Linux/utils/file/%{name}-%{version}.tar.gz
@@ -51,6 +51,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man8/symlinks.8*
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.4-6
+- 为 Magic 3.0 重建
+
 * Sat Feb 11 2012 Liu Di <liudidi@gmail.com> - 1.4-5
 - 为 Magic 3.0 重建
 
