@@ -4,7 +4,7 @@
 
 Name:           tumbler
 Version:        0.1.23
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        D-Bus service for applications to request thumbnails
 
 License:        GPLv2+ and LGPLv2+
@@ -99,6 +99,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/%{name}-1/tumbler
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.1.23-3
+- 为 Magic 3.0 重建
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.1.23-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
