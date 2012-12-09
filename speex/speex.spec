@@ -8,7 +8,7 @@ Summary: An open-source, patent-free speech codec
 Summary(zh_CN.UTF-8): 一个开源，自由专利的语音编码
 Name: %name
 Version: %ver
-Release: %rel.1
+Release: %rel.2
 License: BSD
 Group: System Environment/Libraries
 Group(zh_CN.UTF-8): 系统环境/库
@@ -43,6 +43,9 @@ Speex development files.
 Speex开发文件
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.2-0.rc1.2.2
+- 为 Magic 3.0 重建
+
 * Wed Feb 08 2012 Liu Di <liudidi@gmail.com> - 1.2-0.rc1.2.1
 - 为 Magic 3.0 重建
 
