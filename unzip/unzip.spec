@@ -1,7 +1,7 @@
 Summary: A utility for unpacking zip files
 Name: unzip
 Version: 6.0
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: BSD
 Group: Applications/Archiving
 Source: http://downloads.sourceforge.net/infozip/unzip60.tar.gz
@@ -53,6 +53,9 @@ make -f unix/Makefile prefix=$RPM_BUILD_ROOT%{_prefix} MANDIR=$RPM_BUILD_ROOT/%{
 %{_mandir}/*/*
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 6.0-6
+- 为 Magic 3.0 重建
+
 * Tue Feb 21 2012 Liu Di <liudidi@gmail.com> - 6.0-5
 - 为 Magic 3.0 重建
 
