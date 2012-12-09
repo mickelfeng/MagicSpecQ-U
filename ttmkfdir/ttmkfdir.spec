@@ -1,7 +1,7 @@
 Summary: Utility to create fonts.scale files for truetype fonts
 Name: ttmkfdir
 Version: 3.0.9
-Release: 35%{?dist}
+Release: 36%{?dist}
 # This is a Red Hat maintained package which is specific to
 # our distribution.  Thus the source is only available from
 # within this srpm.
@@ -62,6 +62,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/ttmkfdir
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 3.0.9-36
+- 为 Magic 3.0 重建
+
 * Tue Feb 28 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.0.9-35
 - Rebuilt for c++ ABI breakage
 
