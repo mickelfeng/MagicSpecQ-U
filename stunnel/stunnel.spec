@@ -1,7 +1,7 @@
 Summary: An SSL-encrypting socket wrapper
 Name: stunnel
 Version: 4.52
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2
 Group: Applications/Internet
 URL: http://stunnel.mirt.net/
@@ -78,6 +78,9 @@ rm -rf $RPM_BUILD_ROOT
 %exclude %{_sysconfdir}/stunnel/*
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 4.52-2
+- 为 Magic 3.0 重建
+
 * Tue Mar 6 2012 Avesh Agarwal <avagarwa@redhat.com> - 4.52-1
 - New upstream realease 4.52
 - Updated local patches
