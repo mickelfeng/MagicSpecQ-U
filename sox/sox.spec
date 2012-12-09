@@ -1,7 +1,7 @@
 Summary: A general purpose sound file conversion tool
 Name: sox
 Version: 14.4.0
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+ and LGPLv2+
 Group: Applications/Multimedia
 Source: http://downloads.sourceforge.net/%{name}/%{name}-%{version}.tar.gz
@@ -66,6 +66,9 @@ rm -f $RPM_BUILD_ROOT/%{_libdir}/sox/*.a
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 14.4.0-4
+- 为 Magic 3.0 重建
+
 * Tue Sep 18 2012 Honza Horak <hhorak@redhat.com> - 14.4.0-3
 - Minor spec file fixes
  
