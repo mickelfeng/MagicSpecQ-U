@@ -1,7 +1,7 @@
 Summary: Allows restricted root access for specified users
 Name: sudo
 Version: 1.8.3p1
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: ISC
 Group: Applications/System
 URL: http://www.courtesan.com/sudo/
@@ -174,6 +174,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man8/sudo_plugin.8*
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.8.3p1-5
+- 为 Magic 3.0 重建
+
 * Tue Feb  7 2012 Daniel Kopecek <dkopecek@redhat.com> - 1.8.3p1-4
 - added SSSD support
 
