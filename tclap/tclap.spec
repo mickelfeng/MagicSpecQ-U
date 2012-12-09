@@ -1,7 +1,7 @@
 Name:           tclap
 Summary:        Template-Only Command Line Argument Parser
 Version:        1.2.0
-Release:        4%{?dist}
+Release:        5%{?dist}
 License:        MIT
 URL:            http://%{name}.sourceforge.net
 Source0:        http://downloads.sourceforge.net/%{name}/%{name}-%{version}.tar.gz
@@ -87,6 +87,9 @@ rm -rf %{buildroot}
 %{_defaultdocdir}/%{name}/
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.2.0-5
+- 为 Magic 3.0 重建
+
 * Wed Oct 05 2011 Denis Arnaud <denis.arnaud_fedora@m4x.org> 1.2.0-4
 - The package and sub-packages are now all noarch.
 - A few cosmetic improvements have also been made.
