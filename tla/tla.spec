@@ -2,7 +2,7 @@ Summary:	A version control system
 Summary(zh_CN.UTF-8):	一个版本控制系统
 Name:		tla
 Version:	1.3.5
-Release:	1%{?dist}
+Release:	2%{?dist}
 License:	GPLv2+
 Group:		Development/Tools
 Group(zh_CN.UTF-8):	开发/工具
@@ -120,4 +120,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/%{name}-gpg-check.1*
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.3.5-2
+- 为 Magic 3.0 重建
+
 
