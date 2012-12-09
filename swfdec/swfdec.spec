@@ -5,7 +5,7 @@
 
 Name:		swfdec
 Version:	%{major_version}.2
-Release:	3%{?dist}
+Release:	4%{?dist}
 Summary:	Flash animation rendering library
 Summary(zh_CN): Flash 动画渲染库
 
@@ -156,6 +156,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.9.2-4
+- 为 Magic 3.0 重建
+
 * Sun Jul 26 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.9.2-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
 
