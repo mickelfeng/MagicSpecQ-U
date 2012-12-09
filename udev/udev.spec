@@ -1,7 +1,7 @@
 Summary:        A rule-based device node and kernel event manager
 Name:           udev
 Version:        181
-Release:        2%{?dist}
+Release:        3%{?dist}
 License:        GPLv2+
 Group:          System Environment/Base
 Source:         ftp://ftp.kernel.org/pub/linux/utils/kernel/hotplug/%{name}-%{version}.tar.xz
@@ -173,6 +173,9 @@ systemctl daemon-reload >/dev/null 2>&1 || :
 %attr(0644,root,root) %{_libdir}/pkgconfig/gudev-1.0*
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 181-3
+- 为 Magic 3.0 重建
+
 * Thu Feb 09 2012 Kay Sievers <kay@redhat.com> - 181-2
 - rebuild with fixed binutils
 - remove 'dev' package dependency handling
