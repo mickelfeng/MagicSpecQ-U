@@ -5,7 +5,7 @@
 Summary: Tool Command Language, pronounced tickle
 Name: tcl
 Version: %{vers}
-Release: 1%{?dist}
+Release: 2%{?dist}
 Epoch: 1
 License: TCL
 Group: Development/Languages
@@ -137,6 +137,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/%{name}%{majorver}/tclAppInit.c
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1:8.5.13-2
+- 为 Magic 3.0 重建
+
 * Mon Nov 12 2012 Jaroslav Škarvada <jskarvad@redhat.com> - 1:8.5.13-1
 - New version
   Resolves: rhbz#875830
