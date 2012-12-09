@@ -1,7 +1,7 @@
 %define     real_version    1.8beta5
 Name:       tsocks
 Version:    1.8
-Release:    0.9.beta5%{?dist}
+Release:    0.10.beta5%{?dist}
 Summary:    Library for catching network connections, redirecting them on a SOCKS server
 Group:      System Environment/Libraries
 License:    GPLv2+
@@ -64,6 +64,9 @@ rm -rf $RPM_BUILD_ROOT
 %postun -p /sbin/ldconfig
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.8-0.10.beta5
+- 为 Magic 3.0 重建
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.8-0.9.beta5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
