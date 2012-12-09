@@ -1,6 +1,6 @@
 Name:           upx
 Version:        3.08
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Ultimate Packer for eXecutables
 
 Group:          Applications/Archiving
@@ -54,6 +54,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 3.08-2
+- 为 Magic 3.0 重建
+
 * Fri Jan 27 2012 Jon Ciesla <limburgher@gmail.com> - 3.08-1
 - New upstream.
 
