@@ -1,6 +1,6 @@
 Name:           urlview
 Version:        0.9
-Release:        10%{?dist}
+Release:        11%{?dist}
 Summary:        URL extractor/launcher
 
 Group:          Applications/Internet
@@ -52,6 +52,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man5/urlview.conf.5*
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.9-11
+- 为 Magic 3.0 重建
+
 * Sun Jul 22 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.9-10
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
