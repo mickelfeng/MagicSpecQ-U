@@ -1,6 +1,6 @@
 Name:       SDL
 Version:    1.2.15
-Release:    1%{?dist}
+Release:    2%{?dist}
 Summary:    A cross-platform multimedia library
 Group:      System Environment/Libraries
 URL:        http://www.libsdl.org/
@@ -128,6 +128,9 @@ rm -f %{buildroot}%{_libdir}/*.la
 %{_libdir}/lib*.a
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.2.15-2
+- 为 Magic 3.0 重建
+
 * Thu Feb 23 2012 Petr Pisar <ppisar@redhat.com> - 1.2.15-1
 - Beautify spec code
 - 1.2.15 bump
