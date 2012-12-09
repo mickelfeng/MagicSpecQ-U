@@ -69,7 +69,7 @@ Summary: Spam filter for email which can be invoked from mail delivery agents
 Name: spamassassin
 Version: 3.3.2
 #Release: 0.8.%{prerev}%{?dist}
-Release: 13%{?dist}
+Release: 14%{?dist}
 License: ASL 2.0
 Group: Applications/Internet
 URL: http://spamassassin.apache.org/
@@ -365,6 +365,9 @@ fi
 %endif
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 3.3.2-14
+- 为 Magic 3.0 重建
+
 * Sat Aug 25 2012 Kevin Fenzi <kevin@scrye.com> 3.3.2-13
 - Add systemd macros for presets. Fixes bug #850320
 
