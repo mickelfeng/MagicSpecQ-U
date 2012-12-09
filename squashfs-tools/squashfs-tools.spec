@@ -1,7 +1,7 @@
 Summary: Utility for the creation of squashfs filesystems
 Name: squashfs-tools
 Version: 4.2
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 URL: http://squashfs.sourceforge.net/
@@ -39,6 +39,9 @@ rm -rf %{buildroot}
 %{_sbindir}/unsquashfs
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 4.2-3
+- 为 Magic 3.0 重建
+
 * Thu Feb 09 2012 Liu Di <liudidi@gmail.com> - 4.2-2
 - 为 Magic 3.0 重建
 
