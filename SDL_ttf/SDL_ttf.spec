@@ -1,6 +1,6 @@
 Name:		SDL_ttf
 Version:	2.0.11
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	Simple DirectMedia Layer TrueType Font library
 
 Group:		System Environment/Libraries
@@ -69,6 +69,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/pkgconfig/SDL_ttf.pc
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 2.0.11-2
+- 为 Magic 3.0 重建
+
 * Tue Jan 31 2012 Jon Ciesla <limburgher@gmail.com> - 2.0.11-1
 - New upstream.
 
