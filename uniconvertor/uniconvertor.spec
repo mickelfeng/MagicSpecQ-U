@@ -2,7 +2,7 @@
 
 Name:           uniconvertor
 Version:        1.1.4
-Release:        6%{?dist}
+Release:        7%{?dist}
 Summary:        Universal vector graphics translator
 
 Group:          Applications/Multimedia
@@ -77,6 +77,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.1.4-7
+- 为 Magic 3.0 重建
+
 * Sun Jul 22 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.1.4-6
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
