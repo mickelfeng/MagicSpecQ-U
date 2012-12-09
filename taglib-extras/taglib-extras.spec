@@ -1,7 +1,7 @@
 Summary:        Taglib support for other formats 
 Name:           taglib-extras
 Version:        1.0.1
-Release:        4%{?dist}
+Release:        5%{?dist}
 
 Group:          Applications/Multimedia
 # all LGPLv2, except for rmff/ which is GPLv2+/LGPLv2+
@@ -82,6 +82,9 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.0.1-5
+- 为 Magic 3.0 重建
+
 * Mon Oct 29 2012 Liu Di <liudidi@gmail.com> - 1.0.1-4
 - 为 Magic 3.0 重建
 
