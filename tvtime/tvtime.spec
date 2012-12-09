@@ -1,7 +1,7 @@
 Summary: A high quality TV viewer
 Name: tvtime
 Version: 1.0.2
-Release: 17%{?dist}
+Release: 18%{?dist}
 License: GPLv2+ and LGPLv2+
 Group: Applications/Multimedia
 URL: http://tvtime.sourceforge.net
@@ -127,6 +127,9 @@ rm -rf %{buildroot}
 %{_bindir}/tvtime
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.0.2-18
+- 为 Magic 3.0 重建
+
 * Wed Feb 09 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.0.2-17
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 
