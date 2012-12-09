@@ -1,7 +1,7 @@
 Summary:	Clean up and pretty-print HTML/XHTML/XML
 Name:		tidyp
 Version:	1.02
-Release:	6%{?dist}
+Release:	7%{?dist}
 License:	W3C
 Group:		Applications/Text
 Url:		http://www.tidyp.com/
@@ -82,6 +82,9 @@ rm -rf %{buildroot}
 %exclude %{_libdir}/libtidyp.la
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.02-7
+- 为 Magic 3.0 重建
+
 * Wed Jan 11 2012 Paul Howarth <paul@city-fan.org> 1.02-6
 - rebuilt for gcc 4.7 in Rawhide
 
