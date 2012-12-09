@@ -4,7 +4,7 @@ Summary: Tools needed to create Texinfo format documentation files
 Summary(zh_CN.UTF-8): 建立 Texinfo 格式文档文件所需要的工具
 Name: texinfo
 Version: 4.13a
-Release: 14%{?dist}
+Release: 15%{?dist}
 License: GPLv3+
 Group: Applications/Publishing
 Group(zh_CN.UTF-8): 应用程序/出版
@@ -185,6 +185,9 @@ fi
 %{_mandir}/man1/pdftexi2dvi.1*
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 4.13a-15
+- 为 Magic 3.0 重建
+
 * Tue Apr 24 2012 Liu Di <liudidi@gmail.com> - 4.13a-14
 - 为 Magic 3.0 重建
 
