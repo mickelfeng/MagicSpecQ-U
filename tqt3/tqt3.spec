@@ -44,7 +44,7 @@ Summary(zh_CN.UTF-8): TQt GUI 工具包的共享库。
 Name: 	 tqt3
 Version: %{ver}
 %if %{git}
-Release: 3.git%{gitdate}%{?dist}
+Release: 4.git%{gitdate}%{?dist}
 %else
 Release: 2%{?dist}
 %endif
@@ -890,6 +890,9 @@ exit 0
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 3.4-4.git20121102
+- 为 Magic 3.0 重建
+
 * Thu Mar 29 2012 Liu Di <liudidi@gmail.com> - 3.4-2
 - 为 Magic 3.0 重建
 
