@@ -9,7 +9,7 @@ Summary(zh_CN.UTF-8): 一组 Tk 的扩展组件
 Name: tix
 Epoch: 1
 Version: %{tixmajor}.3
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: BSD
 Group: Development/Languages
 Group(zh_CN.UTF-8): 开发/语言
@@ -151,6 +151,9 @@ rm -rf $RPM_BUILD_ROOT
 %doc %{tcl_sitelib}/Tix%{tixmajor}
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1:8.4.3-5
+- 为 Magic 3.0 重建
+
 * Wed Feb 15 2012 Liu Di <liudidi@gmail.com> - 1:8.4.3-4
 - 为 Magic 3.0 重建
 
