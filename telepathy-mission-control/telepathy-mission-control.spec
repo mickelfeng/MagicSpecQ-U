@@ -2,7 +2,7 @@
 
 Name:           telepathy-mission-control
 Version:        5.14.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Epoch:          1
 Summary:        Central control for Telepathy connection manager
 
@@ -88,6 +88,9 @@ fi
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1:5.14.0-2
+- 为 Magic 3.0 重建
+
 * Wed Oct  3 2012 Brian Pepple <bpepple@fedoraproject.org> - 1:5.14.0-1
 - Update to 5.14.0
 
