@@ -6,7 +6,7 @@
 
 Name:           telepathy-idle
 Version:        0.1.12
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        IRC connection manager for Telepathy
 
 Group:          Applications/Communications
@@ -64,6 +64,9 @@ make install DESTDIR=$RPM_BUILD_ROOT
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.1.12-3
+- 为 Magic 3.0 重建
+
 * Tue Oct  2 2012 Dan Winship <danw@redhat.com> - 0.1.12-2
 - Add a patch from upstream for "make -j" reliability
 
