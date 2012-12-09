@@ -1,6 +1,6 @@
 Name: uClibc
 Version: 0.9.32
-Release: 3%{?dist}
+Release: 4%{?dist}
 Summary: C library for embedded Linux
 Summary(zh_CN.UTF-8): 嵌入式 Linux 使用的 C 库
 
@@ -104,6 +104,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/uClibc
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.9.32-4
+- 为 Magic 3.0 重建
+
 * Wed May 02 2012 Liu Di <liudidi@gmail.com> - 0.9.32-3
 - 为 Magic 3.0 重建
 
