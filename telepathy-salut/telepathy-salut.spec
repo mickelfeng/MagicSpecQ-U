@@ -1,6 +1,6 @@
 Name:           telepathy-salut
 Version:        0.8.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Link-local XMPP telepathy connection manager
 
 Group:          Applications/Communications
@@ -72,6 +72,9 @@ rm -f $RPM_BUILD_ROOT%{_docdir}/%{name}/*.html
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.8.0-3
+- 为 Magic 3.0 重建
+
 * Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.8.0-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
