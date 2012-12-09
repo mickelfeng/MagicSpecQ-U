@@ -7,7 +7,7 @@ Name: unixODBC-gui-qt
 # There has not been a formal upstream release yet and we're not
 # sure what the first formal release version number will be, so using 0
 Version: 0
-Release: 0.5.%{checkout}%{?dist}
+Release: 0.6.%{checkout}%{?dist}
 Group: Applications/Databases
 URL: http://sourceforge.net/projects/unixodbc-gui-qt/
 # Programs are GPL, libraries are LGPL
@@ -102,6 +102,9 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/*.la
 %postun -p /sbin/ldconfig
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0-0.6.20120105svn98
+- 为 Magic 3.0 重建
+
 * Wed Feb 01 2012 Honza Horak <hhorak@redhat.com> - 0-0.5.20120105svn98
 - desktop files minor fixes
   Related: #768986
