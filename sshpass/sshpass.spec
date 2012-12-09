@@ -1,7 +1,7 @@
 Summary:    Non-interactive SSH authentication utility
 Name:       sshpass
 Version:    1.05
-Release:    3%{?dist}
+Release:    4%{?dist}
 License:    GPLv2
 Group:      Applications/Internet
 Url:        http://sshpass.sourceforge.net/
@@ -29,6 +29,9 @@ magic_rpm_clean.sh
 %doc AUTHORS COPYING ChangeLog NEWS
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.05-4
+- 为 Magic 3.0 重建
+
 * Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.05-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
