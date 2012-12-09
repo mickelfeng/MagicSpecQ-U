@@ -1,7 +1,7 @@
 Summary: File system tree viewer
 Name: tree
 Version: 1.6.0
-Release: 2%{?dist}
+Release: 3%{?dist}
 Group: Applications/File
 License: GPLv2+
 Url: http://mama.indstate.edu/users/ice/tree/
@@ -50,6 +50,9 @@ rm -rf $RPM_BUILD_ROOT
 %doc README LICENSE
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.6.0-3
+- 为 Magic 3.0 重建
+
 * Fri Feb 17 2012 Liu Di <liudidi@gmail.com> - 1.6.0-2
 - 为 Magic 3.0 重建
 
