@@ -2,7 +2,7 @@
 
 Name:           tinyxml
 Version:        2.6.2
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        A simple, small, C++ XML parser
 Group:          System Environment/Libraries
 License:        zlib
@@ -77,6 +77,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 2.6.2-2
+- 为 Magic 3.0 重建
+
 * Wed Feb 09 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.6.1-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 
