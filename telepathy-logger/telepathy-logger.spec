@@ -1,6 +1,6 @@
 Name:           telepathy-logger
 Version:        0.6.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Telepathy framework logging daemon
 
 Group:          Applications/Communications
@@ -99,6 +99,9 @@ glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas &>/dev/null |
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.6.0-3
+- 为 Magic 3.0 重建
+
 * Wed Oct 31 2012 Rex Dieter <rdieter@fedoraproject.org> - 0.6.0-2
 - track sonames so bumps aren't a surprise
 - verbose build
