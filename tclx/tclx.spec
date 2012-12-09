@@ -5,7 +5,7 @@ Summary: Extensions for Tcl and Tk
 Summary(zh_CN.UTF-8): Tcl 的扩展。
 Name: tclx
 Version: %{major_ver}.0
-Release: 8%{?dist}
+Release: 9%{?dist}
 License: BSD
 Group: Development/Languages
 Group(zh_CN.UTF-8): 开发/语言
@@ -132,6 +132,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man*
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 8.4.0-9
+- 为 Magic 3.0 重建
+
 * Thu Nov 01 2012 Liu Di <liudidi@gmail.com> - 8.4.0-8
 - 为 Magic 3.0 重建
 
