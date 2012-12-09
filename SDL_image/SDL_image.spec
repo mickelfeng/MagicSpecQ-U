@@ -1,6 +1,6 @@
 Name:		SDL_image
 Version:	1.2.12
-Release:	3%{?dist}
+Release:	4%{?dist}
 Summary:	Image loading library for SDL
 
 Group:		System Environment/Libraries
@@ -86,6 +86,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.2.12-4
+- 为 Magic 3.0 重建
+
 * Sat Apr 07 2012 Liu Di <liudidi@gmail.com> - 1.2.12-3
 - 为 Magic 3.0 重建
 
