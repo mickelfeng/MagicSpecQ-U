@@ -7,7 +7,7 @@
 
 Name: R
 Version: 2.15.0
-Release: 4%{?dist}
+Release: 5%{?dist}
 Summary: A language for data analysis and graphics
 URL: http://www.r-project.org
 Source0: ftp://cran.r-project.org/pub/R/src/base/R-2/R-%{version}.tar.gz
@@ -1008,6 +1008,9 @@ R CMD javareconf \
 %postun -n libRmath -p /usr/sbin/ldconfig
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 2.15.0-5
+- 为 Magic 3.0 重建
+
 * Fri Nov 23 2012 Liu Di <liudidi@gmail.com> - 2.15.0-4
 - 为 Magic 3.0 重建
 
