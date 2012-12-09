@@ -3,7 +3,7 @@
 
 Name:           system-config-keyboard
 Version:        1.3.1
-Release:        8%{?dist}
+Release:        9%{?dist}
 Summary:        A graphical interface for modifying the keyboard
 
 Group:          System Environment/Base
@@ -98,6 +98,9 @@ fi
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.3.1-9
+- 为 Magic 3.0 重建
+
 * Wed Feb 22 2012 Thomas Woerner <twoerner@redhat.com> 1.3.1-8
 - split out base components into base sub package (rhbz#791332)
 
