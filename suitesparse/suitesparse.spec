@@ -1,6 +1,6 @@
 Name:           suitesparse
 Version:        3.6.1
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        A collection of sparse matrix libraries
 
 Group:          System Environment/Libraries
@@ -394,6 +394,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %doc Doc/*
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 3.6.1-4
+- 为 Magic 3.0 重建
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.6.1-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
