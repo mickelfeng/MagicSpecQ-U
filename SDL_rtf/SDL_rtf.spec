@@ -1,6 +1,6 @@
 Name:		SDL_rtf
 Version:		0.1.0
-Release:		2%{?dist}
+Release:		3%{?dist}
 Summary:	Simple DirectMedia Layer Rich Text Format (RTF) library
 Summary(zh_CN.UTF-8): 简单直接媒体层(SDL)富文本格式(RTF)库
 Group:		System Environment/Libraries
@@ -78,5 +78,8 @@ rm -rf %{_builddir}/%{name}-%{version}
 
 
 %changelog
+* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.1.0-3
+- 为 Magic 3.0 重建
+
 * Tue Jan 31 2006 kde <jack@linux.net.cn> 0.1.0-1mgc
 - initial spec file
