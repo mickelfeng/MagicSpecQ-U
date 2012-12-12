@@ -1,6 +1,6 @@
 Name:           redland
 Version:        1.0.15
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        RDF Application Framework
 
 Group:          System Environment/Libraries
@@ -140,6 +140,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.0.15-3
+- 为 Magic 3.0 重建
+
 * Thu Oct 18 2012 Liu Di <liudidi@gmail.com> - 1.0.15-2
 - 为 Magic 3.0 重建
 
