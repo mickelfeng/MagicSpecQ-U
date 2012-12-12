@@ -4,7 +4,7 @@
 
 Name:           qedje
 Version:        0.4.0
-Release:        10%{?dist}
+Release:        11%{?dist}
 Summary:        A library combining the benefits of Edje and Qt
 
 Group:          System Environment/Libraries
@@ -121,6 +121,9 @@ rm -rf %{buildroot}
 %{_datadir}/sip/%{name}
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.4.0-11
+- 为 Magic 3.0 重建
+
 * Sun Jan 29 2012 Liu Di <liudidi@gmail.com> - 0.4.0-10
 - 为 Magic 3.0 重建
 
