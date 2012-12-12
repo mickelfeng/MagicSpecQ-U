@@ -21,8 +21,8 @@ Url:            http://www.freedesktop.org/wiki/Software/systemd
 # AGAIN: DO NOT BLINDLY UPDATE RAWHIDE PACKAGES TOO WHEN YOU UPDATE
 # THIS PACKAGE FOR A NON-RAWHIDE DEVELOPMENT DISTRIBUTION!
 
-Version:        195
-Release:        6%{?gitcommit:.git%{gitcommit}}%{?dist}
+Version:        196
+Release:        1%{?gitcommit:.git%{gitcommit}}%{?dist}
 # For a breakdown of the licensing, see README
 License:        LGPLv2+ and MIT and GPLv2+
 Summary:        A System and Service Manager
@@ -83,9 +83,6 @@ Source3:        udlfb.conf
 Source4:        listen.conf
 # Prevent accidental removal of the systemd package
 Source6:        yum-protect-systemd.conf
-
-# Temporary workaround for build error https://bugzilla.redhat.com/show_bug.cgi?id=872638
-Patch0:         disable-broken-test-build.patch
 
 Obsoletes:      SysVinit < 2.86-24, sysvinit < 2.86-24
 Provides:       SysVinit = 2.86-24, sysvinit = 2.86-24
@@ -193,7 +190,6 @@ glib-based applications using libudev functionality.
 
 %prep
 %setup -q %{?gitcommit:-n %{name}-git%{gitcommit}}
-%patch0 -p1
 
 %build
 %{?gitcommit: ./autogen.sh }
@@ -344,10 +340,12 @@ migrate_ntp()
 return 0
 
 %post
-/usr/bin/systemd-machine-id-setup > /dev/null 2>&1 || :
-/usr/lib/systemd/systemd-random-seed save > /dev/null 2>&1 || :
-/usr/bin/systemctl daemon-reexec > /dev/null 2>&1 || :
+/usr/bin/systemd-machine-id-setup >/dev/null 2>&1 || :
+/usr/lib/systemd/systemd-random-seed save >/dev/null 2>&1 || :
+/usr/bin/systemctl daemon-reexec >/dev/null 2>&1 || :
 /usr/bin/systemctl start systemd-udevd.service >/dev/null 2>&1 || :
+/usr/bin/udevadm hwdb --update >/dev/null 2>&1 || :
+/usr/bin/journalctl --update-catalog >/dev/null 2>&1 || :
 
 # Stop-gap until rsyslog.rpm does this on its own. (This is supposed
 # to fail when the link already exists)
@@ -413,7 +411,7 @@ if [ -e /etc/sysconfig/i18n -a ! -e /etc/locale.conf ]; then
         unset LC_TELEPHONE
         unset LC_MEASUREMENT
         unset LC_IDENTIFICATION
-        . /etc/sysconfig/i18n 2>&1 || :
+        . /etc/sysconfig/i18n >/dev/null 2>&1 || :
         [ -n "$LANG" ] && echo LANG=$LANG > /etc/locale.conf 2>&1 || :
         [ -n "$LC_CTYPE" ] && echo LC_CTYPE=$LC_CTYPE >> /etc/locale.conf 2>&1 || :
         [ -n "$LC_NUMERIC" ] && echo LC_NUMERIC=$LC_NUMERIC >> /etc/locale.conf 2>&1 || :
@@ -435,8 +433,8 @@ if [ -e /etc/sysconfig/keyboard -a ! -e /etc/vconsole.conf ]; then
         unset SYSFONTACM
         unset UNIMAP
         unset KEYMAP
-        [ -e /etc/sysconfig/i18n ] && . /etc/sysconfig/i18n 2>&1 || :
-        . /etc/sysconfig/keyboard 2>&1 || :
+        [ -e /etc/sysconfig/i18n ] && . /etc/sysconfig/i18n >/dev/null 2>&1 || :
+        . /etc/sysconfig/keyboard >/dev/null 2>&1 || :
         [ -n "$SYSFONT" ] && echo FONT=$SYSFONT > /etc/vconsole.conf 2>&1 || :
         [ -n "$SYSFONTACM" ] && echo FONT_MAP=$SYSFONTACM >> /etc/vconsole.conf 2>&1 || :
         [ -n "$UNIMAP" ] && echo FONT_UNIMAP=$UNIMAP >> /etc/vconsole.conf 2>&1 || :
@@ -448,10 +446,10 @@ fi
 # Migrate HOSTNAME= from /etc/sysconfig/network
 if [ -e /etc/sysconfig/network -a ! -e /etc/hostname ]; then
         unset HOSTNAME
-        . /etc/sysconfig/network 2>&1 || :
+        . /etc/sysconfig/network >/dev/null 2>&1 || :
         [ -n "$HOSTNAME" ] && echo $HOSTNAME > /etc/hostname 2>&1 || :
 fi
-/usr/bin/sed -i '/^HOSTNAME=/d' /etc/sysconfig/network 2>&1 || :
+/usr/bin/sed -i '/^HOSTNAME=/d' /etc/sysconfig/network >/dev/null 2>&1 || :
 
 %posttrans
 # Convert old /etc/sysconfig/desktop settings
@@ -535,6 +533,8 @@ fi
 %dir %{_prefix}/lib/systemd/user-preset
 %dir %{_prefix}/lib/systemd/system-shutdown
 %dir %{_prefix}/lib/systemd/system-sleep
+%dir %{_prefix}/lib/systemd/catalog
+%dir %{_prefix}/lib/systemd/ntp-units.d
 %dir %{_prefix}/lib/tmpfiles.d
 %dir %{_prefix}/lib/sysctl.d
 %dir %{_prefix}/lib/modules-load.d
@@ -606,6 +606,7 @@ fi
 %{_prefix}/lib/tmpfiles.d/tmp.conf
 %{_prefix}/lib/systemd/system-preset/90-default.preset
 %{_prefix}/lib/systemd/system-preset/90-display-manager.preset
+%{_prefix}/lib/systemd/catalog/systemd.catalog
 %{_sbindir}/init
 %{_sbindir}/reboot
 %{_sbindir}/halt
@@ -705,6 +706,17 @@ fi
 %{_libdir}/pkgconfig/gudev-1.0*
 
 %changelog
+* Wed Nov 21 2012 Lennart Poettering <lpoetter@redhat.com> - 196-1
+- New upstream release
+
+* Tue Nov 20 2012 Lennart Poettering <lpoetter@redhat.com> - 195-8
+- https://bugzilla.redhat.com/show_bug.cgi?id=873459
+- https://bugzilla.redhat.com/show_bug.cgi?id=878093
+
+* Thu Nov 15 2012 Michal Schmidt <mschmidt@redhat.com> - 195-7
+- Revert udev killing cgroup patch for F18 Beta.
+- https://bugzilla.redhat.com/show_bug.cgi?id=873576
+
 * Fri Nov 09 2012 Michal Schmidt <mschmidt@redhat.com> - 195-6
 - Fix cyclical dep between systemd and systemd-libs.
 - Avoid broken build of test-journal-syslog.
