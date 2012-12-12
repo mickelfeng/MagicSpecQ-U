@@ -1,6 +1,6 @@
 Name:           slim
 Version:        1.3.2
-Release:        10%{?dist}
+Release:        11%{?dist}
 Summary:        Simple Login Manager
 Group:          User Interface/X
 License:        GPLv2+
@@ -92,6 +92,9 @@ install -p -D %{SOURCE6} %{buildroot}%{_sysconfdir}/tmpfiles.d/slim.conf
 %endif
 
 %changelog
+* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.3.2-11
+- 为 Magic 3.0 重建
+
 * Thu Jan 26 2012 Pavel Alexeev <Pahan@Hubbitus.info> - 1.3.2-10
 - Add Patch slim-1.3.2-libpng-version.patch to fix FBFS in rawhide.
 - Fix bz#717774
