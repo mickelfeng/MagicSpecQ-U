@@ -1,7 +1,7 @@
 Summary: Revision Control System (RCS) file version management tools
 Name: rcs
-Version: 5.8
-Release: 2%{?dist}
+Version: 5.8.1
+Release: 4%{?dist}
 License: GPLv3+
 Group: Development/Tools
 URL: http://www.gnu.org/software/rcs/
@@ -9,13 +9,15 @@ Source: ftp://ftp.gnu.org/gnu/rcs/%{name}-%{version}.tar.gz
 Patch0: rcs-5.8-build-tweaks.patch
 Patch1: rcs-5.8-sameuserlocks.patch
 Patch2: rcs-5.8-newsvnsyntax.patch
-BuildRoot: %{_tmppath}/%{name}-%{version}-root
+Provides: bundled(gnulib)
 BuildRequires: autoconf
 BuildRequires: groff
 BuildRequires: ghostscript
 BuildRequires: sendmail
 BuildRequires: ed
 Requires: diffutils
+Requires(post): /sbin/install-info
+Requires(postun): /sbin/install-info
 
 %description
 The Revision Control System (RCS) is a system for managing multiple
@@ -39,26 +41,45 @@ autoconf
 make %{?_smp_mflags}
 
 %install
-rm -rf ${RPM_BUILD_ROOT}
-%makeinstall
+make DESTDIR=$RPM_BUILD_ROOT install
 
 install -m 755 src/rcsfreeze $RPM_BUILD_ROOT%{_bindir}
 
 rm -f $RPM_BUILD_ROOT/%{_infodir}/dir
 
 %check
+make check
 
-%clean
-rm -rf ${RPM_BUILD_ROOT}
+%post
+/sbin/install-info %{_infodir}/%{name}.info.gz %{_infodir}/dir 2>/dev/null || :
+
+
+%postun
+if [ $1 -eq 0 ]; then
+  /sbin/install-info --delete %{_infodir}/%{name}.info.gz %{_infodir}/dir 2>/dev/null || :
+fi
 
 %files
-%defattr(-,root,root,-)
 %doc ChangeLog COPYING THANKS NEWS README
 %{_bindir}/*
 %{_mandir}/man[15]/*
 %{_infodir}/*
 
 %changelog
+* Fri Nov 23 2012 Honza Horak <hhorak@redhat.com> - 5.8.1-4
+- Use make DESTDIR=... install instead of %%make_install
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 5.8.1-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Thu Jun 07 2012 Honza Horak <hhorak@redhat.com> - 5.8.1-2
+- Provides: bundled(gnulib) added, as per #821786
+- minor spec file clean up
+- install-info run in postin/postun
+
+* Wed Jun 06 2012 Honza Horak <hhorak@redhat.com> - 5.8.1-1
+- Update to upstream 5.8.1
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 5.8-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
