@@ -1,7 +1,7 @@
 #define pre_tag rc1
 #define pre -%{pre_tag}
 
-%define real_version 4.8.2
+%define real_version 4.8.4
 %define release_number 1
 
 # switches: whether to build it or not
@@ -89,6 +89,8 @@ Patch59: qt-4.6.3-bn-rendering-bz562049.patch
 Patch60: qt-4.6.3-bn-rendering-bz562058.patch
 Patch61: qt-4.6.3-indic-rendering-bz631732.patch
 Patch62: qt-4.6.3-indic-rendering-bz636399.patch
+
+Patch80: qt-everywhere-opensource-src-4.8.0-ld-gold.patch
 
 ## qt-copy patches
 # magic patches
@@ -1140,6 +1142,8 @@ Requires: %name-webkit = %version-%release
 #%patch61 -p1 -b .indic-rendering-bz631732
 #%patch62 -p1 -b .indic-rendering-bz636399
 
+%patch80 -p1 -b .gold_ld
+
 # upstream patches
 
 # patches from magic
@@ -1149,19 +1153,19 @@ Requires: %name-webkit = %version-%release
 %patch103 -p1
 %patch104 -p1
 %patch105 -p1
-%patch106 -p1
+#%patch106 -p1
 
 # opensuse patches
-%patch1001 -p0
+# %patch1001 -p0
 
 ## qt-copy patches
-%patch10118 -p0
+#%patch10118 -p0
 #%patch10180 -p1
-%patch10195 -p0
-%patch10209 -p0
-%patch10216 -p0
-%patch10225 -p1
-%patch10289 -p1
+#%patch10195 -p0
+#%patch10209 -p0
+#%patch10216 -p0
+#%patch10225 -p1
+#%patch10289 -p1
 
 # compile patches
 
@@ -1401,6 +1405,28 @@ rm -rfv %{buildroot}%_qtdir/include/Qt/QtWebKit
 rm -rfv %{buildroot}%_libdir/pkgconfig/QtWebKit.pc
 %endif
 
+# Qt.pc
+cat >%{buildroot}%{_libdir}/pkgconfig/Qt.pc<<EOF
+prefix=%{_qt4_prefix}
+bindir=%{_qt4_bindir}
+datadir=%{_qt4_datadir}
+demosdir=%{_qt4_demosdir}
+docdir=%{_qt4_docdir}
+examplesdir=%{_qt4_examplesdir}
+headerdir=%{_qt4_headerdir}
+importdir=%{_qt4_importdir}
+libdir=%{_qt4_libdir}
+moc=%{_qt4_bindir}/moc
+plugindir=%{_qt4_plugindir}
+qmake=%{_qt4_bindir}/qmake
+sysconfdir=%{_qt4_sysconfdir}
+translationdir=%{_qt4_translationdir}
+
+Name: Qt
+Description: Qt Configuration
+Version: %{version}
+EOF
+
 # rpm macros
 # 无下划线开头的宏由 magiclinux project 定义
 # 下划线开头的宏为 fedora project 兼容目的
@@ -1446,6 +1472,7 @@ rm -rf %{buildroot} %{_builddir}/%{buildsubdir}
 %_qtdir/include/Qt/*.h
 %_includedir/Qt
 %{_sysconfdir}/rpm/macros.qt4
+%_libdir/pkgconfig/Qt.pc
 
 %files doc
 %defattr(-,root,root)
@@ -1456,6 +1483,7 @@ rm -rf %{buildroot} %{_builddir}/%{buildsubdir}
 %_bindir/qmake*
 %_qtdir/bin/qmake
 %_qtdir/mkspecs
+%exclude %_qtdir/mkspecs/modules/qt_webkit_version.pri 
 
 %files script
 %defattr(-,root,root)
@@ -1998,6 +2026,7 @@ rm -rf %{buildroot} %{_builddir}/%{buildsubdir}
 %_libdir/libQtWebKit.so
 %_qtdir/lib/libQtWebKit.prl
 %_libdir/libQtWebKit.prl
+%_qtdir/mkspecs/modules/qt_webkit_version.pri 
 %_libdir/pkgconfig/QtWebKit.pc
 %_includedir/QtWebKit
 %_qtdir/include/QtWebKit
