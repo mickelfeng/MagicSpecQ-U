@@ -1,6 +1,6 @@
-%global source_date 20121111_r28233
+%global source_date 20121205_r28449
 %global tl_version 2012
-%global tl_rel 7
+%global tl_rel 10
 %global tl_release %{tl_rel}.%{source_date}%{?dist}
 %global tl_noarch_release %{tl_rel}%{?dist}
 %global source_name texlive-%{source_date}-source
@@ -21,10 +21,12 @@ Summary: TeX formatting system
 Group: Applications/Publishing
 License: Artistic 2.0 and GPLv2 and GPLv2+ and LGPLv2+ and LPPL and MIT and Public Domain and UCD and Utopia
 URL: http://tug.org/texlive/
-BuildRequires: xz libXaw-devel ncurses-devel bison flex file perl-MD5
+BuildRequires: xz libXaw-devel ncurses-devel bison flex file perl(Digest::MD5)
 BuildRequires: gd-devel teckit-devel freetype-devel t1lib-devel libpng-devel zlib-devel poppler-devel t1utils
 BuildRequires: zziplib-devel libicu-devel
-Requires: %{name}-base
+Requires: texlive-scheme-basic
+Requires: texlive-collection-latexrecommended
+Requires: tex-kpathsea, tex-tetex
 Obsoletes: texlive < %{tl_version}, texlive-texmf < %{tl_version}
 Obsoletes: texlive-afm < %{tl_version}
 Obsoletes: texlive-doc < %{tl_version}
@@ -40,7 +42,6 @@ Obsoletes: texlive-texmf-errata-east-asian < %{tl_version}, texlive-texmf-errata
 Obsoletes: texlive-texmf-errata-latex < %{tl_version}, texlive-texmf-errata-xetex < %{tl_version}
 Conflicts: texlive-dvips = 2007
 Patch1: tl-kpfix.patch
-Patch2: texlive-stdc++11.patch
 Source0: %{source_name}.tar.xz
 Source1: tl2rpm.c
 Source2: texlive.tlpdb
@@ -60,17 +61,10 @@ of TeX macros and font libraries.
 The distribution includes extensive general documentation about TeX,
 as well as the documentation for the included software packages.
 
-%include _packages.spec
-
 %package base
-Summary: TeX Live licenses shipped in text form
+Summary: TeX Live filesystem, metadata and licenses shipped in text form
 BuildArch: noarch
 Version: %{tl_version}
-Obsoletes: %{name}-base < %{tl_version}
-Requires: %{name}
-Requires: %{name}-scheme-basic
-Requires: %{name}-collection-latexrecommended
-Requires: tex-kpathsea, tex-tetex
 
 %description base
 TeX Live licenses shipped in text form.
@@ -97,19 +91,20 @@ executable. It is no longer distributed separately, but rather
 consititutes a central part of the sources of the TeX-live
 distribution.
 
+%include _packages.spec
+
 %prep
 %setup -q -c -T
 xz -dc %{SOURCE0} | tar x
 [ -e %{source_name} ] && mv %{source_name} source
 %patch1 -p0
-%patch2 -p1
 for l in `unxz -c %{SOURCE3} | tar t`; do
 	ln -s %{_texdir}/licenses/$l $l
 done
 
 %build
 export CFLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing"
-export CXXFLAGS="$RPM_OPT_FLAGS -std=c++11"
+export CXXFLAGS="$RPM_OPT_FLAGS -std=c++11 -fno-strict-aliasing"
 cd source
 PREF=`pwd`/inst
 mkdir -p work
@@ -216,7 +211,7 @@ rm -f man
 [ ! -e mfplain ] && ln -s mpost mfplain
 [ ! -e texlua ] && ln -s luatex texlua
 [ ! -e texluac ] && ln -s luatex texluac
-for i in physe phyzzx installfont-tl pdfthumb ppower4 tcdialog dosepsbin mkjobtexmf texdiff texdirflatten adhocfilelist; do
+for i in physe phyzzx installfont-tl pdfthumb ppower4 tcdialog dosepsbin mkjobtexmf texdiff texdirflatten; do
 	rm -f %{buildroot}%{_bindir}/$i
 done
 rm -rf %{buildroot}%{_includedir}/ptexenc
@@ -244,8 +239,8 @@ popd
 
 # touch ghosts
 touch %{buildroot}%{_texdir}/texmf/ls-R
+touch %{buildroot}%{_texdir}/texmf-local/ls-R
 touch %{buildroot}%{_texdir}/texmf-dist/ls-R
-touch %{buildroot}%{_texdir}/../texmf/ls-R
 
 # configure ConTeXt
 for i in ctxtools luatools texexec texmfstart; do
@@ -253,7 +248,7 @@ for i in ctxtools luatools texexec texmfstart; do
 done
 
 # configure texmf-local - make it visible to kpathsea
-sed -i -e 's|^TEXMFLOCAL.*|TEXMFLOCAL\ =\ \$TEXMFROOT/texmf-local|' %{buildroot}/%{_texdir}/texmf/web2c/texmf.cnf
+sed -i -e 's|^TEXMFLOCAL.*|TEXMFLOCAL\ =\ \$TEXMFROOT/texmf-local//|' %{buildroot}/%{_texdir}/texmf/web2c/texmf.cnf
 
 %clean
 rm -rf %{buildroot}
@@ -264,10 +259,6 @@ rm -rf %{_texmf_var}/*
 :
 
 %posttrans base
-%{_bindir}/texhash 2> /dev/null
-%{_bindir}/updmap-sys &> /dev/null
-%{_bindir}/fmtutil-sys --all &> /dev/null
-rm -rf %{_texmf_var}/web2c/*
 if [ -x /usr/sbin/selinuxenabled ] && /usr/sbin/selinuxenabled; then
   [ -x /sbin/restorecon ] && /sbin/restorecon -R %{_texmf_var}/
 fi
@@ -288,8 +279,9 @@ fi
 %{_texdir}/licenses/*
 %attr(0644, root, root) %verify(not md5 size mtime) %ghost %{_texdir}/texmf/ls-R
 %attr(0644, root, root) %verify(not md5 size mtime) %ghost %{_texdir}/texmf-dist/ls-R
-%attr(0644, root, root) %verify(not md5 size mtime) %ghost %{_texdir}/../texmf/ls-R
+%attr(0644, root, root) %verify(not md5 size mtime) %ghost %{_texdir}/texmf-local/ls-R
 %{_texdir}/texlive.tlpdb
+
 %include _files.spec
 
 %files kpathsea-lib
@@ -307,7 +299,26 @@ fi
 %{_libdir}/*.so
 
 %changelog
-* Wed Nov 10 2012 Jindrich Novy <jnovy@redhat.com> 2012-7-20121107
+* Thu Dec  6 2012 Jindrich Novy <jnovy@redhat.com> 2012-10-20121205
+- sync with CTAN
+- compile also C++ sources with -fno-strict-aliasing
+- ship adhocfilelist
+- fix changelog dates
+
+* Tue Nov 20 2012 Jindrich Novy <jnovy@redhat.com> 2012-9-20121120
+- obsolete metapost-metauml (#573863)
+- update BR perl-MD5 to perl(Digest::MD5) - required for updmap
+- remove redundant posttrans executions in texlive-base (#865650)
+- own ls-R in texmf-local directory
+
+* Wed Nov 14 2012 Jindrich Novy <jnovy@redhat.com> 2012-8-20121115
+- prevent sed from being verbose in install log when uninstalling
+- be sure the old /usr/share/texmf tree is indexed and searched by
+  kpathsea (#876710)
+- drop patch to fix build for dvisvgm, it is now applied upstream
+- fix dependencies in texlive and texlive-base subpackages (#875364)
+
+* Sat Nov 10 2012 Jindrich Novy <jnovy@redhat.com> 2012-7-20121107
 - run mtxrun only once per transaction (#865650), this considerably
   speeds up installation time
 
@@ -382,7 +393,7 @@ fi
 - sync with upstream
 - install texlive.tlpdb for autodep finder
 
-* Thu Dec 15 2010 Jindrich Novy <jnovy@redhat.com> 2010-13.20101215
+* Wed Dec 15 2010 Jindrich Novy <jnovy@redhat.com> 2010-13.20101215
 - sync with upstream as of 15th Dec
 - fix dangling symlink (thanks to Michel Alexandre Salim)
 
@@ -404,7 +415,7 @@ fi
 - don't make redundant copies of binaries, symlink them
 - fix symlinks to perl utilities
 
-* Mon Aug 25 2010 Jindrich Novy <jnovy@redhat.com> 2010-10.20100814
+* Wed Aug 25 2010 Jindrich Novy <jnovy@redhat.com> 2010-10.20100814
 - add obsolete of dvisvgm to allow smooth updates
 
 * Mon Aug 23 2010 Jindrich Novy <jnovy@redhat.com> 2010-9.20100814

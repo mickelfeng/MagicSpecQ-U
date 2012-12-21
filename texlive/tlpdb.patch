@@ -1,5 +1,5 @@
---- texlive.tlpdb.orig	2012-11-11 19:07:00.325102794 +0100
-+++ texlive.tlpdb	2012-11-11 19:07:00.652102792 +0100
+--- texlive.tlpdb.orig	2012-12-06 07:38:57.246579879 +0100
++++ texlive.tlpdb	2012-12-06 07:38:57.275579821 +0100
 @@ -76,7 +76,7 @@
  catalogue-ctan /macros/latex/contrib/abc
  catalogue-date 2008-03-08 20:47:21 +0100
@@ -9,7 +9,7 @@
  
  name abraces
  category Package
-@@ -6884,7 +6884,7 @@
+@@ -6963,7 +6963,7 @@
  catalogue-license pd
  catalogue-version 1.0a
  
@@ -18,7 +18,7 @@
  category Package
  revision 27228
  shortdesc A font to typeset maths in Xe(La)TeX and Lua(La)TeX.
-@@ -24386,7 +24386,6 @@
+@@ -24675,7 +24675,6 @@
  shortdesc TeX Live documentation
  relocated 1
  depend texlive-common
@@ -26,8 +26,8 @@
  depend texlive-en
  
  name collection-documentation-bulgarian
-@@ -24685,7 +24684,7 @@
- revision 27812
+@@ -24974,7 +24973,7 @@
+ revision 28412
  shortdesc Extra fonts
  relocated 1
 -depend Asana-Math
@@ -35,16 +35,16 @@
  depend adforn
  depend adfsymbols
  depend allrunes
-@@ -24804,7 +24803,7 @@
- depend libertine-type1
- depend libertineotf
+@@ -25092,7 +25091,7 @@
+ depend libertine
+ depend librebaskerville
  depend libris
 -depend linearA
 +depend lineara
  depend lxfonts
  depend ly1
  depend mathabx
-@@ -25158,7 +25157,7 @@
+@@ -25451,7 +25450,7 @@
  depend cns
  depend ctex
  depend dnp
@@ -53,7 +53,7 @@
  depend garuda-c90
  depend hyphen-chinese
  depend ipaex
-@@ -26665,7 +26664,7 @@
+@@ -26969,7 +26968,7 @@
  depend m-tx
  depend musixguit
  depend musixtex
@@ -62,7 +62,7 @@
  depend pmx
  depend songbook
  depend collection-latex
-@@ -27094,25 +27093,6 @@
+@@ -27408,25 +27407,6 @@
  depend texinfo
  depend collection-basic
  
@@ -87,8 +87,8 @@
 -
  name collection-xetex
  category Collection
- revision 27811
-@@ -48241,7 +48221,7 @@
+ revision 28124
+@@ -48724,7 +48704,7 @@
  catalogue-license lppl1.3
  catalogue-version v2.2b
  
@@ -97,7 +97,7 @@
  category Package
  revision 25417
  shortdesc Thai fonts for LaTeX from TLWG.
-@@ -59175,13 +59155,6 @@
+@@ -59704,13 +59684,6 @@
  catalogue-license lppl
  catalogue-version v1.6b
  
@@ -111,7 +111,7 @@
  name interactiveworkbook
  category Package
  revision 15878
-@@ -68426,7 +68399,7 @@
+@@ -68956,7 +68929,7 @@
  catalogue-ctan /macros/latex/contrib/labels
  catalogue-date 2009-09-29 00:01:21 +0200
  catalogue-license lppl1.2
@@ -120,7 +120,7 @@
  
  name lacheck
  category TLCore
-@@ -74063,7 +74036,7 @@
+@@ -74805,7 +74778,7 @@
  catalogue-date 2007-01-08 23:14:30 +0100
  catalogue-license lppl
  
@@ -129,7 +129,7 @@
  category Package
  revision 15878
  shortdesc Linear A script fonts.
-@@ -76242,7 +76215,7 @@
+@@ -77037,7 +77010,7 @@
  catalogue-ctan /info/lshort/persian
  catalogue-date 2009-11-09 23:05:00 +0100
  catalogue-license pd
@@ -138,7 +138,7 @@
  
  name lshort-polish
  category Package
-@@ -85161,7 +85134,7 @@
+@@ -85890,7 +85863,7 @@
  catalogue-license lppl1.3
  catalogue-version 1.2.2
  
@@ -147,7 +147,7 @@
  category Package
  revision 24517
  shortdesc Fonts used by MusixTeX.
-@@ -100076,7 +100049,7 @@
+@@ -101006,7 +100979,7 @@
  catalogue-ctan /graphics/pstricks/contrib/pst-layout
  catalogue-date 2011-05-27 12:35:46 +0200
  catalogue-license lppl
@@ -156,7 +156,7 @@
  
  name pst-lens
  category Package
-@@ -117661,7 +117634,6 @@
+@@ -120476,7 +120449,6 @@
  revision 13663
  shortdesc i386-linux files of texlive-scripts
  binfiles arch=i386-linux size=2
@@ -164,7 +164,7 @@
   bin/i386-linux/rungs
  
  name texlive-sr
-@@ -126709,7 +126681,7 @@
+@@ -129581,7 +129553,7 @@
  catalogue-ctan /macros/latex209/contrib/trees/tree-dvips
  catalogue-date 2011-03-14 14:09:23 +0100
  catalogue-license lppl1
@@ -173,7 +173,7 @@
  
  name treetex
  category Package
-@@ -137949,7 +137921,6 @@
+@@ -140894,7 +140866,6 @@
  revision 26912
  shortdesc i386-linux files of xetex
  binfiles arch=i386-linux size=4837

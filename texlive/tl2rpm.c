@@ -1458,6 +1458,10 @@ void solve(char *name) {
 					fprintf(fpack, "Provides: chktex = %%{tl_version}\n");
 					fprintf(fpack, "Obsoletes: chktex < %%{tl_version}\n");
 				}
+				if ( !strcmp(name, "metauml") ) {	/* rhbz#573863 */
+					fprintf(fpack, "Provides: metapost-metauml = %%{tl_version}\n");
+					fprintf(fpack, "Obsoletes: metapost-metauml < %%{tl_version}\n");
+				}
 				/* description */
 #ifndef SRPMS
 				fprintf(fpack, "\n%%description %s\n", name);
@@ -1639,22 +1643,22 @@ void solve(char *name) {
 							continue;
 						}
 						if ( !strncmp(pkg[i].exe[n], "addMap ", 7) ) {
-							fprintf(fpack, "sed -i '/^Map %s/d' %%{_texdir}/texmf/web2c/updmap.cfg\n", &pkg[i].exe[n][7]);
+							fprintf(fpack, "sed -i '/^Map %s/d' %%{_texdir}/texmf/web2c/updmap.cfg > /dev/null 2>&1\n", &pkg[i].exe[n][7]);
 							run_updmap = 1;
 							continue;
 						}
 						if ( !strncmp(pkg[i].exe[n], "addMixedMap ", 12) ) {
-							fprintf(fpack, "sed -i '/^MixedMap %s/d' %%{_texdir}/texmf/web2c/updmap.cfg\n", &pkg[i].exe[n][12]);
+							fprintf(fpack, "sed -i '/^MixedMap %s/d' %%{_texdir}/texmf/web2c/updmap.cfg > /dev/null 2>&1\n", &pkg[i].exe[n][12]);
 							run_updmap = 1;
 							continue;
 						}
 						if ( !strncmp(pkg[i].exe[n], "addKanjiMap ", 12) ) {
-							fprintf(fpack, "sed -i '/^KanjiMap %s/d' %%{_texdir}/texmf/web2c/updmap.cfg\n", &pkg[i].exe[n][12]);
+							fprintf(fpack, "sed -i '/^KanjiMap %s/d' %%{_texdir}/texmf/web2c/updmap.cfg > /dev/null 2>&1\n", &pkg[i].exe[n][12]);
 							run_updmap = 1;
 							continue;
 						}
 						if ( !strncmp(pkg[i].exe[n], "BuildFormat ", 12) ) {
-							fprintf(fpack, "sed -i 's/^%s.*$/\\#\\!\\ %s/'  %%{_texdir}/texmf/web2c/fmtutil.cnf\n", &pkg[i].exe[n][12], &pkg[i].exe[n][12]);
+							fprintf(fpack, "sed -i 's/^%s.*$/\\#\\!\\ %s/'  %%{_texdir}/texmf/web2c/fmtutil.cnf > /dev/null 2>&1\n", &pkg[i].exe[n][12], &pkg[i].exe[n][12]);
 							run_fmtutil = 1;
 							continue;
 						}
@@ -1686,7 +1690,7 @@ void solve(char *name) {
 							opt_char = *opt;
 							*opt = '\0';
 
-							fprintf(fpack, "sed -i 's/^%s.*$/\\#\\!\\ %s %s %s %s/' %%{_texdir}/texmf/web2c/fmtutil.cnf\n", name, name, engine, patterns?patterns:"-", options);
+							fprintf(fpack, "sed -i 's/^%s.*$/\\#\\!\\ %s %s %s %s/' %%{_texdir}/texmf/web2c/fmtutil.cnf > /dev/null 2>&1\n", name, name, engine, patterns?patterns:"-", options);
 
 							name[strlen(name)] = ' ';
 							engine[strlen(engine)] = ' ';
@@ -1715,27 +1719,27 @@ void solve(char *name) {
 							file += 5;
 							for (k=10; pkg[i].exe[n][k]; k++) if ( pkg[i].exe[n][k] == ' ' ) pkg[i].exe[n][k] = '\0';
 
-							fprintf(fpack, "sed -i '/%s.*/d' %%{_texdir}/texmf/tex/generic/config/language.dat\n", name);
+							fprintf(fpack, "sed -i '/%s.*/d' %%{_texdir}/texmf/tex/generic/config/language.dat > /dev/null 2>&1\n", name);
 							if ( synonyms ) {
 								char *syn = synonyms, *s;
 								while ( (s=strchr(syn, ',')) ) {
 									*s = '\0';
-									fprintf(fpack, "  sed -i '/=%s/d' %%{_texdir}/texmf/tex/generic/config/language.dat\n", syn);
+									fprintf(fpack, "  sed -i '/=%s/d' %%{_texdir}/texmf/tex/generic/config/language.dat > /dev/null 2>&1\n", syn);
 									*s = ',';
 									syn = s+1;
 								}
-								fprintf(fpack, "  sed -i '/=%s/d' %%{_texdir}/texmf/tex/generic/config/language.dat\n", syn);
+								fprintf(fpack, "  sed -i '/=%s/d' %%{_texdir}/texmf/tex/generic/config/language.dat > /dev/null 2>&1\n", syn);
 							}
-							fprintf(fpack, "sed -i '/\\\\addlanguage{%s}.*/d' %%{_texdir}/texmf/tex/generic/config/language.def\n", name);
+							fprintf(fpack, "sed -i '/\\\\addlanguage{%s}.*/d' %%{_texdir}/texmf/tex/generic/config/language.def > /dev/null 2>&1\n", name);
 							if ( synonyms ) {
 								char *syn = synonyms, *s;
 								while ( (s=strchr(syn, ',')) ) {
 									*s = '\0';
-									fprintf(fpack, "sed -i '/\\\\addlanguage{%s}.*/d' %%{_texdir}/texmf/tex/generic/config/language.def\n", syn);
+									fprintf(fpack, "sed -i '/\\\\addlanguage{%s}.*/d' %%{_texdir}/texmf/tex/generic/config/language.def > /dev/null 2>&1\n", syn);
 									*s = ',';
 									syn = s+1;
 								}
-								fprintf(fpack, "sed -i '/\\\\addlanguage{%s}.*/d' %%{_texdir}/texmf/tex/generic/config/language.def\n", syn);
+								fprintf(fpack, "sed -i '/\\\\addlanguage{%s}.*/d' %%{_texdir}/texmf/tex/generic/config/language.def > /dev/null 2>&1\n", syn);
 							}
 							for (--k; k>=10; k--) if ( pkg[i].exe[n][k] == '\0' ) pkg[i].exe[n][k] = ' ';
 							run_fmtutil = 1;
@@ -2034,8 +2038,8 @@ void solve(char *name) {
 					fprintf(fpack, "Obsoletes: lcdf-typetools < %%{tl_version}\n");
 				}
 				if ( !strcmp(name, "xmltex") ) {
-					fprintf(fpack, "Provides: xmltex = %%{tl_version}\n");
-					fprintf(fpack, "Obsoletes: xmltex < %%{tl_version}\n");
+					fprintf(fpack, "Provides: xmltex = %%{tl_version}0101\n");
+					fprintf(fpack, "Obsoletes: xmltex < %%{tl_version}0101\n");
 				}
 				if ( !strcmp(name, "pstools") ) {
 					fprintf(fpack, "Provides: ps2eps = %%{tl_version}\n");
