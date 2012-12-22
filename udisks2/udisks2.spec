@@ -1,30 +1,33 @@
 %define glib2_version                   2.31.13
 %define gobject_introspection_version   1.30.0
 %define polkit_version                  0.101
-%define udev_version                    173
+%define systemd_version                 184
 %define libatasmart_version             0.12
 %define dbus_version                    1.4.0
 
 Summary: Disk Manager
 Name: udisks2
-Version: 1.93.0
-Release: 2%{?dist}
+Version: 2.0.0
+Release: 1%{?dist}
 License: GPLv2+
 Group: System Environment/Libraries
 URL: http://www.freedesktop.org/wiki/Software/udisks
 Source0: http://udisks.freedesktop.org/releases/udisks-%{version}.tar.bz2
+
 BuildRequires: glib2-devel >= %{glib2_version}
 BuildRequires: gobject-introspection-devel >= %{gobject_introspection_version}
 BuildRequires: polkit-devel >= %{polkit_version}
 BuildRequires: intltool
 BuildRequires: libatasmart-devel >= %{libatasmart_version}
-BuildRequires: libgudev1-devel >= %{udev_version}
+BuildRequires: libgudev1-devel >= %{systemd_version}
 BuildRequires: gtk-doc
 BuildRequires: systemd-devel
+BuildRequires: libacl-devel
+
 # needed to pull in the system bus daemon
 Requires: dbus >= %{dbus_version}
 # needed to pull in the udev daemon
-Requires: udev >= %{udev_version}
+Requires: systemd >= %{systemd_version}
 # we need at least this version for bugfixes / features etc.
 Requires: libatasmart >= %{libatasmart_version}
 # for mount, umount, mkswap
@@ -37,16 +40,22 @@ Requires: xfsprogs
 Requires: dosfstools
 # for mlabel
 Requires: mtools
-# for mkntfs - no ntfsprogs on ppc, though
-%ifnarch ppc ppc64
-Requires: ntfsprogs
-%endif
 # for partitioning
 Requires: parted
 Requires: gdisk
 # for LUKS devices
 Requires: cryptsetup-luks
-Requires: acl
+# For ejecting removable disks
+Requires: eject
+
+Requires: libudisks2 = %{version}-%{release}
+
+# for mkntfs (not available on rhel or on ppc/ppc64)
+%if ! 0%{?rhel}
+%ifnarch ppc ppc64
+Requires: ntfsprogs
+%endif
+%endif
 
 # for /proc/self/mountinfo, only available in 2.6.26 or higher
 Conflicts: kernel < 2.6.26
@@ -67,7 +76,7 @@ access to the udisks daemon. This package is for the udisks 2.x
 series.
 
 %package -n libudisks2-devel
-Summary: Development files for libudev
+Summary: Development files for libudisks2
 Group: Development/Libraries
 Requires: libudisks2 = %{version}-%{release}
 Requires: pkgconfig
@@ -100,8 +109,10 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/*.a
 %files -f %{name}.lang
 %doc README AUTHORS NEWS COPYING HACKING
 
+%dir %{_sysconfdir}/udisks2
+
 %{_sysconfdir}/dbus-1/system.d/org.freedesktop.UDisks2.conf
-%{_sysconfdir}/bash_completion.d/udisksctl-bash-completion.sh
+%{_datadir}/bash-completion/completions/udisksctl
 %{_prefix}/lib/systemd/system/udisks2.service
 %{_prefix}/lib/udev/rules.d/80-udisks2.rules
 %{_sbindir}/umount.udisks2
@@ -137,8 +148,50 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/*.a
 
 # Note: please don't forget the %{?dist} in the changelog. Thanks
 %changelog
-* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.93.0-2
-- 为 Magic 3.0 重建
+* Fri Oct 02 2012 David Zeuthen <davidz@redhat.com> - 2.0.0-1%{?dist}
+- Update to release 2.0.0
+
+* Fri Jul 27 2012 David Zeuthen <davidz@redhat.com> - 1.99.0-1%{?dist}
+- Update to release 1.99.0
+
+* Sun Jul 22 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.98.0-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Thu Jun 07 2012 David Zeuthen <davidz@redhat.com> - 1.98.0-1%{?dist}
+- Update to release 1.98.0
+
+* Mon Jun 04 2012 Kay Sievers <kay@redhat.com> - 1.97.0-4
+- rebuild for libudev1
+
+* Tue May 22 2012 Peter Robinson <pbrobinson@fedoraproject.org> - 1.97.0-3
+- Add upstream patch to fix issue with rootfs being on a bound mount
+
+* Fri May 18 2012 Matthias Clasen <mclasen@redhat.com> - 1.97.0-2%{?dist}
+- Add a Requires for eject (#810882)
+
+* Wed May 09 2012 David Zeuthen <davidz@redhat.com> - 1.97.0-1%{?dist}
+- Update to release 1.97.0
+
+* Thu May 03 2012 David Zeuthen <davidz@redhat.com> - 1.96.0-2%{?dist}
+- Include patch so Fedora Live media is shown
+
+* Mon Apr 30 2012 David Zeuthen <davidz@redhat.com> - 1.96.0-1%{?dist}
+- Update to release 1.96.0
+
+* Mon Apr 30 2012 David Zeuthen <davidz@redhat.com> - 1.95.0-3%{?dist}
+- BR: gnome-common
+
+* Mon Apr 30 2012 David Zeuthen <davidz@redhat.com> - 1.95.0-2%{?dist}
+- Make daemon actually link with libsystemd-login
+
+* Mon Apr 30 2012 David Zeuthen <davidz@redhat.com> - 1.95.0-1%{?dist}
+- Update to release 1.95.0
+
+* Tue Apr 10 2012 David Zeuthen <davidz@redhat.com> - 1.94.0-1%{?dist}
+- Update to release 1.94.0
+
+* Tue Apr 03 2012 David Zeuthen <davidz@redhat.com> - 1.93.0-2%{?dist}
+- Don't inadvertently unmount large block devices (fdo #48155)
 
 * Mon Mar 05 2012 David Zeuthen <davidz@redhat.com> - 1.93.0-1%{?dist}
 - Update to release 1.93.0
