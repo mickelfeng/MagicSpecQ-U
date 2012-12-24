@@ -1,8 +1,8 @@
 Summary: Simple kernel loader which boots from a FAT filesystem
 Name: syslinux
-Version: 4.02
-%define tarball_version 4.02
-Release: 5%{?dist}
+Version: 4.05
+%define tarball_version 4.05
+Release: 4%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: http://syslinux.zytor.com/wiki/index.php/The_Syslinux_Project
@@ -11,14 +11,16 @@ ExclusiveArch: %{ix86} x86_64
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: nasm >= 0.98.38-1, perl, netpbm-progs
 BuildRequires: /usr/include/gnu/stubs-32.h
+BuildRequires: libuuid-devel
 %ifarch %{ix86}
 Requires: mtools, libc.so.6
 %endif
 %ifarch x86_64
 Requires: mtools, libc.so.6()(64bit)
 %endif
-Obsoletes: syslinux-devel < %{version}-%{release}
-Provides: syslinux-devel
+
+Patch1: syslinux-isohybrid-fix-mbr.patch
+Patch2: syslinux-4.05-avoid-ext2_fs.h.patch
 
 # NOTE: extlinux belongs in /sbin, not in /usr/sbin, since it is typically
 # a system bootloader, and may be necessary for system recovery.
@@ -64,6 +66,9 @@ booting in the /tftpboot directory.
 
 %prep
 %setup -q -n syslinux-%{tarball_version}
+
+%patch1 -p1 -b .isohyb
+%patch2 -p1 -b .ext2
 
 %build
 CFLAGS="-Werror -Wno-unused -finline-limit=2000"
@@ -119,6 +124,7 @@ rm -rf %{buildroot}
 %{_datadir}/syslinux/memdisk
 %dir %{_datadir}/syslinux/dosutil
 %{_datadir}/syslinux/dosutil/*
+%{_datadir}/syslinux/diag/*
 
 %files perl
 %defattr(-,root,root)
@@ -160,8 +166,26 @@ elif [ -f /boot/extlinux.conf ]; then \
 fi
 
 %changelog
-* Sat Feb 11 2012 Liu Di <liudidi@gmail.com> - 4.02-5
-- 为 Magic 3.0 重建
+* Mon Aug 06 2012 Peter Jones <pjones@redhat.com> - 4.05-4
+- Fix build problem from kernel-headers' removeal of ext2_fs.h
+  (fix backported from as-yet-unreleased upstream version.)
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.05-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Wed Apr 18 2012 Michael Schwendt <mschwendt@fedoraproject.org> - 4.05-2
+- Remove old Obsoletes/Provides for syslinux-devel as such a subpkg
+  was introduced with 3.83-2 (#756733).
+
+* Wed Feb 15 2012 Matthew Garrett <mjg@redhat.com> - 4.05-1
+- New upstream release
+- syslinux-isohybrid-fix-mbr.patch: generate a full MBR for UEFI images
+
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.02-6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
+* Wed Aug 24 2011 Matthew Garrett <mjg@redhat.com> - 4.02-5
+- Add support for building Mac and GPT bootable hybrid images
 
 * Wed Feb 09 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.02-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
