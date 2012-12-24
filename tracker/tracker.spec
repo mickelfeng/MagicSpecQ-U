@@ -1,30 +1,33 @@
 Summary:	Desktop-neutral search tool and indexer
 Name:		tracker
-Version:	0.12.9
-Release:	2%{?dist}
+Version:	0.15.0
+Release:	1%{?dist}
 License:	GPLv2+
 Group:		Applications/System
 URL:		http://projects.gnome.org/tracker/
-Source0:	http://download.gnome.org/sources/tracker/0.12/%{name}-%{version}.tar.xz
-Patch0:		tracker-fixdso.patch
-Patch1:		tracker-extract-pdf-crash-fix.patch
-Patch2:		tracker-libemail.patch
-Patch3:		tracker-g-thread-init.patch
+Source0:	http://download.gnome.org/sources/tracker/0.14/%{name}-%{version}.tar.xz
 
-BuildRequires:	poppler-glib-devel evolution-devel libxml2-devel libgsf-devel
+# only autostart in Gnome, see also
+# https://bugzilla.redhat.com/show_bug.cgi?id=771601
+Patch1:  tracker-0.14.2-onlyshowin.patch
+
+BuildRequires:	poppler-glib-devel libxml2-devel libgsf-devel
 BuildRequires:	libuuid-devel dbus-glib-devel
 BuildRequires:	nautilus-devel
-BuildRequires:	libjpeg-devel libexif-devel exempi-devel raptor-devel
+BuildRequires:	libjpeg-devel libexif-devel exempi-devel
 BuildRequires:	libiptcdata-devel libtiff-devel libpng-devel giflib-devel
 BuildRequires:	sqlite-devel vala-devel libgee06-devel
-BuildRequires:  gstreamer-plugins-base-devel gstreamer-devel id3lib-devel
+BuildRequires:  gstreamer-plugins-base-devel gstreamer-devel
 BuildRequires:	totem-pl-parser-devel libvorbis-devel flac-devel enca-devel
 BuildRequires:	upower-devel gnome-keyring-devel NetworkManager-glib-devel
 BuildRequires:	libunistring-devel gupnp-dlna-devel taglib-devel rest-devel
+BuildRequires:	libosinfo-devel libcue-devel
+BuildRequires:	firefox thunderbird
 BuildRequires:	gdk-pixbuf2-devel
 BuildRequires:	desktop-file-utils intltool gettext
 BuildRequires:	gtk-doc graphviz dia
 BuildRequires:	gobject-introspection
+#BuildRequires:	evolution-devel
 
 
 %description
@@ -45,8 +48,7 @@ all types of files and other first class objects
 %package devel
 Summary:	Headers for developing programs that will use %{name}
 Group:		Development/Libraries
-Requires:	%{name} = %{version}-%{release}
-Requires:	pkgconfig
+Requires:	%{name}%{?_isa} = %{version}-%{release}
 Requires:	dbus-glib-devel gtk2-devel
 
 %description devel
@@ -56,7 +58,7 @@ developing with tracker
 %package ui-tools
 Summary:	Tracker search tool(s)
 Group:		User Interface/Desktops
-Requires:	%{name} = %{version}-%{release}
+Requires:	%{name}%{?_isa} = %{version}-%{release}
 Obsoletes:	paperbox <= 0.4.4
 Obsoletes:	tracker-search-tool <= 0.12.0
 
@@ -65,22 +67,47 @@ Graphical frontend to tracker search (tracker-needle) and configuration
 (tracker-preferences) facilities. This also contains A test tool to navigate
 around objects in the database based on their relationships (tracker-explorer)
 
-%package evolution-plugin
-Summary:	Tracker's evolution plugin
-Group:		User Interface/Desktops
-Requires:	%{name} = %{version}-%{release}
+#%package evolution-plugin
+#Summary:	Tracker's evolution plugin
+#Group:		User Interface/Desktops
+#Requires:	%{name}%{?_isa} = %{version}-%{release}
 
-%description evolution-plugin
-Tracker's evolution plugin
+#%description evolution-plugin
+#Tracker's evolution plugin
+
+%package firefox-plugin
+Summary:	A simple bookmark exporter for Tracker
+Group:		User Interface/Desktops
+Requires:	%{name}%{?_isa} = %{version}-%{release}
+
+%description firefox-plugin
+This Firefox addon exports your bookmarks to Tracker, so that you can search
+for them for example using tracker-needle.
 
 %package nautilus-plugin
 Summary:	Tracker's nautilus plugin
 Group:		User Interface/Desktops
-Requires:	%{name} = %{version}-%{release}
+Requires:	%{name}%{?_isa} = %{version}-%{release}
 
 %description nautilus-plugin
 Tracker's nautilus plugin, provides 'tagging' functionality. Ability to perform
 search in nuautilus using tracker is built-in directly in the nautilus package.
+
+%package miner-flickr
+Summary:	Tracker's Flickr data miner
+Group:		User Interface/Desktops
+Requires:	%{name}%{?_isa} = %{version}-%{release}
+
+%description miner-flickr
+Tracker's Flickr data miner.
+
+%package thunderbird-plugin
+Summary:	Thunderbird extension to export mails to Tracker
+Group:		User Interface/Desktops
+Requires:	%{name}%{?_isa} = %{version}-%{release}
+
+%description thunderbird-plugin
+A simple Thunderbird extension to export mails to Tracker.
 
 %package docs
 Summary:	Documentations for tracker
@@ -92,12 +119,10 @@ This package contains the documentation for tracker
 
 %prep
 %setup -q
-%patch0 -p0 -b .fixdso
-%patch1 -p0
-%patch2 -p1 -b .libemail
-%patch3 -p1 -b .g-thread-init
 
-%global evo_plugins_dir %(pkg-config evolution-plugin-3.0 --variable=plugindir)
+%patch1 -p1 -b .onlyshowin
+
+#%global evo_plugins_dir %(pkg-config evolution-plugin-3.0 --variable=plugindir)
 
 ## nuke unwanted rpaths, see also
 ## https://fedoraproject.org/wiki/Packaging/Guidelines#Beware_of_Rpath
@@ -106,9 +131,11 @@ sed -i -e 's|"/lib /usr/lib|"/%{_lib} %{_libdir}|' configure
 %build
 %configure --disable-static		\
 	--disable-tracker-search-bar	\
-	--disable-miner-thunderbird	\
-	--disable-miner-firefox		\
 	--enable-gtk-doc		\
+	--disable-miner-evolution	\
+	--disable-generic-media-extractor \
+	--with-firefox-plugin-dir=%{_libdir}/firefox/extensions		\
+	--with-thunderbird-plugin-dir=%{_libdir}/thunderbird/extensions	\
 	--disable-functional-tests
 # Disable the functional tests for now, they use python bytecodes.
 
@@ -118,41 +145,47 @@ make V=1 %{?_smp_mflags}
 make DESTDIR=%{buildroot} install
 
 mkdir -p %{buildroot}%{_sysconfdir}/ld.so.conf.d
-echo "%{_libdir}/tracker-0.12"	\
+echo "%{_libdir}/tracker-0.15"	\
 	> %{buildroot}%{_sysconfdir}/ld.so.conf.d/tracker-%{_arch}.conf
 
+%if 0%{?fedora} && 0%{?fedora} < 18
 desktop-file-install --delete-original			\
 	--vendor="fedora"				\
 	--dir=%{buildroot}%{_datadir}/applications	\
 	%{buildroot}%{_datadir}/applications/%{name}-needle.desktop
+%endif
 
 find %{buildroot} -type f -name "*.la" -exec rm -f {} ';'
 rm -rf %{buildroot}%{_datadir}/tracker-tests
-
+magic_rpm_clean.sh
 %find_lang %{name}
 
 %post -p /sbin/ldconfig
 
 %post ui-tools
 touch --no-create %{_datadir}/icons/hicolor
-if [ -x %{_bindir}/gtk-update-icon-cache ]; then
-  %{_bindir}/gtk-update-icon-cache --quiet %{_datadir}/icons/hicolor || :
-fi
 
 %postun
 /sbin/ldconfig
 if [ $1 -eq 0 ]; then
-  glib-compile-schemas %{_datadir}/glib-2.0/schemas || :
+  glib-compile-schemas %{_datadir}/glib-2.0/schemas &>/dev/null || :
 fi
 
 %postun ui-tools
+if [ $1 -eq 0 ] ; then
 touch --no-create %{_datadir}/icons/hicolor
 if [ -x %{_bindir}/gtk-update-icon-cache ]; then
   %{_bindir}/gtk-update-icon-cache --quiet %{_datadir}/icons/hicolor || :
 fi
+fi
 
 %posttrans
-glib-compile-schemas %{_datadir}/glib-2.0/schemas || :
+glib-compile-schemas %{_datadir}/glib-2.0/schemas &>/dev/null || :
+
+%posttrans ui-tools
+if [ -x %{_bindir}/gtk-update-icon-cache ]; then
+  %{_bindir}/gtk-update-icon-cache --quiet %{_datadir}/icons/hicolor || :
+fi
 
 %files -f %{name}.lang
 %defattr(-, root, root, -)
@@ -162,29 +195,33 @@ glib-compile-schemas %{_datadir}/glib-2.0/schemas || :
 %{_datadir}/tracker/
 %{_datadir}/dbus-1/services/org.freedesktop.Tracker*
 %{_libdir}/*.so.*
-%{_libdir}/tracker-0.12/
-%{_libdir}/girepository-1.0/Tracker-0.12.typelib
-%{_libdir}/girepository-1.0/TrackerExtract-0.12.typelib
-%{_libdir}/girepository-1.0/TrackerMiner-0.12.typelib
+%{_libdir}/tracker-0.15/
+%{_libdir}/girepository-1.0/Tracker-0.15.typelib
+%{_libdir}/girepository-1.0/TrackerExtract-0.15.typelib
+%{_libdir}/girepository-1.0/TrackerMiner-0.15.typelib
 %{_mandir}/*/tracker*.gz
 %{_sysconfdir}/ld.so.conf.d/tracker-%{_arch}.conf
-%{_sysconfdir}/xdg/autostart/tracker*.desktop
+%config(noreplace) %{_sysconfdir}/xdg/autostart/tracker*.desktop
 %{_datadir}/glib-2.0/schemas/*
 %exclude %{_bindir}/tracker-explorer
 %exclude %{_bindir}/tracker-needle
 %exclude %{_bindir}/tracker-preferences
 %exclude %{_mandir}/man1/tracker-preferences.1.gz
 %exclude %{_mandir}/man1/tracker-needle.1.gz
+%exclude %{_libexecdir}/tracker-miner-flickr
+%exclude %{_sysconfdir}/xdg/autostart/tracker-miner-flickr.desktop
+%exclude %{_datadir}/dbus-1/services/org.freedesktop.Tracker1.Miner.Flickr.service
+%exclude %{_datadir}/tracker/miners/tracker-miner-flickr.desktop
 
 %files devel
 %defattr(-, root, root, -)
-%{_includedir}/tracker-0.12/
+%{_includedir}/tracker-0.15/
 %{_libdir}/*.so
 %{_libdir}/pkgconfig/*.pc
 %{_datadir}/vala/vapi/tracker*.*
-%{_datadir}/gir-1.0/Tracker-0.12.gir
-%{_datadir}/gir-1.0/TrackerExtract-0.12.gir
-%{_datadir}/gir-1.0/TrackerMiner-0.12.gir
+%{_datadir}/gir-1.0/Tracker-0.15.gir
+%{_datadir}/gir-1.0/TrackerExtract-0.15.gir
+%{_datadir}/gir-1.0/TrackerMiner-0.15.gir
 
 %files ui-tools
 %defattr(-, root, root, -)
@@ -195,15 +232,34 @@ glib-compile-schemas %{_datadir}/glib-2.0/schemas || :
 %{_datadir}/applications/*.desktop
 %{_mandir}/man1/tracker-preferences.1.gz
 %{_mandir}/man1/tracker-needle.1.gz
+%exclude %{_datadir}/applications/trackerbird-launcher.desktop
 
-%files evolution-plugin
+#%files evolution-plugin
+#%defattr(-, root, root, -)
+#%{evo_plugins_dir}/liborg-freedesktop-Tracker-evolution-plugin.so
+#%{evo_plugins_dir}/org-freedesktop-Tracker-evolution-plugin.eplug
+
+%files firefox-plugin
 %defattr(-, root, root, -)
-%{evo_plugins_dir}/liborg-freedesktop-Tracker-evolution-plugin.so
-%{evo_plugins_dir}/org-freedesktop-Tracker-evolution-plugin.eplug
+%{_datadir}/xul-ext/trackerfox/
+%{_libdir}/firefox/extensions/trackerfox@bustany.org
 
 %files nautilus-plugin
 %defattr(-, root, root, -)
 %{_libdir}/nautilus/extensions-3.0/libnautilus-tracker-tags.so
+
+%files miner-flickr
+%defattr(-, root, root, -)
+%{_libexecdir}/tracker-miner-flickr
+%{_datadir}/dbus-1/services/org.freedesktop.Tracker1.Miner.Flickr.service
+%{_datadir}/tracker/miners/tracker-miner-flickr.desktop
+%config(noreplace) %{_sysconfdir}/xdg/autostart/tracker-miner-flickr.desktop
+
+%files thunderbird-plugin
+%defattr(-, root, root, -)
+%{_datadir}/xul-ext/trackerbird/
+%{_libdir}/thunderbird/extensions/trackerbird@bustany.org
+%{_datadir}/applications/trackerbird-launcher.desktop
 
 %files docs
 %defattr(-, root, root, -)
@@ -214,6 +270,62 @@ glib-compile-schemas %{_datadir}/glib-2.0/schemas || :
 %{_datadir}/gtk-doc/html/ontology/
 
 %changelog
+* Fri Nov 02 2012 Deji Akingunola <dakingun@gmail.com> - 0.14.4-1
+- Update to 0.14.4 (http://download.gnome.org/sources/tracker/0.14/tracker-0.14.4.changes)
+
+* Thu Sep 20 2012 Deji Akingunola <dakingun@gmail.com> - 0.14.2-4
+- Mark autostart desktop files as config (Gerd v. Egidy & Rex Dieter, #842318)
+- Move all the files related to the Flickr miner in the '-miner-flicker' subpackage (Mathieu Bridon, #850900)
+
+* Tue Aug 21 2012 Matthias Clasen <mclasen@redhat.com> - 0.14.2-3
+- Drop obsolete BR on id3lib-devel
+
+* Wed Aug 15 2012 Rex Dieter <rdieter@fedoraproject.org> - 0.14.2-2
+- tighten subpkg deps
+- fix icon scriptlet
+- -devel: drop extraneous dep on pkgconfig
+- drop .desktop vendor (f18+)
+- tracker should not auto-start in KDE/XFCE (#771601)
+
+* Mon Jul 30 2012 Deji Akingunola <dakingun@gmail.com> - 0.14.2-1
+- Update to 0.14.2 (http://download.gnome.org/sources/tracker/0.14/tracker-0.14.2.changes)
+- Temporarily disable the evolution plugin, fails to build with evo-3.5
+
+* Sun Jul 22 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.14.1-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Tue Jul 10 2012 Matthias Clasen <mclasen@redhat.com> - 0.14.1-2
+- Drop the raptor-devel BR
+
+* Sun May 20 2012 Deji Akingunola <dakingun@gmail.com> - 0.14.1-1
+- Update to 0.14.1 (http://download.gnome.org/sources/tracker/0.14/tracker-0.14.1.changes)
+
+* Wed May 16 2012 Marek Kasik <mkasik@redhat.com> - 0.14.0-4
+- Rebuild (poppler-0.20.0)
+
+* Wed May 02 2012 Milan Crha <mcrha@redhat.com> - 0.14.0-3
+- Rebuild against newer evolution-data-server
+
+* Tue Apr 24 2012 Kalev Lember <kalevlember@gmail.com> - 0.14.0-2
+- Silence glib-compile-schemas output in rpm scripts
+
+* Thu Mar 08 2012 Deji Akingunola <dakingun@gmail.com> - 0.14.0-1
+- Update to 0.14.0
+
+* Mon Mar 05 2012 Dan Horák <dan[at]danny.cz> - 0.13.1-3
+- Must call autoreconf because configure.ac is patched
+
+* Mon Feb 27 2012 Deji Akingunola <dakingun@gmail.com> - 0.13.1-2
+- Enable Firefox and thunderbird plugins.
+- Split flickr data miner into its subpackage.
+
+* Mon Feb 27 2012 Deji Akingunola <dakingun@gmail.com> - 0.13.1-1
+- Update to 0.13.1
+
+* Wed Feb 22 2012 Milan Crha <mcrha@redhat.com> - 0.12.10-1
+- Update to 0.12.10
+- Remove patch to remove g_thread_init() calls (fixed upstream)
+
 * Wed Feb 08 2012 Milan Crha <mcrha@redhat.com> - 0.12.9-2
 - Rebuild against newer evolution-data-server
 - Add patch to build with evolution-3.3.5's libemail
