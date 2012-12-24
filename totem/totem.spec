@@ -1,40 +1,39 @@
 Summary: Movie player for GNOME
 Name: totem
-Version: 3.3.4
-Release: 3%{?dist}
+Version: 3.6.3
+Release: 1%{?dist}
 Epoch: 1
 License: GPLv2+ with exceptions
 Group: Applications/Multimedia
 URL: http://projects.gnome.org/totem/
-Source0: http://download.gnome.org/sources/totem/3.3/totem-%{version}.tar.xz
+Source0: http://download.gnome.org/sources/totem/3.6/totem-%{version}.tar.xz
 
 Requires: gnome-icon-theme
 # For the opensubtitles plugin
 Requires: pyxdg
 # For all the Python plugins
 Requires: pygobject3
-# For the iplayer plugin
-Requires: python-httplib2
-Requires: python-BeautifulSoup
-Requires: python-feedparser
 
 Requires: iso-codes
-Requires: gstreamer
-Requires: gstreamer-plugins-base
-Requires: gstreamer-plugins-good
-Requires: gstreamer-plugins-bad-free
+Requires: gstreamer1
+Requires: gstreamer1-plugins-base
+Requires: gstreamer1-plugins-good
+Requires: gstreamer1-plugins-bad-free
 Requires: gvfs-fuse
 Requires: gnome-dvb-daemon
 Requires: grilo-plugins
+Requires: gsettings-desktop-schemas
 
-BuildRequires: gstreamer-devel
-BuildRequires: gstreamer-plugins-base-devel
-BuildRequires: gstreamer-plugins-good
+BuildRequires: gstreamer1-devel
+BuildRequires: gstreamer1-plugins-bad-free-devel
+BuildRequires: gstreamer1-plugins-base-devel
+BuildRequires: gstreamer1-plugins-good
 BuildRequires: libpeas-devel
 
 BuildRequires: gcc-c++, pkgconfig, gettext
 BuildRequires: perl(XML::Parser) intltool
 BuildRequires: gnome-icon-theme
+BuildRequires: gsettings-desktop-schemas-devel
 BuildRequires: libXtst-devel
 BuildRequires: libXi-devel
 BuildRequires: libXt-devel
@@ -42,7 +41,9 @@ BuildRequires: gnome-doc-utils
 BuildRequires: python-devel
 BuildRequires: pygobject3-devel
 BuildRequires: totem-pl-parser-devel
-BuildRequires: clutter-gst-devel clutter-gtk-devel libmx-devel
+BuildRequires: clutter-gst2-devel
+BuildRequires: clutter-gtk-devel
+BuildRequires: vala
 
 # For the nautilus extension
 BuildRequires: nautilus-devel
@@ -57,6 +58,7 @@ BuildRequires: liberation-sans-fonts
 BuildRequires: lirc-devel
 BuildRequires: libgdata-devel
 BuildRequires: grilo-devel
+BuildRequires: libzeitgeist-devel
 
 BuildRequires: gnome-common
 BuildRequires: autoconf automake intltool
@@ -96,6 +98,16 @@ Group: Applications/Internet
 %description mozplugin
 Totem is simple movie player for the GNOME desktop.
 The mozilla plugin for Totem allows it to be embedded into a web browser.
+
+%package mozplugin-vegas
+Summary: Mozilla flash plugin for Totem
+Group: Applications/Internet
+Requires: %{name}-mozplugin = %{epoch}:%{version}-%{release}
+
+%description mozplugin-vegas
+Totem is simple movie player for the GNOME desktop.
+The mozilla vegas plugin for Totem allows it playback flash videos
+on some popular video websites.
 
 %package lirc
 Summary: LIRC (Infrared remote) plugin for Totem
@@ -140,12 +152,11 @@ audio and video files in the properties dialog.
 
 %build
 
-export MOZILLA_PLUGINDIR=%{_libdir}/mozilla/plugins
+export BROWSER_PLUGIN_DIR=%{_libdir}/mozilla/plugins
 %configure \
-  --enable-mozilla \
+  --enable-browser-plugins \
   --enable-nautilus \
   --disable-scrollkeeper \
-  --disable-vala \
   --disable-static
 
 make %{?_smp_mflags}
@@ -170,10 +181,12 @@ rm -rf $RPM_BUILD_ROOT%{_libdir}/totem/plugins/*/*.{a,la} \
 find $RPM_BUILD_ROOT -name '*.la' -exec rm -f {} ';'
 
 %post
+/sbin/ldconfig
 update-desktop-database &> /dev/null || :
 touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
 
 %postun
+/sbin/ldconfig
 update-desktop-database &> /dev/null || :
 if [ $1 -eq 0 ] ; then
     touch --no-create %{_datadir}/icons/hicolor &>/dev/null
@@ -194,9 +207,11 @@ glib-compile-schemas %{_datadir}/glib-2.0/schemas &> /dev/null || :
 %{_libdir}/libtotem.so.*
 %{_libdir}/girepository-1.0/Totem-1.0.typelib
 %{_datadir}/applications/%{name}.desktop
+%dir %{_datadir}/totem
 %{_datadir}/totem/*.png
 %{_datadir}/totem/fullscreen.ui
 %{_datadir}/totem/playlist.ui
+%{_datadir}/totem/preferences.ui
 %{_datadir}/totem/properties.ui
 %{_datadir}/totem/totem.ui
 %{_datadir}/totem/uri.ui
@@ -206,22 +221,26 @@ glib-compile-schemas %{_datadir}/glib-2.0/schemas &> /dev/null || :
 %exclude %{_libexecdir}/totem/totem-bugreport.py[co]
 %dir %{_libdir}/totem
 %dir %{_libdir}/totem/plugins
+%{_libdir}/totem/plugins/apple-trailers
+%{_libdir}/totem/plugins/autoload-subtitles
 %{_libdir}/totem/plugins/brasero-disc-recorder
 %{_libdir}/totem/plugins/chapters
 %{_libdir}/totem/plugins/dbus
 %{_libdir}/totem/plugins/gromit
 %{_libdir}/totem/plugins/grilo
-%{_libdir}/totem/plugins/iplayer
 %{_libdir}/totem/plugins/im-status
 %{_libdir}/totem/plugins/ontop
+%{_libdir}/totem/plugins/rotation
 %{_libdir}/totem/plugins/screensaver
 %{_libdir}/totem/plugins/skipto
 %{_libdir}/totem/plugins/properties
 %{_libdir}/totem/plugins/media-player-keys
 %{_libdir}/totem/plugins/opensubtitles
 %{_libdir}/totem/plugins/pythonconsole
+%{_libdir}/totem/plugins/recent
 %{_libdir}/totem/plugins/screenshot
 %{_libdir}/totem/plugins/save-file
+%{_libdir}/totem/plugins/zeitgeist-dp
 %{_datadir}/icons/hicolor/*/apps/totem.png
 %{_datadir}/icons/hicolor/*/devices/totem-tv.png
 %{_datadir}/icons/hicolor/scalable/devices/totem-tv.svg
@@ -255,8 +274,74 @@ glib-compile-schemas %{_datadir}/glib-2.0/schemas &> /dev/null || :
 %{_libexecdir}/totem-plugin-viewer
 %{_datadir}/totem/mozilla-viewer.ui
 %{_datadir}/totem/mozilla-viewer.css
+%exclude %{_libdir}/mozilla/plugins/libtotem-vegas-plugin.so
+
+%files mozplugin-vegas
+%{_libdir}/mozilla/plugins/libtotem-vegas-plugin.so
 
 %changelog
+* Thu Nov 08 2012 Bastien Nocera <bnocera@redhat.com> 3.6.3-1
+- Update to 3.6.3
+
+* Fri Oct 26 2012 Kalev Lember <kalevlember@gmail.com> - 1:3.6.2-1
+- Update to 3.6.2
+
+* Mon Oct  8 2012 Brian Pepple <bpepple@fedoraproject.org> - 1:3.6.0-2
+- Rebuild against new gstreamer1.
+
+* Tue Sep 25 2012 Kalev Lember <kalevlember@gmail.com> - 1:3.6.0-1
+- Update to 3.6.0
+
+* Mon Sep 24 2012 Brian Pepple <bpepple@fedoraproject.org> - 1:3.5.92-2
+- Rebuild for gst-1.0.0
+
+* Wed Sep 19 2012 Tomas Bzatek <tbzatek@redhat.com> - 1:3.5.92-1
+- Update to 3.5.92
+
+* Tue Aug 28 2012 Matthias Clasen <mclasen@redhat.com> - 1:3.5.90-2
+- Rebuild against newer cogl/clutter
+
+* Wed Aug 22 2012 Richard Hughes <hughsient@gmail.com> - 1:3.5.90-1
+- Update to 3.5.90
+
+* Fri Jul 27 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1:3.4.3-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Sun Jul 22 2012 Ville Skyttä <ville.skytta@iki.fi> - 1:3.4.3-2
+- Call ldconfig at post(un)install time.
+- Own the %%{_datadir}/totem dir.
+- Fix tarball URL.
+
+* Tue Jul 17 2012 Richard Hughes <hughsient@gmail.com> - 1:3.4.3-1
+- Update to 3.4.3
+
+* Wed Jun 27 2012 Bastien Nocera <bnocera@redhat.com> 3.4.2-2
+- Enable the vala plugins
+
+* Fri May 18 2012 Richard Hughes <hughsient@gmail.com> - 1:3.4.2-1
+- Update to 3.4.2
+
+* Sun May 06 2012 Adel Gadllah <adel.gadllah@gmail.com> 3.4.1-3
+- Split off vegas plugin (RH #804435)
+
+* Wed Apr 25 2012 Bastien Nocera <bnocera@redhat.com> 3.4.1-2
+- Remove dependencies for removed plugin (#816245)
+
+* Mon Apr 16 2012 Richard Hughes <hughsient@gmail.com> - 1:3.4.1-1
+- Update to 3.4.1
+
+* Tue Mar 27 2012 Richard Hughes <hughsient@gmail.com> - 1:3.4.0-1
+- Update to 3.4.0
+
+* Tue Mar 20 2012 Kalev Lember <kalevlember@gmail.com> - 1:3.3.92-1
+- Update to 3.3.92
+
+* Sat Mar 10 2012 Matthias Clasen <mclasen@redhat.com> - 1:3.3.90-2
+- Rebuild against new cogl
+
+* Sat Feb 25 2012 Matthias Clasen <mclasen@redhat.com> - 1:3.3.90-1
+- Update to 3.3.90
+
 * Thu Jan 19 2012 Matthias Clasen <mclasen@redhat.com> - 1:3.3.4-3
 - Rebuild against new cogl
 
