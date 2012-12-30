@@ -1,7 +1,7 @@
 %global major_version 1
 %global minor_version 9
 %global teeny_version 3
-%global patch_level 125
+%global patch_level 327
 
 %global major_minor_version %{major_version}.%{minor_version}
 
@@ -25,7 +25,7 @@
 %global ruby_vendorlibdir %{_datadir}/ruby/%{ruby_vendordir}
 %global ruby_vendorarchdir %{_libdir}/ruby/%{ruby_vendordir}
 
-%global rubygems_version 1.8.11
+%global rubygems_version 1.8.23
 
 # The RubyGems library has to stay out of Ruby directory three, since the
 # RubyGems should be share by all Ruby implementations.
@@ -34,12 +34,7 @@
 # Specify custom RubyGems root.
 %global gem_dir %{_datadir}/gems
 # TODO: Should we create arch specific rubygems-filesystem?
-%global multilib_64_archs sparc64 ppc64 s390x x86_64
-%ifarch %{multilib_64_archs}
 %global gem_extdir %{_exec_prefix}/lib{,64}/gems
-%else
-%global gem_extdir %{_exec_prefix}/lib/gems
-%endif
 
 %global rake_version 0.9.2.2
 # TODO: The IRB has strange versioning. Keep the Ruby's versioning ATM.
@@ -51,14 +46,20 @@
 %global json_version 1.5.4
 %global minitest_version 2.5.1
 
-%global	_normalized_cpu	%(echo %{_target_cpu} | sed 's/^ppc/powerpc/;s/i.86/i386/;s/sparcv./sparc/;s/armv.*/arm/')
+%global	_normalized_cpu	%(echo %{_target_cpu} | sed 's/^ppc/powerpc/;s/i.86/i386/;s/sparcv./sparc/')
 
 Summary: An interpreter of object-oriented scripting language
 Name: ruby
 Version: %{ruby_version_patch_level}
-Release: 5%{?dist}
+# Note:
+# As seen on perl srpm, as this (ruby) srpm contains several sub-components,
+# we cannot reset the release number to 1 even when the main (ruby) version
+# is updated - because it may be that the versions of sub-components don't
+# change.
+Release: 23%{?dist}
 Group: Development/Languages
-License: Ruby or BSD
+# Public Domain for example for: include/ruby/st.h, strftime.c, ...
+License: (Ruby or BSD) and Public Domain
 URL: http://ruby-lang.org/
 Source0: ftp://ftp.ruby-lang.org/pub/%{name}/%{major_minor_version}/%{ruby_archive}.tar.gz
 Source1: operating_system.rb
@@ -77,8 +78,6 @@ Patch4: ruby-1.9.3-fix-s390x-build.patch
 # Fix the uninstaller, so that it doesn't say that gem doesn't exist
 # when it exists outside of the GEM_HOME (already fixed in the upstream)
 Patch5: ruby-1.9.3-rubygems-1.8.11-uninstaller.patch
-# http://redmine.ruby-lang.org/issues/5135 - see comment 29
-Patch6: ruby-1.9.3-webrick-test-fix.patch
 # Already fixed upstream:
 # https://github.com/ruby/ruby/commit/f212df564a4e1025f9fb019ce727022a97bfff53
 Patch7: ruby-1.9.3-bignum-test-fix.patch
@@ -88,11 +87,26 @@ Patch8: ruby-1.9.3-custom-rubygems-location.patch
 # Add support for installing binary extensions according to FHS.
 # https://github.com/rubygems/rubygems/issues/210
 Patch9: rubygems-1.8.11-binary-extensions.patch
+# Opening /dev/tty fails with ENXIO (ref: man 2 open) on koji.
+# Let's rescue this
+# Fixed in ruby 1.9.3 p327
+#Patch10: ruby-1.9.3-p286-open-devtty-on-koji.patch
+# On koji, network related tests sometimes cause internal server error,
+# ignore these
+Patch10: ruby-1.9.3-p327-ignore-internal-server-error-on-test.patch
+# http://bugs.ruby-lang.org/issues/show/7312
+# test_str_crypt fails with glibc 2.17
+Patch11: ruby-1.9.3-p327-crypt-argument-glibc217.patch
 # Make mkmf verbose by default
 Patch12: ruby-1.9.3-mkmf-verbose.patch
 
 Requires: %{name}-libs%{?_isa} = %{version}-%{release}
 Requires: ruby(rubygems) >= %{rubygems_version}
+# Make the bigdecimal gem a runtime dependency of Ruby to avoid problems
+# with user-installed gems, that don't require it in gemspec/Gemfile
+# See https://bugzilla.redhat.com/show_bug.cgi?id=829209
+# and http://bugs.ruby-lang.org/issues/6123
+Requires: rubygem(bigdecimal) >= %{bigdecimal_version}
 
 BuildRequires: autoconf
 BuildRequires: gdbm-devel
@@ -205,16 +219,26 @@ Provides:   ri = %{version}-%{release}
 Provides:   rubygem(rdoc) = %{version}-%{release}
 Obsoletes:  ruby-rdoc < %{version}
 Obsoletes:  ruby-ri < %{version}
+BuildArch:  noarch
+
+%description -n rubygem-rdoc
+RDoc produces HTML and command-line documentation for Ruby projects.  RDoc
+includes the 'rdoc' and 'ri' tools for generating and displaying online
+documentation.
+
+
+%package doc
+Summary:    Documentation for %{name}
+Group:      Documentation
+Requires:   %{_bindir}/ri
 # TODO: It seems that ri documentation differs from platform to platform due to
 # some encoding bugs, therefore the documentation should be split out of this gem
 # or kept platform specific.
 # https://github.com/rdoc/rdoc/issues/71
 # BuildArch:  noarch
 
-%description -n rubygem-rdoc
-RDoc produces HTML and command-line documentation for Ruby projects.  RDoc
-includes the 'rdoc' and 'ri' tools for generating and displaying online
-documentation.
+%description doc
+This package contains documentation for %{name}.
 
 
 %package -n rubygem-bigdecimal
@@ -311,10 +335,11 @@ Tcl/Tk interface for the object-oriented scripting language Ruby.
 %patch3 -p1
 %patch4 -p1
 %patch5 -p1
-%patch6 -p1
 %patch7 -p1
 %patch8 -p1
 %patch9 -p1
+%patch10 -p1
+%patch11 -p1
 %patch12 -p1
 
 %build
@@ -345,19 +370,19 @@ make install DESTDIR=%{buildroot}
 # Dump the macros into macro.ruby to use them to build other Ruby libraries.
 mkdir -p %{buildroot}%{_sysconfdir}/rpm
 cat >> %{buildroot}%{_sysconfdir}/rpm/macros.ruby << \EOF
-%%ruby_libdir %{_datadir}/%{name}
-%%ruby_libarchdir %{_libdir}/%{name}
+%%ruby_libdir %%{_datadir}/%{name}
+%%ruby_libarchdir %%{_libdir}/%{name}
 
 # This is the local lib/arch and should not be used for packaging.
 %%ruby_sitedir site_ruby
-%%ruby_sitelibdir %{_prefix}/local/share/ruby/%{ruby_sitedir}
-%%ruby_sitearchdir %{_prefix}/local/%{_lib}/ruby/%{ruby_sitedir}
+%%ruby_sitelibdir %%{_prefix}/local/share/%{name}/%%{ruby_sitedir}
+%%ruby_sitearchdir %%{_prefix}/local/%%{_lib}/%{name}/%%{ruby_sitedir}
 
 # This is the general location for libs/archs compatible with all
 # or most of the Ruby versions available in the Fedora repositories.
 %%ruby_vendordir vendor_ruby
-%%ruby_vendorlibdir %{_datadir}/ruby/%{ruby_vendordir}
-%%ruby_vendorarchdir %{_libdir}/ruby/%{ruby_vendordir}
+%%ruby_vendorlibdir %%{ruby_libdir}/%%{ruby_vendordir}
+%%ruby_vendorarchdir %%{ruby_libarchdir}/%%{ruby_vendordir}
 EOF
 
 cat >> %{buildroot}%{_sysconfdir}/rpm/macros.rubygems << \EOF
@@ -384,6 +409,7 @@ mv %{buildroot}%{ruby_libdir}/gems/%{ruby_abi} %{buildroot}%{gem_dir}
 mkdir -p %{buildroot}%{gem_extdir}/exts
 
 # Move bundled rubygems to %%gem_dir and %%gem_extdir
+# make symlinks for io-console and bigdecimal, which are considered to be part of stdlib by other Gems
 mkdir -p %{buildroot}%{gem_dir}/gems/rake-%{rake_version}/lib
 mv %{buildroot}%{ruby_libdir}/rake* %{buildroot}%{gem_dir}/gems/rake-%{rake_version}/lib
 
@@ -394,11 +420,15 @@ mkdir -p %{buildroot}%{gem_dir}/gems/bigdecimal-%{bigdecimal_version}/lib
 mkdir -p %{buildroot}%{_libdir}/gems/exts/bigdecimal-%{bigdecimal_version}/lib
 mv %{buildroot}%{ruby_libdir}/bigdecimal %{buildroot}%{gem_dir}/gems/bigdecimal-%{bigdecimal_version}/lib
 mv %{buildroot}%{ruby_libarchdir}/bigdecimal.so %{buildroot}%{_libdir}/gems/exts/bigdecimal-%{bigdecimal_version}/lib
+ln -s %{gem_dir}/gems/bigdecimal-%{bigdecimal_version}/lib/bigdecimal %{buildroot}%{ruby_libdir}/bigdecimal
+ln -s %{_libdir}/gems/exts/bigdecimal-%{bigdecimal_version}/lib/bigdecimal.so %{buildroot}%{ruby_libarchdir}/bigdecimal.so
 
 mkdir -p %{buildroot}%{gem_dir}/gems/io-console-%{io_console_version}/lib
 mkdir -p %{buildroot}%{_libdir}/gems/exts/io-console-%{io_console_version}/lib/io
 mv %{buildroot}%{ruby_libdir}/io %{buildroot}%{gem_dir}/gems/io-console-%{io_console_version}/lib
 mv %{buildroot}%{ruby_libarchdir}/io/console.so %{buildroot}%{_libdir}/gems/exts/io-console-%{io_console_version}/lib/io
+ln -s %{gem_dir}/gems/io-console-%{io_console_version}/lib/io %{buildroot}%{ruby_libdir}/io
+ln -s %{_libdir}/gems/exts/io-console-%{io_console_version}/lib/io/console.so %{buildroot}%{ruby_libarchdir}/io/console.so
 
 mkdir -p %{buildroot}%{gem_dir}/gems/json-%{json_version}/lib
 mkdir -p %{buildroot}%{_libdir}/gems/exts/json-%{json_version}/lib
@@ -410,38 +440,43 @@ mv %{buildroot}%{ruby_libdir}/minitest %{buildroot}%{gem_dir}/gems/minitest-%{mi
 
 # Adjust the gemspec files so that the gems will load properly
 sed -i '2 a\
-  s.require_paths = ["lib"]' %{buildroot}/%{gem_dir}/specifications/rake-%{rake_version}.gemspec
+  s.require_paths = ["lib"]' %{buildroot}%{gem_dir}/specifications/rake-%{rake_version}.gemspec
 
 sed -i '2 a\
-  s.require_paths = ["lib"]' %{buildroot}/%{gem_dir}/specifications/rdoc-%{rdoc_version}.gemspec
-
-sed -i '2 a\
-  s.require_paths = ["lib"]\
-  s.extensions = ["bigdecimal.so"]' %{buildroot}/%{gem_dir}/specifications/bigdecimal-%{bigdecimal_version}.gemspec
+  s.require_paths = ["lib"]' %{buildroot}%{gem_dir}/specifications/rdoc-%{rdoc_version}.gemspec
 
 sed -i '2 a\
   s.require_paths = ["lib"]\
-  s.extensions = ["io/console.so"]' %{buildroot}/%{gem_dir}/specifications/io-console-%{io_console_version}.gemspec
+  s.extensions = ["bigdecimal.so"]' %{buildroot}%{gem_dir}/specifications/bigdecimal-%{bigdecimal_version}.gemspec
 
 sed -i '2 a\
   s.require_paths = ["lib"]\
-  s.extensions = ["json/ext/parser.so", "json/ext/generator.so"]' %{buildroot}/%{gem_dir}/specifications/json-%{json_version}.gemspec
+  s.extensions = ["io/console.so"]' %{buildroot}%{gem_dir}/specifications/io-console-%{io_console_version}.gemspec
 
 sed -i '2 a\
-  s.require_paths = ["lib"]' %{buildroot}/%{gem_dir}/specifications/minitest-%{minitest_version}.gemspec
+  s.require_paths = ["lib"]\
+  s.extensions = ["json/ext/parser.so", "json/ext/generator.so"]' %{buildroot}%{gem_dir}/specifications/json-%{json_version}.gemspec
+
+sed -i '2 a\
+  s.require_paths = ["lib"]' %{buildroot}%{gem_dir}/specifications/minitest-%{minitest_version}.gemspec
 
 magic_rpm_clean.sh
 
-%if 0%{?with_check}
 %check
-# Disable make check on ARM until the bug is fixed
-# https://bugzilla.redhat.com/show_bug.cgi?id=789410
-# https://bugs.ruby-lang.org/issues/6011
-%if 0
-# TODO: Investigate the test failures.
-# https://bugs.ruby-lang.org/issues/6036
-make check TESTS="-v -x test_pathname.rb -x test_drbssl.rb -x test_parse.rb -x test_x509cert.rb"
+DISABLE_TESTS=""
+
+# OpenSSL 1.0.1 is breaking the drb test suite.
+# https://bugs.ruby-lang.org/issues/6221
+DISABLE_TESTS="-x test_drbssl.rb $DISABLE_TESTS"
+
+%ifarch armv7l armv7hl armv7hnl
+# test_call_double(DL::TestDL) fails on ARM HardFP
+# http://bugs.ruby-lang.org/issues/6592
+DISABLE_TESTS="-x test_dl2.rb $DISABLE_TESTS"
 %endif
+
+%ifnarch ppc ppc64
+make check TESTS="-v $DISABLE_TESTS"
 %endif
 
 %post libs -p /sbin/ldconfig
@@ -451,15 +486,8 @@ make check TESTS="-v -x test_pathname.rb -x test_drbssl.rb -x test_parse.rb -x t
 %files
 %doc COPYING
 %lang(ja) %doc COPYING.ja
-%doc ChangeLog
 %doc GPL
 %doc LEGAL
-%doc NEWS
-%doc README
-%lang(ja) %doc README.ja
-%doc ToDo
-%doc doc/ChangeLog-*
-%doc doc/NEWS-*
 %{_bindir}/erb
 %{_bindir}/ruby
 %{_bindir}/testrb
@@ -489,6 +517,8 @@ make check TESTS="-v -x test_pathname.rb -x test_drbssl.rb -x test_parse.rb -x t
 %doc LEGAL
 %doc README
 %lang(ja) %doc README.ja
+%doc NEWS
+%doc doc/NEWS-*
 # Exclude /usr/local directory since it is supposed to be managed by
 # local system administrator.
 %exclude %{ruby_sitelibdir}
@@ -643,17 +673,10 @@ make check TESTS="-v -x test_pathname.rb -x test_drbssl.rb -x test_parse.rb -x t
 %{rubygems_dir}
 %{gem_dir}
 %exclude %{gem_dir}/gems/*
-%ifarch %{multilib_64_archs}
 %{_exec_prefix}/lib*/gems
 %exclude %{_exec_prefix}/lib*/gems/exts/bigdecimal-%{bigdecimal_version}
 %exclude %{_exec_prefix}/lib*/gems/exts/io-console-%{io_console_version}
 %exclude %{_exec_prefix}/lib*/gems/exts/json-%{json_version}
-%else
-%{_exec_prefix}/lib/gems
-%exclude %{_exec_prefix}/lib/gems/exts/bigdecimal-%{bigdecimal_version}
-%exclude %{_exec_prefix}/lib/gems/exts/io-console-%{io_console_version}
-%exclude %{_exec_prefix}/lib/gems/exts/json-%{json_version}
-%endif
 %exclude %{gem_dir}/gems/rake-%{rake_version}
 %exclude %{gem_dir}/gems/rdoc-%{rdoc_version}
 %exclude %{gem_dir}/specifications/bigdecimal-%{bigdecimal_version}.gemspec
@@ -684,14 +707,24 @@ make check TESTS="-v -x test_pathname.rb -x test_drbssl.rb -x test_parse.rb -x t
 %{gem_dir}/gems/rdoc-%{rdoc_version}
 %{gem_dir}/specifications/rdoc-%{rdoc_version}.gemspec
 %{_mandir}/man1/ri*
+
+%files doc
+%doc README
+%doc ChangeLog
+%doc doc/ChangeLog-*
 %{_datadir}/ri
+%{_docdir}/ruby/html/*
 
 %files -n rubygem-bigdecimal
+%{ruby_libdir}/bigdecimal
+%{ruby_libarchdir}/bigdecimal.so
 %{_libdir}/gems/exts/bigdecimal-%{bigdecimal_version}
 %{gem_dir}/gems/bigdecimal-%{bigdecimal_version}
 %{gem_dir}/specifications/bigdecimal-%{bigdecimal_version}.gemspec
 
 %files -n rubygem-io-console
+%{ruby_libdir}/io
+%{ruby_libarchdir}/io/console.so
 %{_libdir}/gems/exts/io-console-%{io_console_version}
 %{gem_dir}/gems/io-console-%{io_console_version}
 %{gem_dir}/specifications/io-console-%{io_console_version}.gemspec
@@ -715,14 +748,55 @@ make check TESTS="-v -x test_pathname.rb -x test_drbssl.rb -x test_parse.rb -x t
 %{ruby_libdir}/tkextlib
 
 %changelog
-* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.9.3.125-5
-- 为 Magic 3.0 重建
+* Sun Nov 11 2012 Mamoru TASAKA <mtasaka@fedoraproject.org> - 1.9.3.327-23
+- Skip test_str_crypt (on rawhide) for now (upstream bug 7312)
 
-* Wed Apr 18 2012 Liu Di <liudidi@gmail.com> - 1.9.3.125-4
-- 为 Magic 3.0 重建
+* Sat Nov 10 2012 Mamoru TASAKA <mtasaka@fedoraproject.org> - 1.9.3.327-22
+- Ignore some network related tests
 
-* Wed Apr 18 2012 Liu Di <liudidi@gmail.com>
-- 为 Magic 3.0 重建
+* Sat Nov 10 2012 Mamoru TASAKA <mtasaka@fedoraproject.org> - 1.9.3.327-21
+- Update to 1.9.3.327
+- Fix Hash-flooding DoS vulnerability on MurmurHash function
+  (CVE-2012-5371)
+
+* Sat Oct 13 2012 Mamoru TASAKA <mtasaka@fedoraproject.org> - 1.9.3.286-19
+- Update to 1.9.3 p286
+- Don't create files when NUL-containing path name is passed
+  (bug 865940, CVE-2012-4522)
+
+* Thu Oct 04 2012 Mamoru Tasaka <mtasaka@fedoraproject.org> - 1.9.3.194-18
+- Patch from trunk for CVE-2012-4464, CVE-2012-4466
+
+* Thu Sep 06 2012 Vít Ondruch <vondruch@redhat.com> - 1.9.3.194-17
+- Split documentation into -doc subpackage (rhbz#854418).
+
+* Tue Aug 14 2012 Vít Ondruch <vondruch@redhat.com> - 1.9.3.194-16
+- Revert the dependency of ruby-libs on rubygems (rhbz#845011, rhbz#847482).
+
+* Wed Aug 01 2012 Vít Ondruch <vondruch@redhat.com> - 1.9.3.194-15
+- ruby-libs must require rubygems (rhbz#845011).
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.9.3.194-14
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Mon Jun 11 2012 Bohuslav Kabrda <bkabrda@redhat.com> - 1.9.3.194-13
+- Make the bigdecimal gem a runtime dependency of Ruby.
+
+* Mon Jun 11 2012 Bohuslav Kabrda <bkabrda@redhat.com> - 1.9.3.194-12
+- Make symlinks for bigdecimal and io-console gems to ruby stdlib dirs (RHBZ 829209).
+
+* Tue May 29 2012 Bohuslav Kabrda <bkabrda@redhat.com> - 1.9.3.194-11
+- Fix license to contain Public Domain.
+- macros.ruby now contains unexpanded macros.
+
+* Sun Apr 22 2012 Mamoru Tasaka <mtasaka@fedoraproject.org> - 1.9.3.194-10.1
+- Bump release
+
+* Fri Apr 20 2012 Vít Ondruch <vondruch@redhat.com> - 1.9.3.194-1
+- Update to Ruby 1.9.3-p194.
+
+* Mon Apr 09 2012 Karsten Hopp <karsten@redhat.com> 1.9.3.125-3
+- disable check on ppc(64), RH bugzilla 803698
 
 * Wed Feb 29 2012 Peter Robinson <pbrobinson@fedoraproject.org> - 1.9.3.125-2
 - Temporarily disable make check on ARM until it's fixed upstream. Tracked in RHBZ 789410
