@@ -3,18 +3,19 @@
 %global minorversion 0.1
 
 Name:           tumbler
-Version:        0.1.23
-Release:        3%{?dist}
+Version:        0.1.26
+Release:        1%{?dist}
 Summary:        D-Bus service for applications to request thumbnails
 
 License:        GPLv2+ and LGPLv2+
 Group:          Applications/System
 URL:            http://git.xfce.org/xfce/tumbler/
+#VCS git:git://git.xfce.org/xfce/tumbler
 Source0:        http://archive.xfce.org/src/apps/tumbler/%{minorversion}/%{name}-%{version}.tar.bz2
 BuildRequires:  dbus-glib-devel
 BuildRequires:  freetype-devel
 BuildRequires:  gettext
-BuildRequires:  gtk2-devel
+BuildRequires:  gtk2-devel >= 2.10.0
 BuildRequires:  intltool
 BuildRequires:  libpng-devel
 BuildRequires:  libjpeg-devel
@@ -61,15 +62,15 @@ make %{?_smp_mflags} V=1
 
 
 %install
-make install INSTALL="%{__install} -p" DESTDIR=$RPM_BUILD_ROOT
+make install INSTALL="%{__install} -p" DESTDIR=%{buildroot}
 
-find $RPM_BUILD_ROOT -type f -name "*.la" -delete
+find %{buildroot} -type f -name "*.la" -delete
 
 %find_lang %{name}
 
 
 %clean
-rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
 
 
 %post -p /sbin/ldconfig
@@ -99,8 +100,21 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/%{name}-1/tumbler
 
 %changelog
-* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.1.23-3
-- 为 Magic 3.0 重建
+* Sun Dec 09 2012 Kevin Fenzi <kevin@scrye.com> 0.1.26-1
+- Update to 0.1.26
+
+* Sun Jul 22 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.1.25-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Wed May 16 2012 Marek Kasik <mkasik@redhat.com> - 0.1.25-2
+- Rebuild (poppler-0.20.0)
+
+* Sun Apr 29 2012 Christoph Wickert <cwickert@fedoraproject.org> - 0.1.25-1
+- Update to 0.1.25 (Xfce 4.10 final)
+- Add VCS key
+
+* Tue Apr 03 2012 Kevin Fenzi <kevin@scrye.com> - 0.1.24-1
+- Update to 0.1.24
 
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.1.23-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
