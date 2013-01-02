@@ -1,6 +1,11 @@
+# XXX docs override, bz864730
+%{!?with_docs: %global with_docs 0}
+%{!?with_publican: %global with_publican 0}
+# XXX end docs override
 %{!?with_sqlite: %global with_sqlite 1}
 %{!?with_docs: %global with_docs 1}
-%ifarch ppc %{sparc} %{arm} # crash is not available
+# crash is not available
+%ifarch ppc ppc64 %{sparc}
 %{!?with_crash: %global with_crash 0}
 %else
 %{!?with_crash: %global with_crash 1}
@@ -9,14 +14,26 @@
 %{!?with_bundled_elfutils: %global with_bundled_elfutils 0}
 %{!?elfutils_version: %global elfutils_version 0.142}
 %{!?pie_supported: %global pie_supported 1}
-%{!?with_grapher: %global with_grapher 1}
 %{!?with_boost: %global with_boost 0}
+%ifarch ppc ppc64 %{sparc}
 %{!?with_publican: %global with_publican 0}
+%else
+%{!?with_publican: %global with_publican 1}
+%endif
+%if 0%{?rhel}
+%{!?publican_brand: %global publican_brand RedHat}
+%else
 %{!?publican_brand: %global publican_brand fedora}
+%endif
+%ifnarch s390 s390x %{arm}
+%{!?with_dyninst: %global with_dyninst 0%{?fedora} >= 18 || 0%{?rhel} >= 7}
+%else
+%global with_dyninst 0
+%endif
 
 Name: systemtap
-Version: 1.7
-Release: 1%{?dist}
+Version: 2.0
+Release: 4%{?dist}
 # for version, see also configure.ac
 
 
@@ -25,12 +42,11 @@ Release: 1%{?dist}
 # systemtap              empty req:-client req:-devel
 # systemtap-server       /usr/bin/stap-server*, req:-devel
 # systemtap-devel        /usr/bin/stap, runtime, tapset, req:kernel-devel
-# systemtap-runtime      /usr/bin/staprun, /usr/bin/stapsh
+# systemtap-runtime      /usr/bin/staprun, /usr/bin/stapsh, /usr/bin/stapdyn
 # systemtap-client       /usr/bin/stap, samples, docs, tapset(bonus), req:-runtime
 # systemtap-initscript   /etc/init.d/systemtap, req:systemtap
 # systemtap-sdt-devel    /usr/include/sys/sdt.h /usr/bin/dtrace
 # systemtap-testsuite    /usr/share/systemtap/testsuite*, req:systemtap, req:sdt-devel
-# systemtap-grapher      /usr/bin/stapgraph, req:systemtap
 #
 # Typical scenarios:
 #
@@ -51,7 +67,14 @@ Source: ftp://sourceware.org/pub/%{name}/releases/%{name}-%{version}.tar.gz
 
 # Build*
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires: gettext
+BuildRequires: gcc-c++
+BuildRequires: gettext-devel
+BuildRequires: nss-devel avahi-devel pkgconfig
+%if %{with_dyninst}
+BuildRequires: dyninst-devel >= 8.0
+BuildRequires: libdwarf-devel
+BuildRequires: libselinux-devel
+%endif
 %if %{with_sqlite}
 BuildRequires: sqlite-devel
 %endif
@@ -65,7 +88,6 @@ BuildRequires: crash-devel zlib-devel
 %if %{with_rpm}
 BuildRequires: rpm-devel glibc-headers
 %endif
-BuildRequires: nss-devel avahi-devel pkgconfig
 %if %{with_bundled_elfutils}
 Source1: elfutils-%{elfutils_version}.tar.gz
 Patch1: elfutils-portability.patch
@@ -85,16 +107,9 @@ BuildRequires: publican
 BuildRequires: /usr/share/publican/Common_Content/%{publican_brand}/defaults.cfg
 %endif
 %endif
-%if %{with_grapher}
-BuildRequires: gtkmm24-devel >= 2.8
-BuildRequires: libglademm24-devel >= 2.6.7
-# If 'with_boost' isn't set, the boost-devel build requirement hasn't
-# been specified yet.
-%if ! %{with_boost}
-BuildRequires: boost-devel
-%endif
-%endif
-BuildRequires: gettext-devel
+
+# fix minor changes for dyninst 8.0 final
+Patch2: systemtap-2.0-dyninst-fixes.patch
 
 # Install requirements
 Requires: systemtap-client = %{version}-%{release}
@@ -142,7 +157,7 @@ Requires: kernel >= 2.6.9-11
 # provide for kernel-devel, so this requirement does the right thing,
 # at least past RHEL4.
 Requires: kernel-devel
-Requires: gcc gcc-c++ make
+Requires: gcc make
 # Suggest: kernel-debuginfo
 
 %description devel
@@ -221,27 +236,28 @@ License: GPLv2+
 URL: http://sourceware.org/systemtap/
 Requires: systemtap = %{version}-%{release}
 Requires: systemtap-sdt-devel = %{version}-%{release}
-Requires: dejagnu which prelink elfutils grep
+Requires: systemtap-server = %{version}-%{release}
+Requires: dejagnu which elfutils grep nc
+Requires: gcc gcc-c++ make glibc-devel
+%ifnarch ia64
+Requires: prelink
+%endif
+# testsuite/systemtap.server/client.exp needs avahi
+Requires: avahi
+%if %{with_crash}
+# testsuite/systemtap.base/crash.exp needs crash
+Requires: crash
+%endif
+%ifarch x86_64
+Requires: /usr/lib/libc.so
+# ... and /usr/lib/libgcc_s.so.*
+# ... and /usr/lib/libstdc++.so.*
+%endif
 
 %description testsuite
 This package includes the dejagnu-based systemtap stress self-testing
 suite.  This may be used by system administrators to thoroughly check
 systemtap on the current system.
-
-
-%if %{with_grapher}
-%package grapher
-Summary: Instrumentation System Grapher
-Group: Development/System
-License: GPLv2+
-URL: http://sourceware.org/systemtap/
-# NB: don't bind it to a particular version (PR13499)
-Requires: systemtap
-
-%description grapher
-This package includes a utility for real-time visualization of
-data from SystemTap instrumentation scripts.
-%endif
 
 
 # ------------------------------------------------------------------------
@@ -259,6 +275,8 @@ find . \( -name configure -o -name config.h.in \) -print | xargs touch
 cd ..
 %endif
 
+%patch2 -p1
+
 %build
 
 %if %{with_bundled_elfutils}
@@ -274,6 +292,13 @@ cd ..
 
 # This will be needed for running stap when not installed, for the test suite.
 %global elfutils_mflags LD_LIBRARY_PATH=`pwd`/lib-elfutils
+%endif
+
+# Enable/disable the dyninst pure-userspace backend
+%if %{with_dyninst}
+%global dyninst_config --with-dyninst
+%else
+%global dyninst_config --without-dyninst
 %endif
 
 # Enable/disable the sqlite coverage testing support
@@ -310,12 +335,6 @@ cd ..
 %global pie_config --disable-pie
 %endif
 
-%if %{with_grapher}
-%global grapher_config --enable-grapher
-%else
-%global grapher_config --disable-grapher
-%endif
-
 %if %{with_publican}
 %global publican_config --enable-publican --with-publican-brand=%{publican_brand}
 %else
@@ -323,7 +342,7 @@ cd ..
 %endif
 
 
-%configure %{?elfutils_config} %{sqlite_config} %{crash_config} %{docs_config} %{pie_config} %{grapher_config} %{publican_config} %{rpm_config} --disable-silent-rules
+%configure %{?elfutils_config} %{dyninst_config} %{sqlite_config} %{crash_config} %{docs_config} %{pie_config} %{publican_config} %{rpm_config} --disable-silent-rules --with-extra-version="rpm %{version}-%{release}"
 make %{?_smp_mflags}
 
 %install
@@ -391,17 +410,24 @@ install -m 644 initscript/logrotate.stap-server $RPM_BUILD_ROOT%{_sysconfdir}/lo
 rm -rf ${RPM_BUILD_ROOT}
 
 %pre runtime
-getent group stapusr >/dev/null || groupadd -g 156 -r stapusr || groupadd -r stapusr
-getent group stapsys >/dev/null || groupadd -g 157 -r stapsys || groupadd -r stapsys
-getent group stapdev >/dev/null || groupadd -g 158 -r stapdev || groupadd -r stapdev
+getent group stapusr >/dev/null || groupadd -g 156 -r stapusr 2>/dev/null || groupadd -r stapusr
+getent group stapsys >/dev/null || groupadd -g 157 -r stapsys 2>/dev/null || groupadd -r stapsys
+getent group stapdev >/dev/null || groupadd -g 158 -r stapdev 2>/dev/null || groupadd -r stapdev
 exit 0
 
 %pre server
-getent group stap-server >/dev/null || groupadd -g 155 -r stap-server || groupadd -r stap-server
+getent group stap-server >/dev/null || groupadd -g 155 -r stap-server 2>/dev/null || groupadd -r stap-server
 getent passwd stap-server >/dev/null || \
-  useradd -c "Systemtap Compile Server" -u 155 -g stap-server -d %{_localstatedir}/lib/stap-server -m -r -s /sbin/nologin stap-server || \
+  useradd -c "Systemtap Compile Server" -u 155 -g stap-server -d %{_localstatedir}/lib/stap-server -m -r -s /sbin/nologin stap-server 2>/dev/null || \
   useradd -c "Systemtap Compile Server" -g stap-server -d %{_localstatedir}/lib/stap-server -m -r -s /sbin/nologin stap-server
 test -e ~stap-server && chmod 755 ~stap-server
+
+if [ ! -f ~stap-server/.systemtap/rc ]; then
+  mkdir -p ~stap-server/.systemtap
+  chown stap-server:stap-server ~stap-server/.systemtap
+  echo "--rlimit-as=614400000 --rlimit-cpu=60 --rlimit-nproc=20 --rlimit-stack=1024000 --rlimit-fsize=51200000" > ~stap-server/.systemtap/rc
+  chown stap-server:stap-server ~stap-server/.systemtap/rc
+fi
 exit 0
 
 %post server
@@ -414,15 +440,19 @@ test -e %{_localstatedir}/log/stap-server/log || {
 # used for signing and for ssl.
 if test ! -e ~stap-server/.systemtap/ssl/server/stap.cert; then
    runuser -s /bin/sh - stap-server -c %{_libexecdir}/%{name}/stap-gen-cert >/dev/null
-   # Authorize the certificate as a trusted ssl peer and as a trusted signer
-   # on the local host.
-   %{_libexecdir}/%{name}/stap-authorize-cert ~stap-server/.systemtap/ssl/server/stap.cert %{_sysconfdir}/systemtap/ssl/client >/dev/null
-   %{_libexecdir}/%{name}/stap-authorize-cert ~stap-server/.systemtap/ssl/server/stap.cert %{_sysconfdir}/systemtap/staprun >/dev/null
 fi
-
 # Activate the service
 /sbin/chkconfig --add stap-server
 exit 0
+
+%triggerin client -- systemtap-server
+if test -e ~stap-server/.systemtap/ssl/server/stap.cert; then
+   # echo Authorizing ssl-peer/trusted-signer certificate for local systemtap-server
+   %{_libexecdir}/%{name}/stap-authorize-cert ~stap-server/.systemtap/ssl/server/stap.cert %{_sysconfdir}/systemtap/ssl/client >/dev/null
+   %{_libexecdir}/%{name}/stap-authorize-cert ~stap-server/.systemtap/ssl/server/stap.cert %{_sysconfdir}/systemtap/staprun >/dev/null
+fi
+exit 0
+# XXX: corresponding %triggerun?
 
 %preun server
 # Check that this is the actual deinstallation of the package, as opposed to
@@ -486,6 +516,8 @@ exit 0
 %{_libexecdir}/%{name}/stap-stop-server
 %{_libexecdir}/%{name}/stap-gen-cert
 %{_libexecdir}/%{name}/stap-sign-module
+%{_libexecdir}/%{name}/stap-authorize-cert
+%{_libexecdir}/%{name}/stap-env
 %{_mandir}/man7/stappaths.7*
 %{_mandir}/man8/stap-server.8*
 %{_sysconfdir}/rc.d/init.d/stap-server
@@ -504,9 +536,8 @@ exit 0
 %{_bindir}/stap
 %{_bindir}/stap-prep
 %{_bindir}/stap-report
-%dir %{_datadir}/%{name}/runtime
+%dir %{_datadir}/%{name}
 %{_datadir}/%{name}/runtime
-%dir %{_datadir}/%{name}/tapset
 %{_datadir}/%{name}/tapset
 %{_mandir}/man1/stap.1*
 %{_mandir}/man7/stappaths.7*
@@ -516,15 +547,18 @@ exit 0
 %{_libdir}/%{name}/lib*.so*
 %endif
 
+
 %files runtime -f %{name}.lang
 %defattr(-,root,root)
 %attr(4110,root,stapusr) %{_bindir}/staprun
 %{_bindir}/stapsh
 %{_bindir}/stap-merge
 %{_bindir}/stap-report
+%if %{with_dyninst}
+%{_bindir}/stapdyn
+%endif
 %dir %{_libexecdir}/%{name}
 %{_libexecdir}/%{name}/stapio
-%{_libexecdir}/%{name}/stap-env
 %{_libexecdir}/%{name}/stap-authorize-cert
 %if %{with_crash}
 %dir %{_libdir}/%{name}
@@ -584,53 +618,81 @@ exit 0
 %{_datadir}/%{name}/testsuite
 
 
-%if %{with_grapher}
-%files grapher
-%defattr(-,root,root)
-%{_bindir}/stapgraph
-%dir %{_datadir}/%{name}
-%{_datadir}/%{name}/*.glade
-%{_mandir}/man1/stapgraph.1*
-%endif
-
 # ------------------------------------------------------------------------
 
 %changelog
+* Mon Nov 19 2012 Josh Stone <jistone@redhat.com> 2.0-4
+- Rebuild for the final dyninst 8.0.
+- As with rawhide, disable docs due to bz864730
+
+* Mon Nov 19 2012 Karsten Hopp <karsten@redhat.com> 2.0-3
+- systemtap got compiled with an old dyninst library on ppc, bump release and rebuild
+
+* Mon Oct 29 2012 Josh Stone <jistone@redhat.com> - 2.0-2
+- Rebuild for the new ABI in the dyninst snapshot
+
+* Tue Oct 09 2012 Josh Stone <jistone@redhat.com> - 2.0-1
+- Upstream release.
+
+* Thu Sep 20 2012 Josh Stone <jistone@redhat.com> 2.0-0.4.gitec12f84
+- Update to a new snapshot towards 2.0.
+
+* Fri Aug 31 2012 Lukas Berk <lberk@redhat.com> 2.0-0.3.git10c737f
+- Correct the location of stap-env
+
+* Wed Aug 15 2012 Dan Horák <dan[at]danny.cz> 2.0-0.2.git10c737f
+- dyninst not available on s390(x) and arm
+
+* Tue Aug 07 2012 Josh Stone <jistone@redhat.com> 2.0-0.1.git10c737f
+- Update to a snapshot of the upcoming 2.0 release.
+
+* Wed Jul 18 2012 Josh Stone <jistone@redhat.com> - 1.8-5
+- bz840902 ppc build fix (related to bz837641)
+
+* Fri Jul 13 2012 Peter Robinson <pbrobinson@fedoraproject.org> - 1.8-4
+- Fix ifarch statement
+- use file based requires for glibc-devel on x86_64 so that we work in koji
+
+* Wed Jul 11 2012 Frank Ch. Eigler <fche@redhat.com> - 1.8-3
+- PR14348 task_work_add race condition fix
+
+* Mon Jul 09 2012 Josh Stone <jistone@redhat.com>
+- bz837641 build fix
+
+* Sun Jun 17 2012 Frank Ch. Eigler <fche@redhat.com> - 1.8-1
+- Upstream release.
+
+* Mon Apr 30 2012 Peter Robinson <pbrobinson@fedoraproject.org> - 1.7-7
+- Enable crash support on ARM, cleanup spec
+
+* Thu Apr 19 2012 Karsten Hopp <karsten@redhat.com> - 1.7-6.1
+- rebuild on PPC(64) without crash, publican
+
+* Thu Mar 29 2012 Richard W.M. Jones <rjones@redhat.com> - 1.7-6
+- Rebuild for rpm soname bump.
+
+* Fri Mar 16 2012 Frank Ch. Eigler <fche@redhat.com> - 1.7-5
+- dbhole advises ARM publican/fop/java is a go for launch.
+
+* Thu Mar 01 2012 Mark Wielaard <mjw@redhat.com> - 1.7-4
+- ARM currently doesn't have publican/fop/java and no prelink.
+
+* Tue Feb 28 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.7-3
+- Rebuilt for c++ ABI breakage
+
+* Wed Feb 22 2012 Frank Ch. Eigler <fche@redhat.com> - 1.7-2
+- CVE-2012-0875 (kernel panic when processing malformed DWARF unwind data)
+
 * Wed Feb 01 2012 Frank Ch. Eigler <fche@redhat.com> - 1.7-1
 - Upstream release.
-- Reorganize subpackages, new -client and -devel for subset installations.
 
-* Sat Jan 14 2012 Mark Wielaard <mjw@redhat.com> - 1.6-4
-- Fixes for gcc-4.7 based on upstream commits e14c86 and 47caa9.
-
-* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.6-3
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
-
-* Tue Dec 06 2011 Adam Jackson <ajax@redhat.com> - 1.6-2
-- Rebuild for new libpng
+* Fri Jan 13 2012 David Smith <dsmith@redhat.com> - 1.6-2
+- Fixed /bin/mktemp require.
 
 * Mon Jul 25 2011 Stan Cox <scox@redhat.com> - 1.6-1
 - Upstream release.
 
-* Mon Jul 25 2011 Frank Ch. Eigler <fche@redhat.com> - 1.5-8
-- CVE-2011-2502, CVE-2011-2503
-
-* Fri Jul 15 2011 William Cohen <wcohen@redhat.com> - 1.5-7
-- Fix sdt.h to avoid warning on arm arches.
-
-* Mon Jul 11 2011 William Cohen <wcohen@redhat.com> - 1.5-6
-- there is no crash available on arm arches
-
-* Fri Jun 10 2011 Stan Cox <scox@redhat.com> - 1.5-4
-- PR 12899
-
-* Fri Jun 10 2011 Stan Cox <scox@redhat.com> - 1.5-3
-- Don't massage dtrace -o FILENAME arg
-
-* Thu Jun  2 2011 Stan Cox <scox@redhat.com> - 1.5-2
-- Add explicit 'Requires python' dependency
-
-* Mon May 23 2011 Stan Cox <scox@redhat.com> - 1.5-1
+* Tue May 23 2011 Stan Cox <scox@redhat.com> - 1.5-1
 - Upstream release.
 
 * Mon Jan 17 2011 Frank Ch. Eigler <fche@redhat.com> - 1.4-1
