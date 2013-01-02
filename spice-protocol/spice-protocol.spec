@@ -1,6 +1,6 @@
 Name:           spice-protocol
-Version:        0.10.1
-Release:        2%{?dist}
+Version:        0.12.3
+Release:        1%{?dist}
 Summary:        Spice protocol header files
 Group:          Development/Libraries
 # Main headers are BSD, controller / foreign menu are LGPL
@@ -34,8 +34,20 @@ make DESTDIR=%{buildroot} install
 
 
 %changelog
-* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.10.1-2
-- 为 Magic 3.0 重建
+* Thu Dec 20 2012 Hans de Goede <hdegoede@redhat.com> - 0.12.3-1
+- Update to 0.12.3
+
+* Fri Sep 28 2012 Hans de Goede <hdegoede@redhat.com> - 0.12.2-1
+- Update to 0.12.2
+
+* Thu Sep 6 2012 Soren Sandmann <ssp@redhat.com> - 0.12.1-1
+- Add patch1 and patch2 to support capability bits
+
+* Thu Sep 6 2012 Soren Sandmann <ssp@redhat.com> - 0.12.1-1
+- Update to 0.12.1
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.10.1-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
 * Mon Jan 16 2012 Hans de Goede <hdegoede@redhat.com> - 0.10.1-1
 - Update to 0.10.1
