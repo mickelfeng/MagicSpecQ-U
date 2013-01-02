@@ -1,6 +1,6 @@
 Name:           qca2
 Version:        2.0.3
-Release:        3%{?dist}
+Release:        4%{?dist}
 
 Summary:        Qt Cryptographic Architecture
 
@@ -8,7 +8,8 @@ Group:          System Environment/Libraries
 License:        LGPLv2+
 URL:            http://delta.affinix.com/qca
 Source0:        http://delta.affinix.com/download/qca/2.0/qca-%{version}.tar.bz2
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+# Allow gcc to compile qca
+Patch0:         qca-2.0.3-gcc47.patch
 
 BuildRequires:  qt4-devel
 
@@ -33,6 +34,7 @@ This packages contains the development files for QCA
 
 %prep
 %setup -q -n qca-%{version}
+%patch0 -p1
 
 %build
 unset QTDIR
@@ -78,14 +80,17 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
-* Sun Jan 29 2012 Liu Di <liudidi@gmail.com> - 2.0.3-3
-- 为 Magic 3.0 重建
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.0.3-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Sat Jan 07 2012 Sven Lankes <sven@lank.es> - 2.0.3-3
+- Fix build with gcc 4.7.0
 
 * Tue Feb 08 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.0.3-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
 
 * Mon Nov 29 2010 Sven Lankes <sven@lank.es> - 2.0.3-1
-- new upstrem release
+- new upstream release
 
 * Sun Jul 26 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.0.2-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
