@@ -1,6 +1,14 @@
+# build_client:
+# If you want to build both client and server change value to 1
+# If you want to only build the server change value to 0
+%define build_client        1
+%if 0%{?rhel}
+%define build_client        0
+%endif
+
 Name:           spice
-Version:        0.10.1
-Release:        3%{?dist}
+Version:        0.12.2
+Release:        2%{?dist}
 Summary:        Implements the SPICE protocol
 Group:          User Interface/Desktops
 License:        LGPLv2+
@@ -9,14 +17,22 @@ Source0:        http://www.spice-space.org/download/releases/%{name}-%{version}.
 Source1:        spice-xpi-client-spicec
 
 # https://bugzilla.redhat.com/show_bug.cgi?id=613529
-ExclusiveArch:  i686 x86_64
+%if 0%{?rhel}
+ExclusiveArch:  x86_64
+%else
+ExclusiveArch:  i686 x86_64 armv6l armv7l armv7hl
+%endif
 
 BuildRequires:  pkgconfig
-BuildRequires:  spice-protocol >= 0.10.1
+BuildRequires:  glib2-devel >= 2.22
+BuildRequires:  spice-protocol >= 0.12.3
 BuildRequires:  celt051-devel
 BuildRequires:  pixman-devel alsa-lib-devel openssl-devel libjpeg-devel
+%if %{build_client}
 BuildRequires:  libXrandr-devel cegui06-devel
+%endif
 BuildRequires:  libcacard-devel cyrus-sasl-devel
+BuildRequires:  pyparsing
 
 %description
 The Simple Protocol for Independent Computing Environments (SPICE) is
@@ -25,6 +41,8 @@ you to view a computing 'desktop' environment not only on the machine
 where it is running, but from anywhere on the Internet and from a wide
 variety of machine architectures.
 
+
+%if %{build_client}
 %package client
 Summary:          Implements the client side of the SPICE protocol
 Group:            User Interface/Desktops
@@ -39,6 +57,8 @@ where it is running, but from anywhere on the Internet and from a wide
 variety of machine architectures.
 
 This package contains the SPICE client application.
+%endif
+
 
 %package server
 Summary:        Implements the server side of the SPICE protocol
@@ -54,6 +74,7 @@ variety of machine architectures.
 This package contains the run-time libraries for any application that wishes
 to be a SPICE server.
 
+
 %package server-devel
 Summary:        Header files, libraries and development documentation for spice-server
 Group:          Development/Libraries
@@ -65,27 +86,38 @@ This package contains the header files, static libraries and development
 documentation for spice-server. If you like to develop programs
 using spice-server, you will need to install spice-server-devel.
 
+
 %prep
 %setup -q
 
+
 %build
-%configure --enable-gui --enable-smartcard
-make WARN_CFLAGS='' %{?_smp_mflags}
+%if %{build_client}
+%define configure_client --enable-client --enable-gui
+%else
+%define configure_client --disable-client
+%endif
+%configure --enable-smartcard %{configure_client}
+make %{?_smp_mflags} WARN_CFLAGS='' V=1
+
 
 %install
 make DESTDIR=%{buildroot} install
 rm -f %{buildroot}%{_libdir}/libspice-server.a
 rm -f %{buildroot}%{_libdir}/libspice-server.la
 mkdir -p %{buildroot}%{_libexecdir}
+
+%if %{build_client}
 touch %{buildroot}%{_libexecdir}/spice-xpi-client
 install -m 0755 %{_sourcedir}/spice-xpi-client-spicec %{buildroot}%{_libexecdir}/
+%endif
 
-%files client
-%doc COPYING README NEWS
-%{_bindir}/spicec
-%ghost %{_libexecdir}/spice-xpi-client
-%{_libexecdir}/spice-xpi-client-spicec
 
+%post server -p /sbin/ldconfig
+
+%postun server -p /sbin/ldconfig
+
+%if %{build_client}
 %post client
 %{_sbindir}/update-alternatives --install %{_libexecdir}/spice-xpi-client \
   spice-xpi-client %{_libexecdir}/spice-xpi-client-spicec 10
@@ -94,27 +126,69 @@ install -m 0755 %{_sourcedir}/spice-xpi-client-spicec %{buildroot}%{_libexecdir}
 if [ $1 -eq 0 ] ; then
   %{_sbindir}/update-alternatives --remove spice-xpi-client %{_libexecdir}/spice-xpi-client-spicec
 fi
+%endif
+
+
+%if %{build_client}
+%files client
+%doc COPYING README NEWS
+%{_bindir}/spicec
+%ghost %{_libexecdir}/spice-xpi-client
+%{_libexecdir}/spice-xpi-client-spicec
+%endif
 
 %files server
 %doc COPYING README NEWS
-%{_libdir}/libspice-server.so.1
-%{_libdir}/libspice-server.so.1.0.2
-
-%post server -p /sbin/ldconfig
-
-%postun server -p /sbin/ldconfig
+%{_libdir}/libspice-server.so.1*
 
 %files server-devel
 %{_includedir}/spice-server
 %{_libdir}/libspice-server.so
 %{_libdir}/pkgconfig/spice-server.pc
 
-%changelog
-* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.10.1-3
-- 为 Magic 3.0 重建
 
-* Wed Feb 22 2012 Liu Di <liudidi@gmail.com> - 0.10.1-2
-- 为 Magic 3.0 重建
+%changelog
+* Fri Dec 21 2012 Adam Tkac <atkac redhat com> - 0.12.2-2
+- rebuild against new libjpeg
+
+* Thu Dec 20 2012 Hans de Goede <hdegoede@redhat.com> - 0.12.2-1
+- New upstream release 0.12.2
+
+* Fri Sep 28 2012 Hans de Goede <hdegoede@redhat.com> - 0.12.0-1
+- New upstream release 0.12.0
+- Some minor spec file cleanups
+- Enable building on arm
+
+* Thu Sep 6 2012 Soren Sandmann <ssp@redhat.com> - 0.11.3-1
+- BuildRequire pyparsing
+
+* Thu Sep 6 2012 Soren Sandmann <ssp@redhat.com> - 0.11.3-1
+- Add capability patches
+- Add capability patches to the included copy of spice-protocol
+
+    Please see the comment above Patch6 and Patch7
+    regarding this situation.
+
+* Thu Sep 6 2012 Soren Sandmann <ssp@redhat.com> - 0.11.3-1
+- Update to 0.11.3 and drop upstreamed patches
+- BuildRequire spice-protocol 0.12.1
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.10.1-6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Mon May 14 2012 Alon Levy <alevy@redhat.com>
+- Fix mjpeg memory leak and bad behavior.
+- Add usbredir to list of channels for security purposes. (#819484)
+
+* Sun May 13 2012 Alon Levy <alevy@redhat.com>
+- Add double free fix. (#808936)
+
+%changelog
+* Tue Apr 24 2012 Alon Levy <alevy@redhat.com>
+- Add 32 bit fixes from git master. (#815717)
+
+* Tue Feb 28 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.10.1-2
+- Rebuilt for c++ ABI breakage
 
 * Mon Jan 23 2012 Hans de Goede <hdegoede@redhat.com> - 0.10.1-1
 - New upstream release 0.10.1
