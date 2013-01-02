@@ -5,26 +5,26 @@
 }
 
 %define with_gtk3 0
-%if 0%{?fedora} >= 15
+%if 0%{?fedora} >= 15 || 0%{?rhel} >= 7
 %define with_gtk3 1
 %endif
 
-#define _version_suffix -ab64
+#define _version_suffix -f256
 
 Name:           spice-gtk
-Version:        0.9
+Version:        0.15
 Release:        1%{?dist}
 Summary:        A GTK+ widget for SPICE clients
 
 Group:          System Environment/Libraries
 License:        LGPLv2+
 URL:            http://spice-space.org/page/Spice-Gtk
+#VCS:           git:git://anongit.freedesktop.org/spice/spice-gtk
 Source0:        http://www.spice-space.org/download/gtk/%{name}-%{version}%{?_version_suffix}.tar.bz2
 
 BuildRequires: intltool
 BuildRequires: gtk2-devel >= 2.14
-BuildRequires: spice-protocol >= 0.10.1
-BuildRequires: usbredir-devel >= 0.3.3
+BuildRequires: usbredir-devel >= 0.5.2
 BuildRequires: libusb1-devel >= 1.0.9
 BuildRequires: libgudev1-devel
 BuildRequires: perl-Text-CSV
@@ -38,14 +38,17 @@ BuildRequires: libacl-devel
 BuildRequires: polkit-devel
 BuildRequires: gtk-doc
 BuildRequires: vala-tools
+BuildRequires: usbutils
 %if %{with_gtk3}
 BuildRequires: gtk3-devel
 %endif
+# FIXME: should ship the generated files..
+BuildRequires: pyparsing
+# keep me to get gendeps magic happen
+BuildRequires: spice-protocol
 # Hack because of bz #613466
 BuildRequires: libtool
 Requires: spice-glib%{?_isa} = %{version}-%{release}
-
-ExclusiveArch: %{ix86} x86_64
 
 %description
 Client libraries for SPICE desktop servers.
@@ -143,6 +146,9 @@ if [ -n '%{?_version_suffix}' ]; then
   mv spice-gtk-%{version}%{?_version_suffix} spice-gtk-%{version}
 fi
 
+#pushd spice-gtk-%{version}
+#popd
+
 %if %{with_gtk3}
 cp -a spice-gtk-%{version} spice-gtk3-%{version}
 %endif
@@ -151,13 +157,13 @@ cp -a spice-gtk-%{version} spice-gtk3-%{version}
 %build
 
 cd spice-gtk-%{version}
-%configure --with-gtk=2.0 --enable-gtk-doc --with-usb-acl-helper-dir=%{_libexecdir}/spice-gtk/
+%configure --with-gtk=2.0 --enable-gtk-doc --with-usb-acl-helper-dir=%{_libexecdir}/spice-gtk-%{_arch}/
 make %{?_smp_mflags}
 cd ..
 
 %if %{with_gtk3}
 cd spice-gtk3-%{version}
-%configure --with-gtk=3.0 --enable-vala --with-usb-acl-helper-dir=%{_libexecdir}/spice-gtk/
+%configure --with-gtk=3.0 --enable-vala --with-usb-acl-helper-dir=%{_libexecdir}/spice-gtk-%{_arch}/
 make %{?_smp_mflags}
 cd ..
 %endif
@@ -179,6 +185,13 @@ rm -f %{buildroot}%{_libdir}/*.a
 rm -f %{buildroot}%{_libdir}/*.la
 rm -f %{buildroot}%{_libdir}/python*/site-packages/*.a
 rm -f %{buildroot}%{_libdir}/python*/site-packages/*.la
+
+# needed because of the upstream issue described in
+# http://lists.freedesktop.org/archives/spice-devel/2012-August/010343.html
+# these are unwanted spice-protocol files
+rm -rf %{buildroot}%{_includedir}/spice-1
+rm -rf %{buildroot}%{_datadir}/pkgconfig/spice-protocol.pc
+
 %find_lang %{name}
 
 
@@ -212,7 +225,7 @@ rm -f %{buildroot}%{_libdir}/python*/site-packages/*.la
 %{_libdir}/libspice-client-glib-2.0.so.*
 %{_libdir}/libspice-controller.so.*
 %{_libdir}/girepository-1.0/SpiceClientGLib-2.0.typelib
-%{_libexecdir}/spice-gtk/spice-client-glib-usb-acl-helper
+%{_libexecdir}/spice-gtk-%{_arch}/spice-client-glib-usb-acl-helper
 %{_datadir}/polkit-1/actions/org.spice-space.lowlevelusbaccess.policy
 
 %files -n spice-glib-devel
@@ -253,6 +266,74 @@ rm -f %{buildroot}%{_libdir}/python*/site-packages/*.la
 %{_bindir}/spicy-stats
 
 %changelog
+* Fri Dec 21 2012 Christophe Fergeau <cfergeau@redhat.com> - 0.15-2
+- Update to spice-gtk 0.15
+
+* Thu Oct 25 2012 Christophe Fergeau <cfergeau@redhat.com> - 0.14-2
+- Add various upstream patches
+
+* Fri Sep 21 2012 Christophe Fergeau <cfergeau@redhat.com> - 0.14-1
+- Update to 0.14 release
+
+* Fri Sep 14 2012 Christophe Fergeau <cfergeau@redhat.com> - 0.13.29-4
+- Add patch fixing CVE 2012-4425
+
+* Thu Sep 13 2012 Christophe Fergeau <cfergeau@redhat.com> - 0.13.29-3
+- Run autoreconf after applying patch 2 as it only modifies Makefile.am
+
+* Tue Sep 11 2012 Christophe Fergeau <cfergeau@redhat.com> - 0.13.29-2
+- Add patch to fix symbol versioning
+
+* Fri Sep  7 2012 Hans de Goede <hdegoede@redhat.com> - 0.13.29-1
+- Update to the spice-gtk 0.13.29 development release
+- Rebuild for new usbredir
+
+* Mon Sep 03 2012 Christophe Fergeau <cfergeau@redhat.com> - 0.13-2
+- Update to spice-gtk 0.13
+
+* Tue Aug 07 2012 Christophe Fergeau <cfergeau@redhat.com> - 0.12.101-1
+- Update to the spice-gtk 0.12.101 development release (needed by Boxes
+  3.5.5)
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.12-5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Tue May 15 2012 Marc-André Lureau <marcandre.lureau@redhat.com> - 0.12-4
+- re-Add back spice-protocol BuildRequires to help some deps magic happen
+
+* Thu May 10 2012 Marc-André Lureau <marcandre.lureau@redhat.com> - 0.12-3
+- Fix Spice.Audio constructor Python binding
+  https://bugzilla.redhat.com/show_bug.cgi?id=820335
+
+* Wed May  2 2012 Marc-André Lureau <marcandre.lureau@redhat.com> - 0.12-2
+- Fix virt-manager console not showing up, rhbz#818169
+
+* Tue Apr 24 2012 Marc-André Lureau <marcandre.lureau@redhat.com> - 0.12-1
+- New upstream release 0.12
+
+* Tue Apr 10 2012 Christophe Fergeau <cfergeau@redhat.com> - 0.11-5
+- Fix build on PPC
+- Remove ExclusiveArch. While spice-gtk will build on ARM and PPC, it
+  hasn't been tested on these arch, so there may be some bugs.
+
+* Tue Mar 20 2012 Hans de Goede <hdegoede@redhat.com> - 0.11-4
+- Add missing BuildRequires: usbutils, so that we get proper USB device
+  descriptions in the USB device selection menu
+
+* Wed Mar 14 2012 Hans de Goede <hdegoede@redhat.com> - 0.11-3
+- Fix a crash triggered when trying to view a usbredir enabled vm from
+  virt-manager
+
+* Mon Mar 12 2012 Hans de Goede <hdegoede@redhat.com> - 0.11-2
+- Add back spice-protocol BuildRequires to help some deps magic happen
+
+* Fri Mar  9 2012 Hans de Goede <hdegoede@redhat.com> - 0.11-1
+- New upstream release 0.11
+- Fix multilib conflict in spice-glib
+
+* Thu Feb 23 2012 Marc-André Lureau <marcandre.lureau@redhat.com> - 0.10-1
+- New upstream release 0.10
+
 * Mon Jan 30 2012 Hans de Goede <hdegoede@redhat.com> - 0.9-1
 - New upstream release 0.9
 
