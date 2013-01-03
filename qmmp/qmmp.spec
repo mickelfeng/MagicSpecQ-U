@@ -1,13 +1,13 @@
 Name:          qmmp
-Version:        0.5.3
-Release:        2%{?dist}
+Version:        0.6.5
+Release:        1%{?dist}
 Summary:        A qt4 based media player similar to xmms
 Summary(zh_CN): 基于 qt4 的类似 xmms 的媒体播放器
 
 Group:         Applications/Multimedia
 Group(zh_CN):	应用程序/多媒体
 License:       GPLv2
-URL:             http://audacious-media-player.org/
+URL:           http://qmmp.ylsoftware.com/index_en.php
 
 Source0:       qmmp-%{version}.tar.bz2
 Source1:	     skins.tar.gz
@@ -48,10 +48,19 @@ rm -rf $RPM_BUILD_ROOT
 
 %files 
 %defattr(-,root,root)
-%{_bindir}
-%{_includedir}
-%{_datadir}
-%{_libdir}/*.so*
+#devel
+%{_includedir}/qmmp/*.h
+%{_includedir}/qmmpui/*.h
+%{_libdir}/libqmmp.so
+%{_libdir}/libqmmpui.so
+%{_libdir}/pkgconfig/qmmp*.pc
+##
+%{_libdir}/libqmmp.so.*
+%{_libdir}/libqmmpui.so.*
+%{_bindir}/qmmp
 %{_libdir}/qmmp/*
+%{_datadir}/applications/*.desktop
+%{_datadir}/icons/hicolor/*/apps/qmmp*
+%{_datadir}/qmmp/*
 
 %changelog
