@@ -1,5 +1,5 @@
 Name:           qt-creator
-Version:        2.4.0
+Version:        2.6.1
 Release:        1%{?dist}
 Summary:        Lightweight and cross-platform IDE for Qt
 Summary(zh_CN):	Qt 的跨平台轻量级 IDE
@@ -89,6 +89,7 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{_bindir}/qtcreator
 %{_bindir}/qtpromaker
 %{_bindir}/qtcreator_process_stub
+%{_bindir}/sdktool
 %{_libdir}/qtcreator
 %{_datadir}/qtcreator
 %{_datadir}/applications/qtcreator.desktop
