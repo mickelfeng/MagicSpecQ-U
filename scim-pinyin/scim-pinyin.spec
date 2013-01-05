@@ -1,6 +1,6 @@
 Name:       scim-pinyin
-Version:    0.5.91
-Release:    31%{?dist}
+Version:    0.5.92
+Release:    1%{?dist}
 Summary:    Smart Pinyin IMEngine for Smart Common Input Method platform
 
 License:    GPLv2
@@ -19,7 +19,7 @@ Patch2:         scim-pinyin-showallkeys.patch
 Patch6:         scim-pinyin-0.5.91-save-in-temp.patch
 Patch7:         scim-pinyin-0.5.91-fix-load.patch
 Patch8:         scim-pinyin-0.5.91-fix-ms-shuangpin.patch
-Patch9:         scim-pinyin-0.5.91-gcc43.patch
+#Patch9:         scim-pinyin-0.5.91-gcc43.patch
 
 %description
 Simplified Chinese Smart Pinyin IMEngine for SCIM.
@@ -34,7 +34,7 @@ Simplified Chinese Smart Pinyin IMEngine for SCIM.
 %patch6 -p1 -b .6-savetmp
 %patch7 -p1 -b .6-fix-load
 %patch8 -p1 -b .8-fix-ms-shuangpin
-%patch9 -p1 -b .9-gcc43
+#%patch9 -p1 -b .9-gcc43
 
 %build
 ./bootstrap
@@ -68,8 +68,11 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
-* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.5.91-31
-- 为 Magic 3.0 重建
+* Wed Jul 18 2012  Peng Wu <pwu@redhat.com> - 0.5.92-1
+- Update to 0.5.92
+
+* Tue Feb 28 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.5.91-31
+- Rebuilt for c++ ABI breakage
 
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.5.91-30
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
