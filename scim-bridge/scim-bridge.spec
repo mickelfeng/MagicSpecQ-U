@@ -6,7 +6,7 @@
 Name:           scim-bridge
 
 Version:        0.4.16
-Release:        7%{?dist}
+Release:        12%{?dist}
 Summary:        SCIM Bridge Gtk IM module
 
 Group:          System Environment/Libraries
@@ -29,6 +29,7 @@ Patch2:         scim-bridge-0.4.15-bz461373.patch
 Patch3:         scim-bridge-0.4.15-EOF.patch
 Patch4:         scim-bridge-0.4.16-fix-gtk-key-snooper.patch
 Patch5:         scim-bridge-0.4.16-fixes-null-imengine.patch
+Patch6:         scim-bridge-0.4.16-fixes-unistd-compile.patch
 
 %description
 SCIM Bridge is a C implementation of a Gtk IM module for SCIM.
@@ -85,9 +86,10 @@ This package provides the SCIM Bridge Qt3 input method module.
 %patch2 -p1 -b .2-bz461373
 %patch3 -p1 -b .3-EOF
 pushd client-gtk
-%patch4 -p0
+%patch4 -p0 -b .snooper
 popd
-%patch5 -p1
+%patch5 -p1 -b .null
+%patch6 -p1 -b .unistd
 
 %if %{snapshot}
 mkdir m4
@@ -158,6 +160,22 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Fri Dec 21 2012 Adam Tkac <atkac redhat com> - 0.4.16-12
+- rebuild against new libjpeg
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.4.16-11
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Fri Mar 02 2012  Peng Wu <pwu@redhat.com> - 0.4.16-10
+- Add patch scim-bridge-0.4.16-fixes-unistd-compile.patch,
+  to fix Fedora 17 compile
+
+* Tue Feb 28 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.4.16-9
+- Rebuilt for c++ ABI breakage
+
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.4.16-8
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
 * Tue Dec 06 2011 Adam Jackson <ajax@redhat.com> - 0.4.16-7
 - Rebuild for new libpng
 
