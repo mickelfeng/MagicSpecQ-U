@@ -1,13 +1,13 @@
 Name:		scim-hangul
 Version:	0.3.2
-Release:	9%{?dist}
+Release:	12%{?dist}
 
 License:	GPLv3
 URL:		http://www.scim-im.org/
 BuildRequires:	scim-devel >= 1.2.0 libhangul-devel
 Source0:	http://downloads.sourceforge.net/scim/%{name}-%{version}.tar.gz
 Patch0:		scim-hangul-0.3.2.gcc43.patch
-
+Patch1:         scim-hangul-0.3.2.gcc47.patch
 
 Summary:	Hangul Input Method Engine for SCIM
 Group:		System Environment/Libraries
@@ -20,6 +20,7 @@ Scim-hangul is a SCIM IMEngine module for Korean (Hangul) input support.
 %prep
 %setup -q -n %{name}-%{version}
 %patch0 -p1 -b .gcc43
+%patch1 -p1 -b .gcc47
 
 
 %build
@@ -44,6 +45,15 @@ rm $RPM_BUILD_ROOT%{_libdir}/scim-1.0/*/{IMEngine,SetupUI}/hangul*.la
 
 
 %changelog
+* Sat Aug 04 2012 Parag Nemade <paragn AT fedoraproject DOT org> - 0.3.2-12
+- Fix FTBFS for gcc-4.7
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.3.2-11
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.3.2-10
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
 * Tue Oct 18 2011 Jens Petersen <petersen@redhat.com> - 0.3.2-9
 - rebuild against latest libhangul
 
