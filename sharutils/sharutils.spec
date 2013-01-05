@@ -1,14 +1,17 @@
 Summary: The GNU shar utilities for packaging and unpackaging shell archives
 Name: sharutils
-Version: 4.11.1
+Version: 4.13.1
 Release: 2%{?dist}
 License: GPLv3+ and LGPLv2+ and Public Domain
 Group: Applications/Archiving
 Source: ftp://ftp.gnu.org/gnu/%{name}/%{name}-%{version}.tar.bz2
+# Regression in 4.13.1, reporterd to <bug-gnu-utils@gnu.org>
+Patch0: sharutils-4.13.1-Fix-swapping-on-big-endian-machines.patch
 URL: http://www.gnu.org/software/%{name}/
 BuildRequires: gettext
 Requires(post): info
 Requires(preun): info
+Provides: bundled(gnulib)
 
 %description
 The sharutils package contains the GNU shar utilities, a set of tools
@@ -25,6 +28,7 @@ shar files.
 
 %prep
 %setup -q
+%patch0 -p1 -b .bigendian
 
 # convert TODO, THANKS to UTF-8
 for i in TODO THANKS; do
@@ -42,6 +46,7 @@ rm -f ${RPM_BUILD_ROOT}%{_infodir}/dir
 # gnulib-tool installs compat header files mistakenly
 rm -rf ${RPM_BUILD_ROOT}%{_includedir}
 chmod 644 AUTHORS ChangeLog COPYING NEWS README THANKS TODO
+
 magic_rpm_clean.sh
 %find_lang %{name}
 
@@ -57,7 +62,6 @@ if [ $1 = 0 ]; then
 fi
 
 %files -f %{name}.lang
-%defattr(-,root,root,-)
 %doc AUTHORS ChangeLog COPYING NEWS README THANKS TODO
 %{_bindir}/*
 %{_infodir}/*info*
@@ -65,8 +69,23 @@ fi
 %{_mandir}/man5/*
 
 %changelog
-* Mon Feb 06 2012 Liu Di <liudidi@gmail.com> - 4.11.1-2
-- 为 Magic 3.0 重建
+* Thu Jan 03 2013 Petr Pisar <ppisar@redhat.com> - 4.13.1-2
+- Fix MD5 checksum generation on big-endian machines
+
+* Thu Jan 03 2013 Petr Pisar <ppisar@redhat.com> - 4.13.1-1
+- 4.13.1 bump
+
+* Thu Aug 02 2012 Petr Pisar <ppisar@redhat.com> - 4.11.1-5
+- Fix building with glibc-2.16.6
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.11.1-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Tue May 15 2012 Petr Pisar <ppisar@redhat.com> - 4.11.1-3
+- Export bundled(gnulib) (bug #821789)
+
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.11.1-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
 * Fri May 06 2011 Petr Pisar <ppisar@redhat.com> - 4.11.1-1
 - 4.11.1 bump
