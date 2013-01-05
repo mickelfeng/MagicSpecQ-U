@@ -1,6 +1,6 @@
 Name:      scim
 Version:   1.4.14
-Release:   3%{?dist}
+Release:   4%{?dist}
 Summary:   Smart Common Input Method platform
 
 License:   LGPLv2+
@@ -49,6 +49,15 @@ Obsoletes:  scim-lang-tamil
 Obsoletes:  scim-lang-telugu
 Obsoletes:  scim-lang-thai
 Obsoletes:  scim-lang-tibetan
+Obsoletes:  scim-python
+Obsoletes:  scim-python-chinese
+Obsoletes:  scim-python-english
+Obsoletes:  scim-python-pinyin
+Obsoletes:  scim-python-xingma
+Obsoletes:  scim-python-xingma-cangjie
+Obsoletes:  scim-python-xingma-erbi
+Obsoletes:  scim-python-xingma-wubi
+Obsoletes:  scim-python-xingma-zhengma
 Patch1:    scim-add-restart.patch
 Patch7:    scim_panel_gtk-emacs-cc-style.patch
 
@@ -149,7 +158,7 @@ rm -f docs/html/FreeSans.ttf
 # install xinput config file
 mkdir -pm 755 ${RPM_BUILD_ROOT}/%{_sysconfdir}/X11/xinit/xinput.d
 install -pm 644 %{SOURCE1} ${RPM_BUILD_ROOT}/%{_xinputconf}
-magic_rpm_clean.sh
+
 %find_lang %{name}
 
 
@@ -214,9 +223,6 @@ fi
 %{_datadir}/scim
 %{_datadir}/pixmaps/*
 %config(noreplace) %{_xinputconf}
-#预备分包出来
-   /usr/lib/qt-3.3/lib/qt3/plugins/inputmethods/im-scim.so
-   /usr/lib/qt4/lib/qt4/plugins/inputmethods/im-scim.so
 
 %files devel
 %defattr(-,root,root,-)
@@ -239,7 +245,9 @@ fi
 %{_libdir}/scim-1.0/%{scim_api}/Config
 %dir %{_libdir}/scim-1.0/%{scim_api}/IMEngine
 %{_libdir}/scim-1.0/%{scim_api}/IMEngine/socket.so
-
+#qt3和qt4，需要分包
+%{_libdir}/qt-3.3/lib/qt3/plugins/inputmethods/im-scim.so
+%{_libdir}/qt4/lib/qt4/plugins/inputmethods/im-scim.so
 
 %files rawcode
 %defattr(-,root,root,-)
@@ -247,8 +255,11 @@ fi
 
 
 %changelog
-* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.4.14-3
-- 为 Magic 3.0 重建
+* Mon Dec 10 2012 Peng Wu <pwu@redhat.com> - 1.4.14-4
+- Obsoletes scim-python
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.4.14-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
 * Fri Jun 29 2012  Peng Wu <pwu@redhat.com> - 1.4.14-2
 - Use gtk2 for setup ui
