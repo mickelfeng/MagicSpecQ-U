@@ -3,7 +3,7 @@
 
 Name:          speech-dispatcher
 Version:       0.7.1
-Release:       9%{?dist}
+Release:       10%{?dist}
 Summary:       To provide a high-level device independent layer for speech synthesis
 Group:         System Environment/Libraries
 
@@ -20,10 +20,13 @@ BuildRequires: espeak-devel
 BuildRequires: flite-devel
 Buildrequires: glib2-devel
 Buildrequires: libao-devel
-Buildrequires: pulseaudio-lib-devel
+Buildrequires: pulseaudio-libs-devel
 BuildRequires: python-setuptools-devel
 BuildRequires: texinfo
 BuildRequires: systemd-units
+BuildRequires: automake libtool
+Patch0: 0001-RPM-Cleanups.patch
+
 Requires(post): systemd-units
 Requires(post): systemd-sysv
 Requires(post): chkconfig
@@ -67,8 +70,8 @@ Summary:        Documentation for speech-dispatcher
 License:        GPLv2+
 Group:          Documentation
 Requires:       speech-dispatcher = %{version}-%{release}
-Requires(post): /usr/sbin/install-info
-Requires(preun):/usr/sbin/install-info
+Requires(post): /sbin/install-info
+Requires(preun):/sbin/install-info
 
 %description doc
 speechd documentation
@@ -84,13 +87,8 @@ speechd python module
 
 %prep
 %setup -q
-
-## nuke unwanted rpaths, see also 
-## https://fedoraproject.org/wiki/Packaging/Guidelines#Beware_of_Rpath
-sed -i -e 's|"/lib /usr/lib|"/%{_lib} %{_libdir}|' configure
-# or (though this is more invasive, and BuildRequires: automake libtool
-#autoreconf -i -f
-
+%patch0 -p1
+autoreconf -i -f
 
 %build
 %configure --disable-static --with-alsa --with-pulse --without-nas --with-flite --sysconfdir=%{_sysconfdir}
@@ -98,8 +96,6 @@ sed -i -e 's|"/lib /usr/lib|"/%{_lib} %{_libdir}|' configure
 make %{?_smp_mflags}
 
 %install
-rm -rf %{buildroot}
-
 for dir in \
  config/ doc/ src/audio/ src/c/ src/modules/ src/tests/ src/server/ src/python/
  do
@@ -111,14 +107,9 @@ done
 mkdir -p %{buildroot}%{_unitdir}
 install -p -m 0644 %SOURCE1 %{buildroot}%{_unitdir}/
 
-#Rename certain generically named binaries
-mv %{buildroot}%{_bindir}/long_message %{buildroot}%{_bindir}/spd_long_message 
-mv %{buildroot}%{_bindir}/run_test %{buildroot}%{_bindir}/spd_run_test
-
 #Remove %{_infodir}/dir file
 rm -f %{buildroot}%{_infodir}/dir
 
-cd ../../
 find %{buildroot} -name '*.la' -exec rm -f {} ';'
 
 # Move the config files from /usr/share to /etc
@@ -131,35 +122,30 @@ mv %{buildroot}%{_datadir}/speech-dispatcher/conf/modules/* %{buildroot}%{_sysco
 # Create log dir
 %{__mkdir} -p -m 0700 %{buildroot}%{_localstatedir}/log/speech-dispatcher/
 
-# enable pulseaudio as default with a fallback to alsa
-sed 's/# AudioOutputMethod "pulse,alsa"/AudioOutputMethod "pulse,alsa"/' %{buildroot}%{_sysconfdir}/speech-dispatcher/speechd.conf
-
-magic_rpm_clean.sh
-
 %clean
 rm -rf %{buildroot}
 
 %post 
-/usr/sbin/ldconfig
+/sbin/ldconfig
 if [ $1 -eq 1 ] ; then 
     # Initial installation 
-    /usr/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
 fi
 
 %postun
-/usr/sbin/ldconfig
+/sbin/ldconfig
 
-/usr/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 if [ $1 -ge 1 ] ; then
     # Package upgrade, not uninstall
-    /usr/bin/systemctl try-restart speech-dispatcherd.service >/dev/null 2>&1 || :
+    /bin/systemctl try-restart speech-dispatcherd.service >/dev/null 2>&1 || :
 fi
 
 %preun
 if [ $1 -eq 0 ] ; then
     # Package removal, not upgrade
-    /usr/bin/systemctl --no-reload disable speech-dispatcherd.service > /dev/null 2>&1 || :
-    /usr/bin/systemctl stop speech-dispatcherd.service > /dev/null 2>&1 || :
+    /bin/systemctl --no-reload disable speech-dispatcherd.service > /dev/null 2>&1 || :
+    /bin/systemctl stop speech-dispatcherd.service > /dev/null 2>&1 || :
 fi
 
 %triggerun -- speech-dispatcherd < 0.7.1-6
@@ -169,8 +155,8 @@ fi
 /usr/bin/systemd-sysv-convert --save speech-dispatcherd >/dev/null 2>&1 ||:
 
 # Run these because the SysV package being removed won't do them
-/usr/sbin/chkconfig --del speech-dispatcherd >/dev/null 2>&1 || :
-/usr/bin/systemctl try-restart speech-dispatcherd.service >/dev/null 2>&1 || :
+/sbin/chkconfig --del speech-dispatcherd >/dev/null 2>&1 || :
+/bin/systemctl try-restart speech-dispatcherd.service >/dev/null 2>&1 || :
 
 %files
 %defattr(-,root,root,-)
@@ -205,17 +191,17 @@ fi
 %{_infodir}/*
 
 %post doc
-/usr/sbin/install-info %{_infodir}/%{name}.info %{_infodir}/dir || :
-/usr/sbin/install-info %{_infodir}/spd-say.info %{_infodir}/dir || :
-/usr/sbin/install-info %{_infodir}/ssip.info %{_infodir}/dir || :
-/usr/sbin/install-info %{_infodir}/%{name}-cs.info %{_infodir}/dir || :
+/sbin/install-info %{_infodir}/%{name}.info %{_infodir}/dir || :
+/sbin/install-info %{_infodir}/spd-say.info %{_infodir}/dir || :
+/sbin/install-info %{_infodir}/ssip.info %{_infodir}/dir || :
+/sbin/install-info %{_infodir}/%{name}-cs.info %{_infodir}/dir || :
 
 %preun doc
 if [ $1 = 0 ]; then
- /usr/sbin/install-info --delete %{_infodir}/%{name}.info %{_infodir}/dir || :
- /usr/sbin/install-info --delete %{_infodir}/spd-say.info %{_infodir}/dir || :
- /usr/sbin/install-info --delete %{_infodir}/ssip.info %{_infodir}/dir || :
- /usr/sbin/install-info --delete %{_infodir}/%{name}-cs.info %{_infodir}/dir || :
+ /sbin/install-info --delete %{_infodir}/%{name}.info %{_infodir}/dir || :
+ /sbin/install-info --delete %{_infodir}/spd-say.info %{_infodir}/dir || :
+ /sbin/install-info --delete %{_infodir}/ssip.info %{_infodir}/dir || :
+ /sbin/install-info --delete %{_infodir}/%{name}-cs.info %{_infodir}/dir || :
 fi
 
 %files python
@@ -223,14 +209,17 @@ fi
 %{python_sitearch}/speechd*
 
 %changelog
-* Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 0.7.1-9
+* Sat Jan 05 2013 Liu Di <liudidi@gmail.com> - 0.7.1-10
 - 为 Magic 3.0 重建
 
-* Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 0.7.1-8
-- 为 Magic 3.0 重建
+* Thu Nov 29 2012 Bastien Nocera <bnocera@redhat.com> 0.7.1-9
+- Move RPM hacks to source patches
 
-* Wed Feb 08 2012 Liu Di <liudidi@gmail.com> - 0.7.1-7
-- 为 Magic 3.0 重建
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.7.1-8
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.7.1-7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
 * Thu Jul 26 2011 Jóhann B. Guðmundsson <johannbg@gmail.com> - 0.7.1-6
 - Introduce systemd unit file, drop SysV support
@@ -341,7 +330,7 @@ fi
 - fixed install sequence using cleaner for loop and pushd and popd commands
 - added init script for speech-dispatcher daemon
 - added COPYING to doc in base package
-- removed comment after /usr/sbin/ldconfig
+- removed comment after /sbin/ldconfig
 - resolved rpmlint errors for base package [except UTF-8 encoding error for (cs) documentation file]
 - renamed long_message to spd_long_message and run_test to spd_run_test
 - reset mode of _test.py to 0755
@@ -393,4 +382,4 @@ fi
 - Removed doc-cs packages and merged it into doc package
 - Removed packaging of static files, and tested -without static_libs option for configure script
 - Moved symlink .so files from devel package to main package
-- Commented /usr/sbin/ldconfig for devel package.
+- Commented /sbin/ldconfig for devel package.
