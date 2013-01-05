@@ -1,5 +1,5 @@
 %define name	stardict
-%define version	3.0.2
+%define version	3.0.4
 %define enable_gnome 0
 %define enable_plugins 0
 
@@ -15,6 +15,7 @@ URL: 		http://stardict.sourceforge.net
 Source0:	http://downloads.sourceforge.net/%{name}/%{name}-%{version}.tar.bz2
 Source2:	stardict.desktop
 Source1:        defaultdict.cfg
+Patch4:		stardict-3.0.4-gmodule.patch
 Patch5:         stardict-default-netdict-off.patch
 Patch6:         stardict-3.0.1-gcc46.patch
 Patch7:		stardict-3.0.2-glib.patch
@@ -52,9 +53,10 @@ It has powerful features such as "Glob-style pattern matching,"
 
 %prep
 %setup -q
-%patch5 -p1 -b .orig
-%patch6 -p1 -b .orig
-%patch7 -p1
+#%patch5 -p1 -b .orig
+#%patch6 -p1 -b .orig
+#%patch7 -p1
+%patch4 -p1
 
 # Remove unneeded sigc++ header files to make it sure
 # that we are using system-wide libsigc++
@@ -94,8 +96,8 @@ if which scrollkeeper-update>/dev/null 2>&1; then scrollkeeper-update; fi
 
 %files -f %{name}.lang
 %defattr(-, root, root)
-%{_bindir}
-%{_mandir}
+%{_bindir}/*
+%{_mandir}/man1/*
 %{_libdir}/stardict/plugins/*
 %{_sysconfdir}/stardict/defaultdict.cfg
 %{_datadir}/gnome/*
