@@ -6,7 +6,7 @@
 
 Name:           scim-tables
 Version:        0.5.9
-Release:        6%{?dist}
+Release:        7%{?dist}
 Summary:        SCIM Generic Table IMEngine
 
 License:        GPLv2+
@@ -462,8 +462,11 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
-* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.5.9-6
-- 为 Magic 3.0 重建
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.5.9-7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Tue Feb 28 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.5.9-6
+- Rebuilt for c++ ABI breakage
 
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.5.9-5
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
