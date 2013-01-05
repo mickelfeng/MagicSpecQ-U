@@ -9,11 +9,7 @@
 
 %define perl_vendorarch %(eval "`%{__perl} -V:installvendorarch`"; echo $installvendorarch)
 
-%if 0%{?fedora} < 18
-%define dbdevel db4-devel
-%else
 %define dbdevel libdb-devel
-%endif
 
 %{!?python_sitearch: %define python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 
@@ -53,7 +49,7 @@ BuildRequires: sqlite-devel >= 3.4.0, file-devel, systemd-units
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Provides: svn = %{version}-%{release}
 Requires: subversion-libs%{?_isa} = %{version}-%{release}
-Requires(post): systemd-sysv, /usr/sbin/chkconfig
+Requires(post): systemd-sysv, /sbin/chkconfig
 
 %define __perl_requires %{SOURCE3}
 
@@ -327,7 +323,7 @@ rm -f $RPM_BUILD_ROOT%{_bindir}/diff*
 for f in svn-populate-node-origins-index svn-rep-sharing-stats svnauthz-validate svnmucc svnraisetreeconflict; do
     echo %{_bindir}/$f
 done | tee tools.files | sed 's/^/%%exclude /' > exclude.tools.files
-magic_rpm_clean.sh
+
 %find_lang %{name}
 
 cat %{name}.lang exclude.tools.files >> %{name}.files
@@ -355,27 +351,27 @@ rm -rf ${RPM_BUILD_ROOT}
 %post
 if [ $1 -eq 1 ] ; then 
     # Initial installation 
-    /usr/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
 fi
 
 %preun
 if [ $1 = 0 ]; then
     # Package removal, not upgrade
-    /usr/bin/systemctl --no-reload disable svnserve.service > /dev/null 2>&1 || :
-    /usr/bin/systemctl stop svnserve.service > /dev/null 2>&1 || :
+    /bin/systemctl --no-reload disable svnserve.service > /dev/null 2>&1 || :
+    /bin/systemctl stop svnserve.service > /dev/null 2>&1 || :
 fi
 
 %postun
-/usr/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+/bin/systemctl daemon-reload >/dev/null 2>&1 || :
 if [ $1 -ge 1 ] ; then
     # Package upgrade, not uninstall
-    /usr/bin/systemctl try-restart svnserve.service >/dev/null 2>&1 || :
+    /bin/systemctl try-restart svnserve.service >/dev/null 2>&1 || :
 fi
 
 %triggerun -- subversion < 1.7.3-2
 /usr/bin/systemd-sysv-convert --save svnserve >/dev/null 2>&1 ||:
-/usr/sbin/chkconfig --del svnserve >/dev/null 2>&1 || :
-/usr/bin/systemctl try-restart svnserve.service >/dev/null 2>&1 || :
+/sbin/chkconfig --del svnserve >/dev/null 2>&1 || :
+/bin/systemctl try-restart svnserve.service >/dev/null 2>&1 || :
 
 %post libs -p /sbin/ldconfig
 
