@@ -1,20 +1,23 @@
 Summary: A printer administration tool
 Name: system-config-printer
-Version: 1.3.9
-Release: 3%{?dist}
+Version: 1.3.12
+Release: 7%{?dist}
 License: GPLv2+
 URL: http://cyberelk.net/tim/software/system-config-printer/
 Group: System Environment/Base
 Source0: http://cyberelk.net/tim/data/system-config-printer/1.3/%{name}-%{version}.tar.xz
 Patch1: system-config-printer-no-applet-in-gnome.patch
-Patch2: system-config-printer-udev-sys-path.patch
+Patch2: system-config-printer-FirewallD.patch
+Patch3: system-config-printer-systemd.patch
+Patch4: system-config-printer-dnssd-crash.patch
+
 BuildRequires: cups-devel >= 1.2
 BuildRequires: desktop-file-utils >= 0.2.92
 BuildRequires: gettext-devel
 BuildRequires: intltool
-BuildRequires: libusb-devel, systemd-devel, glib2-devel
+BuildRequires: libusb1-devel, glib2-devel
 BuildRequires: xmlto
-BuildRequires: systemd-units
+BuildRequires: systemd-units, systemd-devel
 
 Requires: pygtk2%{?_isa} >= 2.12
 Requires: pygobject2%{?_isa}
@@ -63,7 +66,18 @@ printers.
 
 # Don't start the applet in GNOME.
 %patch1 -p1 -b .no-applet-in-gnome
-%patch2 -p1
+%if 0%{?rhel}
+sed -i.kde -e 's,NotShowIn=\(.*;\)KDE;,NotShowIn=\1,' print-applet.desktop.in
+%endif
+
+# FirewallD support
+%patch2 -p1 -b .FirewallD
+
+# Fixed systemd config file (bug #862186).
+%patch3 -p1 -b .systemd
+
+# Avoid crash with certain types of dnssd device URI (bug #870000).
+%patch4 -p1 -b .dnssd-crash
 
 %build
 %configure --with-udev-rules
@@ -76,7 +90,6 @@ make DESTDIR=%buildroot install \
 %{__mkdir_p} %buildroot%{_localstatedir}/run/udev-configure-printer
 touch %buildroot%{_localstatedir}/run/udev-configure-printer/usb-uris
 
-magic_rpm_clean.sh
 %find_lang system-config-printer
 
 %files libs -f system-config-printer.lang
@@ -96,7 +109,7 @@ magic_rpm_clean.sh
 %{_datadir}/%{name}/debug.py*
 %{_datadir}/%{name}/dnssdresolve.py*
 %{_datadir}/%{name}/errordialogs.py*
-%{_datadir}/%{name}/firewall.py*
+%{_datadir}/%{name}/firewallsettings.py*
 %{_datadir}/%{name}/gtkinklevel.py*
 %{_datadir}/%{name}/gtk_label_autowrap.py*
 %{_datadir}/%{name}/gtkspinner.py*
@@ -135,7 +148,7 @@ magic_rpm_clean.sh
 %{_prefix}/lib/udev/udev-*-printer
 %ghost %dir %{_localstatedir}/run/udev-configure-printer
 %ghost %verify(not md5 size mtime) %config(noreplace,missingok) %attr(0644,root,root) %{_localstatedir}/run/udev-configure-printer/usb-uris
-%{_unitdir}/udev-configure-printer.service
+%{_unitdir}/configure-printer@.service
 
 %files
 %doc ChangeLog README
@@ -161,35 +174,60 @@ magic_rpm_clean.sh
 %{_mandir}/man1/*
 
 %post
-/usr/bin/rm -f /var/cache/foomatic/foomatic.pickle
+/bin/rm -f /var/cache/foomatic/foomatic.pickle
 exit 0
 
-%post udev
-if [ $1 -eq 1 ] ; then
-    # Initial installation
-    /usr/bin/systemctl daemon-reload >/dev/null 2>&1 || :
-fi
-
-%preun udev
-if [ $1 -eq 0 ] ; then
-    # Package removal, not upgrade
-    /usr/bin/systemctl --no-reload disable udev-configure-printer.service >/dev/null 2>&1 || :
-    /usr/bin/systemctl stop udev-configure-printer.service >/dev/null 2>&1 || :
-fi
-
-%postun udev
-/usr/bin/systemctl daemon-reload >/dev/null 2>&1 || :
-if [ $1 -ge 1 ] ; then
-    # Package upgrade, not uninstall
-    /usr/bin/systemctl try-restart udev-configure-printer.service >/dev/null 2>&1 || :
-fi
-
 %changelog
-* Fri Jul 06 2012 Liu Di <liudidi@gmail.com> - 1.3.9-3
-- 为 Magic 3.0 重建
+* Mon Nov 26 2012 Tim Waugh <twaugh@redhat.com> 1.3.12-7
+- Enable the print applet in KDE (only on Red Hat Enterprise Linux).
 
-* Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 1.3.9-2
-- 为 Magic 3.0 重建
+* Wed Nov 21 2012 Tim Waugh <twaugh@redhat.com> 1.3.12-6
+- Avoid traceback in most recent change (bug #878527).
+
+* Mon Nov 19 2012 Tim Waugh <twaugh@redhat.com> 1.3.12-4
+- Fixed dialog modality problem which prevented e.g. changing drivers.
+
+* Thu Oct 25 2012 Tim Waugh <twaugh@redhat.com> 1.3.12-3
+- Avoid crash with certain types of dnssd device URI (bug #870000).
+
+* Tue Oct 23 2012 Tim Waugh <twaugh@redhat.com> 1.3.12-2
+- Fixed systemd config file (bug #862186).
+
+* Fri Oct  5 2012 Tim Waugh <twaugh@redhat.com> 1.3.12-1
+- 1.3.12.
+
+* Fri Sep 21 2012 Jiri Popelka <jpopelka@redhat.com> 1.3.11-5
+- FirewallD support once again (use D-Bus instead of FirewallD client module)
+
+* Tue Sep 18 2012 Jiri Popelka <jpopelka@redhat.com> 1.3.11-4
+- revert previous change for now, the patch needs more work
+
+* Thu Sep 06 2012 Jiri Popelka <jpopelka@redhat.com> 1.3.11-3
+- FirewallD support
+
+* Wed Aug 22 2012 Jiri Popelka <jpopelka@redhat.com> 1.3.11-2
+- use new systemd-rpm macros (#850334)
+
+* Fri Aug  3 2012 Tim Waugh <twaugh@redhat.com> 1.3.11-1
+- 1.3.11.
+
+* Wed Aug  1 2012 Tim Waugh <twaugh@redhat.com> 1.3.10-1
+- 1.3.10.
+- Build requirement for libusb has changed to libusb1-devel.
+
+* Tue Jul 31 2012 Tim Waugh <twaugh@redhat.com> 1.3.9-5
+- Reverted previous change. New systemd-devel does provide libudev.pc
+  after all.
+
+* Tue Jul 31 2012 Tim Waugh <twaugh@redhat.com> 1.3.9-4
+- Fixed build against systemd-devel now there is no libudev-devel.
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.3.9-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Tue Jun 05 2012 Jiri Popelka <jpopelka@redhat.com> 1.3.9-2
+- BuildRequires systemd-devel instead of udev-devel
+- replace udev_get_sys_path() with hard-coded "/sys"
 
 * Thu Mar  1 2012 Tim Waugh <twaugh@redhat.com> 1.3.9-1
 - 1.3.9:
