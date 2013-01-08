@@ -10,8 +10,8 @@
 
 Summary: SIP - Python/C++ Bindings Generator
 Name: sip
-Version: 4.14
-Release: 2%{?dist}
+Version: 4.14.2
+Release: 1%{?dist}
 
 # sipgen/parser.{c.h} is GPLv3+ with exceptions (bison)
 License: GPLv2 or GPLv3 and (GPLv3+ with exceptions)
@@ -30,7 +30,7 @@ Patch51: sip-4.13.3-no_rpath.patch
 # extracted from sip.h, SIP_API_MAJOR_NR SIP_API_MINOR_NR defines
 Source1: macros.sip
 %global _sip_api_major 9
-%global _sip_api_minor 0 
+%global _sip_api_minor 1
 %global _sip_api %{_sip_api_major}.%{_sip_api_minor}
 
 Provides: sip-api(%{_sip_api_major}) = %{_sip_api}
@@ -130,7 +130,7 @@ popd
 %{__python} configure.py -d %{python_sitearch} CXXFLAGS="%{optflags}" CFLAGS="%{optflags}"
 
 make %{?_smp_mflags}
-magic_rpm_clean.sh
+
 
 %install
 rm -rf %{buildroot}
@@ -189,8 +189,12 @@ rm -rf %{buildroot}
 
 
 %changelog
-* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 4.14-2
-- 为 Magic 3.0 重建
+* Sun Dec 09 2012 Rex Dieter <rdieter@fedoraproject.org> 4.14.2-1
+- sip-4.14.2
+
+* Sun Oct 28 2012 Rex Dieter <rdieter@fedoraproject.org> - 4.14.1-1
+- sip-4.14.1
+- sip-api(9) = 9.1
 
 * Mon Oct 01 2012 Rex Dieter <rdieter@fedoraproject.org> - 4.14-1
 - sip-4.14
