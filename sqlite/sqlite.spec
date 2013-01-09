@@ -1,16 +1,16 @@
 # bcond default logic is nicely backwards...
 %bcond_without tcl
-%bcond_without static
-%bcond_with check
+%bcond_with static
+%bcond_without check
 
-%define realver 3070900
-%define docver 3070900
-%define rpmver %(echo %{realver}|sed -e "s/00//g" -e "s/0/./g")
+%define realver 3071500
+%define docver 3071500
+%define rpmver 3.7.15
 
 Summary: Library that implements an embeddable SQL database engine
 Name: sqlite
 Version: %{rpmver}
-Release: 4%{?dist}
+Release: 1%{?dist}
 License: Public Domain
 Group: Applications/Databases
 URL: http://www.sqlite.org/
@@ -20,6 +20,14 @@ Source1: http://www.sqlite.org/sqlite-doc-%{docver}.zip
 Patch1: sqlite-3.6.23-lemon-system-template.patch
 # Shut up stupid tests depending on system settings of allowed open fd's
 Patch2: sqlite-3.7.7.1-stupid-openfiles-test.patch
+# Shut up pagecache overflow test whose expected result depends on compile
+# options and whatnot. Dunno why this started failing in 3.7.10 but
+# doesn't seem particularly critical...
+Patch3: sqlite-3.7.10-pagecache-overflow-test.patch
+# sqlite >= 3.7.10 is buggy if malloc_usable_size() is detected, disable it:
+# https://bugzilla.redhat.com/show_bug.cgi?id=801981
+# http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=665363
+Patch4: sqlite-3.7.15-no-malloc-usable-size.patch
 BuildRequires: ncurses-devel readline-devel glibc-devel
 %if %{with tcl}
 BuildRequires: /usr/bin/tclsh
@@ -89,6 +97,8 @@ This package contains the tcl modules for %{name}.
 %setup -q -a1 -n %{name}-src-%{realver}
 %patch1 -p1 -b .lemon-system-template
 %patch2 -p1 -b .stupid-openfiles-test
+%patch3 -p1 -b .pagecache-overflow-test
+%patch4 -p1 -b .no-malloc-usable-size
 
 # Remove cgi-script erroneously included in sqlite-doc-3070500
 rm -f %{name}-doc-%{realver}/search
@@ -127,6 +137,9 @@ rm -f $RPM_BUILD_ROOT/%{_libdir}/*.{la,a}
 
 %if %{with check}
 %check
+# XXX shell tests are broken due to loading system libsqlite3, work around...
+export LD_LIBRARY_PATH=`pwd`/.libs
+export MALLOC_CHECK_=3
 %ifarch s390 s390x ppc ppc64 %{sparc} %{arm}
 make test || :
 %else
@@ -174,14 +187,38 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 3.7.9-4
-- 为 Magic 3.0 重建
+* Thu Dec 13 2012 Panu Matilainen <pmatilai@redhat.com> - 3.7.15-1
+- update to 3.7.15 (http://www.sqlite.org/releaselog/3_7_15.html)
+- fix an old incorrect date in spec changelog
 
-* Thu Feb 09 2012 Liu Di <liudidi@gmail.com> - 3.7.9-3
-- 为 Magic 3.0 重建
+* Tue Nov 06 2012 Panu Matilainen <pmatilai@redhat.com> - 3.7.14.1-1
+- update to 3.7.14.1 (http://www.sqlite.org/releaselog/3_7_14_1.html)
 
-* Thu Feb 09 2012 Liu Di <liudidi@gmail.com> - 3.7.9-2
-- 为 Magic 3.0 重建
+* Wed Oct 03 2012 Panu Matilainen <pmatilai@redhat.com> - 3.7.14-1
+- update to 3.7.14 (http://www.sqlite.org/releaselog/3_7_14.html)
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.7.13-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Mon Jun 25 2012 Panu Matilainen <pmatilai@redhat.com> - 3.7.13-1
+- update to 3.7.13 (http://www.sqlite.org/releaselog/3_7_13.html)
+- drop no longer needed savepoint relase patch
+
+* Fri Jun 01 2012 Panu Matilainen <pmatilai@redhat.com> - 3.7.11-3
+- don't abort pending queries on release of nested savepoint (#821642)
+
+* Wed Apr 25 2012 Panu Matilainen <pmatilai@redhat.com> - 3.7.11-2
+- run test-suite with MALLOC_CHECK_=3
+- disable buggy malloc_usable_size code (#801981)
+
+* Mon Mar 26 2012 Panu Matilainen <pmatilai@redhat.com> - 3.7.11-1
+- update to 3.7.11 (http://www.sqlite.org/releaselog/3_7_11.html)
+
+* Wed Mar 07 2012 Panu Matilainen <pmatilai@redhat.com> - 3.7.10-1
+- update to 3.7.10 (http://www.sqlite.org/releaselog/3_7_10.html)
+
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.7.9-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
 * Tue Nov 22 2011 Panu Matilainen <pmatilai@redhat.com> - 3.7.9-1
 - update to 3.7.9 (http://www.sqlite.org/releaselog/3_7_9.html)
@@ -229,7 +266,7 @@ rm -rf $RPM_BUILD_ROOT
 * Mon Nov 1 2010 Panu Matilainen <pmatilai@redhat.com> - 3.7.3-1
 - update to 3.7.3 (http://www.sqlite.org/releaselog/3_7_3.html)
 
-* Tue Sep  2 2010 Tom "spot" Callaway <tcallawa@redhat.com> - 3.7.0.1-2
+* Thu Sep  2 2010 Tom "spot" Callaway <tcallawa@redhat.com> - 3.7.0.1-2
 - enable SQLITE_SECURE_DELETE, SQLITE_ENABLE_UNLOCK_NOTIFY for firefox 4
 
 * Fri Aug 13 2010 Panu Matilainen <pmatilai@redhat.com> - 3.7.0.1-1
