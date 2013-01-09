@@ -1,14 +1,14 @@
 Name: texi2html
 Version: 1.82
-Release: 2%{?dist}
+Release: 3%{?dist}
 # GPLv2+ is for the code
 # OFSFDL (Old FSF Documentation License) for the documentation
 # CC-BY-SA or GPLv2 for the images
 License: GPLv2+ and OFSFDL and (CC-BY-SA or GPLv2)
 Group: Applications/Text
-Group(zh_CN.GB18030): Ó¦ÓÃ³ÌĞò/ÎÄ±¾
+Group(zh_CN.UTF-8): åº”ç”¨ç¨‹åº/æ–‡æœ¬
 Summary: A highly customizable texinfo to HTML and other formats translator
-Summary(zh_CN.GB18030): ¸ß¶È¿É¶¨ÖÆµÄtexinfoµ½HTMLºÍÆäËü¸ñÊ½µÄ×ª»»Æ÷
+Summary(zh_CN.UTF-8): é«˜åº¦å¯å®šåˆ¶çš„texinfoåˆ°HTMLå’Œå…¶å®ƒæ ¼å¼çš„è½¬æ¢å™¨
 Source0: http://download.savannah.nongnu.org/releases/%{name}/%{name}-%{version}.tar.bz2
 URL: http://www.nongnu.org/texi2html/
 Requires(post): /sbin/install-info
@@ -28,8 +28,8 @@ and other formats.  Configuration files written in perl provide fine degree
 of control over the final output, allowing most every aspect of the final 
 output not specified in the Texinfo input file to be specified.  
 
-%description -l zh_CN.GB18030
-texi2htmlµÄ»ù±¾Ä¿±êÊÇ×ª»»TexinfoÎÄµµµ½HTMLºÍÆäËü¸ñÊ½¡£
+%description -l zh_CN.UTF-8
+texi2htmlçš„åŸºæœ¬ç›®æ ‡æ˜¯è½¬æ¢Texinfoæ–‡æ¡£åˆ°HTMLå’Œå…¶å®ƒæ ¼å¼ã€‚
 
 %prep
 %setup -q
@@ -77,7 +77,6 @@ fi
 %dir %{_sysconfdir}/texinfo
 
 %changelog
-* Tue Feb 14 2012 Liu Di <liudidi@gmail.com> - 1.82-2
+* Wed Jan 09 2013 Liu Di <liudidi@gmail.com> - 1.82-3
 - ä¸º Magic 3.0 é‡å»º
-
 
