@@ -19,7 +19,7 @@ tar \fB\-tvf\fR archive.tar
 tar \fB\-xf\fR archive.tar
 # Extract all files from archive.tar.
 .IP
-Main operation mode:
+.SH \fBMain operation mode:\fR
 .TP
 \fB\-A\fR, \fB\-\-catenate\fR, \fB\-\-concatenate\fR
 append tar files to an archive
@@ -48,7 +48,7 @@ only append files newer than copy in archive
 \fB\-x\fR, \fB\-\-extract\fR, \fB\-\-get\fR
 extract files from an archive
 .IP
-.SH\fBCommon Options:\fR
+.SH \fBCommon options:\fR
 .TP
 \fB-C\fR, \fB--directory=DIR\fR
 change to directory DIR
@@ -71,7 +71,7 @@ verbosely list files processed
 \fB-z\fR, \fB--gzip\fR
 filter the archive through gzip
 
-.SH Operation modifiers:
+.SH \fBOperation modifiers:\fR
 .TP
 \fB\-\-check\-device\fR
 check device numbers when creating incremental
@@ -114,7 +114,7 @@ set version of the sparse format to use (implies
 \fB\-S\fR, \fB\-\-sparse\fR
 handle sparse files efficiently
 .IP
-.SH Overwrite control:
+.SH \fBOverwrite control:\fR
 .TP
 \fB\-k\fR, \fB\-\-keep\-old\-files\fR
 don't replace existing files when extracting
@@ -145,7 +145,7 @@ remove each file prior to extracting over it
 \fB\-W\fR, \fB\-\-verify\fR
 attempt to verify the archive after writing it
 .IP
-.SH Select output stream:
+.SH \fBSelect output stream:\fR
 .HP
 \fB\-\-ignore\-command\-error\fR ignore exit codes of children
 .TP
@@ -159,10 +159,7 @@ extract files to standard output
 \fB\-\-to\-command\fR=\fICOMMAND\fR
 pipe extracted files to another program
 .IP
-Handling of file attributes:
-.TP
-\fB\-\-acls\fR
-Save the ACLs to the archive
+.SH \fBHandling of file attributes:\fR
 .TP
 \fB\-\-atime\-preserve\fR[=\fIMETHOD\fR]
 preserve access times on dumped files, either
@@ -187,9 +184,6 @@ set mtime for added files from DATE\-OR\-FILE
 \fB\-m\fR, \fB\-\-touch\fR
 don't extract file modified time
 .TP
-\fB\-\-no\-acls\fR
-Don't extract the ACLs from the archive
-.TP
 \fB\-\-no\-delay\-directory\-restore\fR
 cancel the effect of \fB\-\-delay\-directory\-restore\fR
 option
@@ -201,13 +195,6 @@ users)
 \fB\-\-no\-same\-permissions\fR
 apply the user's umask when extracting permissions
 from the archive (default for ordinary users)
-.TP
-\fB\-\-no\-selinux\fR
-Don't extract the SELinux context from the archive
-.TP
-\fB\-\-no\-xattrs\fR
-Don't extract the user/root xattrs from the
-archive
 .TP
 \fB\-\-numeric\-owner\fR
 always use numbers for user/group names
@@ -228,14 +215,34 @@ exists in the archive (default for superuser)
 .TP
 \fB\-s\fR, \fB\-\-preserve\-order\fR, \fB\-\-same\-order\fR
 sort names to extract to match archive
+.IP
+.SH \fBHandling of extended file attributes:\fR
+.TP
+\fB\-\-acls\fR
+Enable the POSIX ACLs support
+.TP
+\fB\-\-no\-acls\fR
+Disable the POSIX ACLs support
+.TP
+\fB\-\-no\-selinux\fR
+Disable the SELinux context support
+.TP
+\fB\-\-no\-xattrs\fR
+Disable extended attributes support
 .TP
 \fB\-\-selinux\fR
-Save the SELinux context to the archive
+Enable the SELinux context support
 .TP
 \fB\-\-xattrs\fR
-Save the user/root xattrs to the archive
+Enable extended attributes support
+.TP
+\fB\-\-xattrs\-exclude\fR=\fIMASK\fR
+specify the exclude pattern for xattr keys
+.TP
+\fB\-\-xattrs\-include\fR=\fIMASK\fR
+specify the include pattern for xattr keys
 .IP
-.SH Device selection and switching:
+.SH \fBDevice selection and switching:\fR
 .TP
 \fB\-f\fR, \fB\-\-file\fR=\fIARCHIVE\fR
 use archive file or device ARCHIVE
@@ -261,7 +268,7 @@ use remote COMMAND instead of rsh
 \fB\-\-volno\-file\fR=\fIFILE\fR
 use/update the volume number in FILE
 .IP
-.SH Device blocking:
+.SH \fBDevice blocking:\fR
 .TP
 \fB\-b\fR, \fB\-\-blocking\-factor\fR=\fIBLOCKS\fR
 BLOCKS x 512 bytes per record
@@ -275,12 +282,13 @@ ignore zeroed blocks in archive (means EOF)
 \fB\-\-record\-size\fR=\fINUMBER\fR
 NUMBER of bytes per record, multiple of 512
 .IP
-.SH Archive format selection:
-.TP
+.SH \fBArchive format selection:\fR
 \fB\-H\fR, \fB\-\-format\fR=\fIFORMAT\fR
+.RS
 create archive of the given format
-.IP
+.sp
 FORMAT is one of the following:
+.RS
 .TP
 gnu
 GNU tar 1.13.x format
@@ -299,6 +307,8 @@ POSIX 1003.1\-1988 (ustar) format
 .TP
 v7
 old V7 tar format
+.RE
+.RE
 .TP
 \fB\-\-old\-archive\fR, \fB\-\-portability\fR
 same as \fB\-\-format\fR=\fIv7\fR
@@ -314,7 +324,7 @@ create archive with volume name TEXT; at
 list/extract time, use TEXT as a globbing pattern
 for volume name
 .IP
-.SH Compression options:
+.SH \fBCompression options:\fR
 .TP
 \fB\-a\fR, \fB\-\-auto\-compress\fR
 use archive suffix to determine the compression
@@ -349,7 +359,7 @@ filter the archive through compress
 .TP
 \fBNote: You might need to install external program (lzip/ncompress/lzma...) to use some of these compression options\fB
 .IP
-.SH Local file selection:
+.SH \fBLocal file selection:\fR
 .TP
 \fB\-\-add\-file\fR=\fIFILE\fR
 add given FILE to the archive (useful if its name
@@ -441,7 +451,7 @@ unquote filenames read with \fB\-T\fR (default)
 \fB\-X\fR, \fB\-\-exclude\-from\fR=\fIFILE\fR
 exclude patterns listed in FILE
 .IP
-.SH File name transformations:
+.SH \fBFile name transformations:\fR
 .TP
 \fB\-\-strip\-components\fR=\fINUMBER\fR
 strip NUMBER leading components from file
@@ -478,7 +488,7 @@ use wildcards (default)
 \fB\-\-wildcards\-match\-slash\fR
 wildcards match `/' (default for exclusion)
 .IP
-.SH Informative output:
+.SH \fBInformative output:\fR
 .TP
 \fB\-\-checkpoint\fR[=\fINUMBER\fR]
 display progress messages every NUMBERth record
@@ -486,6 +496,9 @@ display progress messages every NUMBERth record
 .TP
 \fB\-\-checkpoint\-action\fR=\fIACTION\fR
 execute ACTION on each checkpoint
+.TP
+\fB\-\-full-time
+print file time to its full resolution
 .TP
 \fB\-\-index\-file\fR=\fIFILE\fR
 send verbose output to FILE
@@ -536,13 +549,13 @@ warning control
 \fB\-w\fR, \fB\-\-interactive\fR, \fB\-\-confirmation\fR
 ask for confirmation for every action
 .IP
-.SH Compatibility options:
+.SH \fBCompatibility options:\fR
 .TP
 \fB\-o\fR
 when creating, same as \fB\-\-old\-archive\fR; when
 extracting, same as \fB\-\-no\-same\-owner\fR
 .IP
-.SH Other options:
+.SH \fBOther options:\fR
 .TP
 \-?, \fB\-\-help\fR
 give this help list

@@ -1,11 +1,11 @@
 %if %{?WITH_SELINUX:0}%{!?WITH_SELINUX:1}
-%define WITH_SELINUX 0
+%global WITH_SELINUX 0
 %endif
 Summary: A GNU file archiving program
 Name: tar
 Epoch: 2
 Version: 1.26
-Release: 4%{?dist}
+Release: 15%{?dist}
 License: GPLv3+
 Group: Applications/Archiving
 URL: http://www.gnu.org/software/tar/
@@ -18,10 +18,10 @@ Patch1: tar-1.14-loneZeroWarning.patch
 #Fix extracting sparse files to a filesystem like vfat,
 #when ftruncate may fail to grow the size of a file.(#179507)
 Patch2: tar-1.15.1-vfatTruncate.patch
-#Add support for selinux, acl and extended attributes
-Patch3: tar-1.24-xattrs.patch
 #change inclusion defaults of tar to "--wildcards --anchored
 #--wildcards-match-slash" for compatibility reasons (#206841)
+#Add support for selinux, acl and extended attributes
+#Patch3: tar-1.24-xattrs.patch
 Patch4: tar-1.17-wildcards.patch
 #ignore errors from setting utime() for source file
 #on read-only filesystem (#500742)
@@ -30,11 +30,26 @@ Patch5: tar-1.22-atime-rofs.patch
 Patch6: tar-1.23-oldarchive.patch
 #temporarily disable sigpipe.at patch (fails at build in koji, passes manually)
 Patch7: tar-sigpipe.patch
-BuildRequires: autoconf automake gzip texinfo gettext libacl-devel gawk rsh
+#partially revert upstream commit 4bde4f3 (#717684)
+Patch8: tar-1.24-openat-partial-revert.patch
+# fix for bad cooperation of -C and -u options (#688567)
+Patch9: tar-1.26-update-with-change-directory.patch
+# fix rawhide buildfailure with undefined gets
+Patch10: tar-1.26-stdio.in.patch
+# Prepare gnulib for xattrs and apply xattrs & acls & selinux (#850291)
+Patch11: tar-1.26-xattrs-gnulib-prepare.patch
+Patch12: tar-1.26-xattrs.patch
+# fix regression with --keep-old-files option (#799252)
+Patch13: tar-1.26-add-skip-old-files-option.patch
+
+BuildRequires: autoconf automake texinfo gettext libacl-devel rsh
+# allow proper tests for extended attributes
+BuildRequires: attr acl
+
 %if %{WITH_SELINUX}
-BuildRequires: libselinux-devel
+BuildRequires: libselinux-devel policycoreutils
 %endif
-Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+Provides: bundled(gnulib)
 Requires(post): /sbin/install-info
 Requires(preun): /sbin/install-info
 
@@ -54,44 +69,47 @@ the rmt package.
 %setup -q
 %patch1 -p1 -b .loneZeroWarning
 %patch2 -p1 -b .vfatTruncate
-%patch3 -p1 -b .xattrs
 %patch4 -p1 -b .wildcards
 %patch5 -p1 -b .rofs
 %patch6 -p1 -b .oldarchive
 %patch7 -p1 -b .fail
+%patch8 -p1 -b .openat
+%patch9 -p1 -b .update_and_changedir
+%patch10 -p1 -b .gets  %{?_rawbuild}
+%patch11 -p1 -b .xattrs_gnulib_prep
+%patch12 -p1 -b .xattrs2
+%patch13 -p1 -b .skip-old-files
 
 autoreconf
 
 %build
-export FORCE_UNSAFE_CONFIGURE=1
-%configure --bindir=%{_bindir} --libexecdir=%{_sbindir} \
-%if %{WITH_SELINUX}
-  --enable-selinux
+%if %{WITH_SELINUX} == 0
+export CONFIGURE_PARAMS+="--without-selinux"
 %endif
+
+%configure --bindir=/bin --libexecdir=/sbin $CONFIGURE_PARAMS
 make
 
 %install
-rm -rf $RPM_BUILD_ROOT
-make DESTDIR=$RPM_BUILD_ROOT bindir=%{_bindir} libexecdir=%{_sbindir} install
+make DESTDIR=$RPM_BUILD_ROOT bindir=/bin libexecdir=/sbin install
 
-ln -s tar ${RPM_BUILD_ROOT}%{_bindir}/gtar
+ln -s tar $RPM_BUILD_ROOT/bin/gtar
 rm -f $RPM_BUILD_ROOT/%{_infodir}/dir
-mkdir -p ${RPM_BUILD_ROOT}%{_mandir}/man1
-install -c -p -m 0644 %{SOURCE2} ${RPM_BUILD_ROOT}%{_mandir}/man1
-ln -s tar.1.gz ${RPM_BUILD_ROOT}%{_mandir}/man1/gtar.1
+mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
+install -c -p -m 0644 %{SOURCE2} $RPM_BUILD_ROOT%{_mandir}/man1
+ln -s tar.1.gz $RPM_BUILD_ROOT%{_mandir}/man1/gtar.1
 
 # XXX Nuke unpackaged files.
-rm -f ${RPM_BUILD_ROOT}%{_sbindir}/rmt
+rm -f $RPM_BUILD_ROOT/sbin/rmt
 
-magic_rpm_clean.sh
 %find_lang %name
 
 %check
-rm -f ${RPM_BUILD_ROOT}/test/testsuite
-make check
+rm -f $RPM_BUILD_ROOT/test/testsuite
+TESTSUITEFLAGS=-v make check
 
 %clean
-rm -rf ${RPM_BUILD_ROOT}
+rm -rf $RPM_BUILD_ROOT
 
 %post
 if [ -f %{_infodir}/tar.info.gz ]; then
@@ -106,11 +124,10 @@ if [ $1 = 0 ]; then
 fi
 
 %files -f %{name}.lang
-%defattr(-,root,root)
 %doc AUTHORS ChangeLog ChangeLog.1 COPYING NEWS README THANKS TODO
 %ifos linux
-%{_bindir}/tar
-%{_bindir}/gtar
+/bin/tar
+/bin/gtar
 %{_mandir}/man1/tar.1*
 %{_mandir}/man1/gtar.1*
 %else
@@ -122,14 +139,62 @@ fi
 %{_infodir}/tar.info*
 
 %changelog
-* Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 2:1.26-4
-- 为 Magic 3.0 重建
+* Thu Nov 29 2012 Ondrej Vasik <ovasik@redhat.com> - 2:1.26-15
+- add missing --full-time option to manpage
 
-* Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 2:1.26-3
-- 为 Magic 3.0 重建
+* Thu Oct 18 2012 Pavel Raiskup <praiskup@redhat.com> - 2:1.26-14
+- fix bad behaviour of --keep-old-files and add --skip-old-files option
+  (#799252)
 
-* Mon Feb 13 2012 Liu Di <liudidi@gmail.com> - 2:1.26-2
-- 为 Magic 3.0 重建
+* Wed Oct 10 2012 Pavel Raiskup <praiskup@redhat.com> 2:1.26-13
+- fix badly written macro for building --without-selinux
+- allow to build tar in difference CoverityScan by forcing the '.gets' patch to
+  be applied even in the run without patches
+
+* Fri Oct 05 2012 Pavel Raiskup <praiskup@redhat.com> 2:1.26-12
+- repair the xattr-gnulib-prepare patch to allow build tar without SELinux
+  support
+- fedora-review compliance -> remove trailing white-spaces, remove macro from
+  comment, remove BR of gawk;coreutils;gzip that should be covered automatically
+  by minimum build environment, do not `rm -rf' buildroot at the beginning of
+  install phase (needed only in EPEL), remove BuildRoot definition, remove
+  defattr macro, s/define/global/
+- do not use ${VAR} syntax for bash variables, use just $VAR
+
+* Wed Aug 22 2012 Pavel Raiskup <praiskup@redhat.com> 2:1.26-11
+- fix manpage to reflect #850291 related commit
+
+* Tue Aug 21 2012 Pavel Raiskup <praiskup@redhat.com> 2:1.26-10
+- prepare Gnulib for new xattrs (#850291)
+- new version of RH xattrs patch (#850291)
+- enable verbose mode in testsuite to allow better debugging on error
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2:1.26-9
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Thu Jul 12 2012 Pavel Raiskup <praiskup@redhat.com> 2:1.26-8
+- force the fchown() be called before xattrs_set() (#771927)
+
+* Sat Jun 16 2012 Ondrej Vasik <ovasik@redhat.com> 2:1.26-7
+- store&restore security.capability extended attributes category
+  (#771927)
+- fix build failure with undefined gets
+
+* Tue May 15 2012 Ondrej Vasik <ovasik@redhat.com> 2:1.26-6
+- add virtual provides for bundled(gnulib) copylib (#821790)
+
+* Thu Apr 04 2012 Pavel Raiskup <praiskup@redhat.com> 2:1.26-5
+- fix for bad cooperation of the '-C' (change directory) and '-u' (update
+  package) options (#688567)
+
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2:1.26-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
+* Sun Oct  2 2011 Ville Skyttä <ville.skytta@iki.fi> - 2:1.26-3
+- Man page heading formatting fixes.
+
+* Mon Sep 26 2011 Kamil Dudka <kdudka@redhat.com> 2:1.26-2
+- restore basic functionality of --acl, --selinux, and --xattr (#717684)
 
 * Sat Mar 12 2011 Ondrej Vasik <ovasik@redhat.com> 2:1.26-1
 - new upstream release 1.26
@@ -175,7 +240,7 @@ fi
 * Wed Apr 07 2010 Ondrej Vasik <ovasik@redhat.com> 2:1.23-3
 - allow storing of extended attributes for fifo and block
   or character devices files(#573147)
- 
+
 * Mon Mar 15 2010 Ondrej Vasik <ovasik@redhat.com> 2:1.23-2
 - update help2maned manpage
 
@@ -352,7 +417,7 @@ fi
 - fix tar-1.15.1-xattrs.patch (#208701)
 
 * Tue Sep 19 2006 Peter Vrabec <pvrabec@redhat.com> 2:1.15.1-17
-- start new epoch, downgrade to solid stable 1.15.1-16 (#206979), 
+- start new epoch, downgrade to solid stable 1.15.1-16 (#206979),
 - all patches are backported
 
 * Tue Sep 19 2006 Peter Vrabec <pvrabec@redhat.com> 1.15.91-2
@@ -368,11 +433,11 @@ fi
 - add xattr support (#200925), patch from james.antill@redhat.com
 
 * Mon Jul 24 2006 Peter Vrabec <pvrabec@redhat.com> 1.15.90-5
-- fix incompatibilities in appending files to the end 
+- fix incompatibilities in appending files to the end
   of an archive (#199515)
 
 * Tue Jul 18 2006 Peter Vrabec <pvrabec@redhat.com> 1.15.90-4
-- fix problem with unpacking archives in a directory for which 
+- fix problem with unpacking archives in a directory for which
   one has write permission but does not own (such as /tmp) (#149686)
 
 * Wed Jul 12 2006 Jesse Keating <jkeating@redhat.com> - 1.15.90-3.1
@@ -382,14 +447,14 @@ fi
 - fix typo in tar.1 man page
 
 * Tue Apr 25 2006 Peter Vrabec <pvrabec@redhat.com> 1.15.90-2
-- exclude listed02.at from testsuite again, because it 
+- exclude listed02.at from testsuite again, because it
   still fails on s390
 
 * Tue Apr 25 2006 Peter Vrabec <pvrabec@redhat.com> 1.15.90-1
 - upgrade
 
 * Mon Apr 24 2006 Peter Vrabec <pvrabec@redhat.com> 1.15.1-16
-- fix problem when options at the end of command line were 
+- fix problem when options at the end of command line were
   not recognized (#188707)
 
 * Thu Apr 13 2006 Peter Vrabec <pvrabec@redhat.com> 1.15.1-15
@@ -426,7 +491,7 @@ fi
 * Wed Jul 27 2005 Peter Vrabec <pvrabec@redhat.com> 1.15.1-8
 - A file is dumpable if it is sparse and both --sparse
   and --totals are specified (#154882)
- 
+
 * Tue Jul 26 2005 Peter Vrabec <pvrabec@redhat.com> 1.15.1-7
 - exclude listed02.at from testsuite
 
@@ -613,11 +678,11 @@ fi
 * Mon Mar 29 1999 Jeff Johnson <jbj@redhat.com>
 - fix suspended tar with compression over pipe produces error (#390).
 
-* Sun Mar 21 1999 Cristian Gafton <gafton@redhat.com> 
+* Sun Mar 21 1999 Cristian Gafton <gafton@redhat.com>
 - auto rebuild in the new build environment (release 8)
 
 * Mon Mar 08 1999 Michael Maher <mike@redhat.com>
-- added patch for bad name cache. 
+- added patch for bad name cache.
 - FIXES BUG 320
 
 * Wed Feb 24 1999 Preston Brown <pbrown@redhat.com>
