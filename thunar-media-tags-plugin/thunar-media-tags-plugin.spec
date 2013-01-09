@@ -2,7 +2,7 @@
 
 Name:           thunar-media-tags-plugin
 Version:        0.1.2
-Release:        11%{?dist}
+Release:        14%{?dist}
 Summary:        Media Tags plugin for the Thunar file manager
 
 Group:          User Interface/Desktops
@@ -20,6 +20,7 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:  Thunar-devel >= %{thunarver}, libxfcegui4-devel >= 4.3.90.2
 BuildRequires:  libxml2-devel, gettext, perl(XML::Parser), libtool, xfce4-dev-tools
 BuildRequires:  taglib-devel >= 1.4
+BuildRequires:  intltool
 Requires:       Thunar >= %{thunarver}
 
 %description
@@ -64,6 +65,15 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.1.2-14
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Sun Jul  8 2012 Peter Robinson <pbrobinson@fedoraproject.org> - 0.1.2-13
+- add intltool build dep
+
+* Thu Apr 05 2012 Kevin Fenzi <kevin@scrye.com> - 0.1.2-12
+- Rebuild for Xfce 4.10
+
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.1.2-11
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
