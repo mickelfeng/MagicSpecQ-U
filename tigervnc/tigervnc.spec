@@ -1,18 +1,18 @@
-%define JAVA  0
+%global		snap 20130109svn5024
+
 Name:		tigervnc
-Version:	1.1.0
-Release:	5%{?dist}
+Version:	1.2.80
+Release:	0.6.%{snap}%{?dist}
 Summary:	A TigerVNC remote display system
 
 Group:		User Interface/Desktops
 License:	GPLv2+
 URL:		http://www.tigervnc.com
 
-Source0:	%{name}-%{version}.tar.gz
+Source0:	%{name}-%{version}-%{snap}.tar.bz2
 Source1:	vncserver.service
 Source2:	vncserver.sysconfig
 Source6:	vncviewer.desktop
-Source7:	xserver110.patch
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:	libX11-devel, automake, autoconf, libtool, gettext, gettext-autopoint
@@ -23,11 +23,11 @@ BuildRequires:	libxkbfile-devel, openssl-devel, libpciaccess-devel
 BuildRequires:	mesa-libGL-devel, libXinerama-devel, ImageMagick
 BuildRequires:  freetype-devel, libXdmcp-devel
 BuildRequires:	desktop-file-utils
-%if %{JAVA}
+%if 0%{?JAVA}
 BuildRequires:  java-devel, jpackage-utils
 %endif
 BuildRequires:	libjpeg-turbo-devel, gnutls-devel, pam-devel
-BuildRequires:	systemd-units
+BuildRequires:	systemd-units, cmake, fltk-devel
 
 Requires(post):	systemd-units systemd-sysv chkconfig coreutils
 Requires(preun):systemd-units
@@ -40,15 +40,11 @@ Obsoletes:	vnc < 4.1.3-2, vnc-libs < 4.1.3-2
 Provides:	tightvnc = 1.5.0-0.15.20090204svn3586
 Obsoletes:	tightvnc < 1.5.0-0.15.20090204svn3586
 
-Patch0:		tigervnc-102434.patch
 Patch4:		tigervnc-cookie.patch
-Patch8:		tigervnc-viewer-reparent.patch
 Patch10:	tigervnc11-ldnow.patch
 Patch11:	tigervnc11-gethomedir.patch
 Patch13:	tigervnc11-rh692048.patch
-Patch16:	tigervnc11-xorg111.patch
-Patch17:	tigervnc11-xorg112.patch
-Patch18:	tigervnc11-java7.patch
+Patch14:	tigervnc12-xorg113-glx.patch
 
 %description
 Virtual Network Computing (VNC) is a remote display system which
@@ -93,7 +89,7 @@ variety of platforms. This package contains minimal installation
 of TigerVNC server, allowing others to access the desktop on your
 machine.
 
-%ifnarch s390 s390x
+%ifnarch s390 s390x %{?rhel:ppc ppc64}
 %package server-module
 Summary:	TigerVNC module to Xorg
 Group:		User Interface/X
@@ -109,7 +105,7 @@ This package contains libvnc.so module to X server, allowing others
 to access the desktop on your machine.
 %endif
 
-%if %{JAVA}
+%if 0%{?JAVA}
 %package server-applet
 Summary:	Java TigerVNC viewer applet for TigerVNC server
 Group:		User Interface/X
@@ -130,38 +126,33 @@ BuildArch:	noarch
 This package contains license of the TigerVNC suite
 
 %prep
-%setup -q -n %{name}-%{version}
+%setup -q -n %{name}-%{version}-%{snap}
 
-%patch0 -p1 -b .102434
 %patch4 -p1 -b .cookie
-%patch8 -p1 -b .viewer-reparent
 %patch10 -p1 -b .ldnow
 %patch11 -p1 -b .gethomedir
 %patch13 -p1 -b .rh692048
 
 cp -r /usr/share/xorg-x11-server-source/* unix/xserver
-%patch16 -p1 -b .xorg111
 pushd unix/xserver
 for all in `find . -type f -perm -001`; do
 	chmod -x "$all"
 done
-patch -p1 -b --suffix .vnc < %{SOURCE7}
-%patch17 -p1 -b .xorg112
+patch -p1 -b --suffix .vnc < ../xserver112.patch
+sed -i 's/112/113/g' hw/vnc/vncHooks.cc
 popd
 
-%patch18 -p1 -b .java7
-
-# Use newer gettext
-sed -i 's/AM_GNU_GETTEXT_VERSION.*/AM_GNU_GETTEXT_VERSION([0.18.1])/' \
-	configure.ac
+%patch14 -p1 -b .glx
 
 %build
-export CFLAGS="$RPM_OPT_FLAGS"
+%ifarch sparcv9 sparc64 s390 s390x
+export CFLAGS="$RPM_OPT_FLAGS -fPIC"
+%else
+export CFLAGS="$RPM_OPT_FLAGS -fpic"
+%endif
 export CXXFLAGS="$CFLAGS"
 
-autoreconf -fiv
-%configure --disable-static --with-system-jpeg --without-simd
-
+%{cmake} .
 make %{?_smp_mflags}
 
 pushd unix/xserver
@@ -170,7 +161,6 @@ autoreconf -fiv
 	--disable-xorg --disable-xnest --disable-xvfb --disable-dmx \
 	--disable-xwin --disable-xephyr --disable-kdrive --with-pic \
 	--disable-static --disable-xinerama \
-	--disable-composite \
 	--with-default-font-path="catalogue:%{_sysconfdir}/X11/fontpath.d,built-ins" \
 	--with-fontdir=%{_datadir}/X11/fonts \
 	--with-xkb-output=%{_localstatedir}/lib/xkb \
@@ -182,7 +172,8 @@ autoreconf -fiv
 	--with-dri-driver-path=%{_libdir}/dri \
 	--without-dtrace \
 	--disable-unit-tests \
-	--disable-devel-docs
+	--disable-devel-docs \
+	--disable-selective-werror
 
 make %{?_smp_mflags}
 popd
@@ -192,9 +183,10 @@ pushd media
 make
 popd
 
-%if %{JAVA}
+%if 0%{?JAVA}
 # Build Java applet
-pushd java/src/com/tigervnc/vncviewer/
+pushd java
+%{cmake} .
 make
 popd
 %endif
@@ -229,23 +221,22 @@ desktop-file-install \
 	--dir $RPM_BUILD_ROOT%{_datadir}/applications \
 	%{SOURCE6}
 
-%if %{JAVA}
+%if 0%{?JAVA}
 # Install Java applet
-pushd java/src/com/tigervnc/vncviewer/
+pushd java
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/vnc/classes
 install -m755 VncViewer.jar $RPM_BUILD_ROOT%{_datadir}/vnc/classes
-install -m644 index.vnc $RPM_BUILD_ROOT%{_datadir}/vnc/classes
+install -m644 com/tigervnc/vncviewer/index.vnc $RPM_BUILD_ROOT%{_datadir}/vnc/classes
 popd
 %endif
 
 magic_rpm_clean.sh
-
-%find_lang %{name} %{name}.lang || touch %{name}.lang
+%find_lang %{name} %{name}.lang
 
 # remove unwanted files
 rm -f  $RPM_BUILD_ROOT%{_libdir}/xorg/modules/extensions/libvnc.la
 
-%ifarch s390 s390x
+%ifarch s390 s390x %{?rhel:ppc ppc64}
 rm -f $RPM_BUILD_ROOT%{_libdir}/xorg/modules/extensions/libvnc.so
 %endif
 
@@ -297,16 +288,16 @@ fi
 %{_mandir}/man1/vncpasswd.1*
 %{_mandir}/man1/vncconfig.1*
 
-%ifnarch s390 s390x
+%ifnarch s390 s390x %{?rhel:ppc ppc64}
 %files server-module
 %defattr(-,root,root,-)
 %{_libdir}/xorg/modules/extensions/libvnc.so
 %endif
 
-%if %{JAVA}
+%if 0%{?JAVA}
 %files server-applet
 %defattr(-,root,root,-)
-%doc java/src/com/tigervnc/vncviewer/README
+%doc java/com/tigervnc/vncviewer/README
 %{_datadir}/vnc/classes/*
 %endif
 
@@ -314,6 +305,48 @@ fi
 %doc LICENCE.TXT
 
 %changelog
+* Tue Dec 04 2012 Adam Tkac <atkac redhat com> 1.2.80-0.6.20121126svn5015
+- rebuild against new fltk
+
+* Mon Nov 26 2012 Adam Tkac <atkac redhat com> 1.2.80-0.5.20121126svn5015
+- update to r5015
+- build with -fpic instead of -fPIC on all archs except s390/sparc
+
+* Wed Nov  7 2012 Peter Robinson <pbrobinson@fedoraproject.org> 1.2.80-0.4.20120905svn4996
+- Build with -fPIC to fix FTBFS on ARM
+
+* Wed Oct 31 2012 Adam Jackson <ajax@redhat.com> 1.2.80-0.3.20120905svn4996
+- tigervnc12-xorg113-glx.patch: Fix to only init glx on the first server
+  generation
+
+* Fri Sep 28 2012 Adam Jackson <ajax@redhat.com> 1.2.80-0.2.20120905svn4996
+- tigervnc12-xorg113-glx.patch: Re-enable GLX against xserver 1.13
+
+* Fri Aug 17 2012 Adam Tkac <atkac redhat com> 1.2.80-0.1.20120905svn4996
+- update to 1.2.80
+- remove deprecated patches
+  - tigervnc-102434.patch
+  - tigervnc-viewer-reparent.patch
+  - tigervnc11-java7.patch
+- patches merged
+  - tigervnc11-xorg111.patch
+  - tigervnc11-xorg112.patch
+
+* Fri Aug 10 2012 Dave Airlie <airlied@redhat.com> 1.1.0-10
+- fix build against newer X server
+
+* Mon Jul 23 2012 Adam Jackson <ajax@redhat.com> 1.1.0-9
+- Build with the Composite extension for feature parity with other X servers
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.1.0-8
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Thu Jul 19 2012 Dave Airlie <airlied@redhat.com> 1.1.0-7
+- fix building against X.org 1.13
+
+* Wed Apr 04 2012 Adam Jackson <ajax@redhat.com> 1.1.0-6
+- RHEL exclusion for -server-module on ppc* too
+
 * Mon Mar 26 2012 Adam Tkac <atkac redhat com> - 1.1.0-5
 - clean Xvnc's /tmp environment in service file before startup
 - fix building against the latest JAVA 7 and X.Org 1.12
