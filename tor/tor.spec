@@ -1,7 +1,9 @@
 ## This package understands the following switches:
 %bcond_without		fedora
 %bcond_without		noarch
+%bcond_with		upstart
 
+%global _hardened_build	1
 
 %global username		toranon
 %global uid			19
@@ -18,23 +20,21 @@ Requires(postun):	 /bin/systemctl\
 %nil}
 %{!?systemd_install:%global systemd_install()\
 %post %1\
-test "$1" != "1" || /bin/systemctl daemon-reload >/dev/null 2>&1 || :\
+%systemd_post %2 \
 %preun %1\
-test "$1" != "0" || /bin/systemctl --no-reload disable %2 >/dev/null 2>&1 || :\
-test "$1" != "0" || /bin/systemctl stop %2 >/dev/null 2>&1 || :\
+%systemd_preun %2 \
 %postun %1\
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :\
-test "$1" = "0" || /bin/systemctl try-restart %2 >/dev/null 2>&1 || :\
+%systemd_postun_with_restart %2 \
 %nil}
 
 
 Name:		tor
-Version:	0.2.2.35
-Release:	%release_func 1703
+Version:	0.2.3.25
+Release:	%release_func 1900
 Group:		System Environment/Daemons
 License:	BSD
 Summary:	Anonymizing overlay network for TCP (The onion router)
-URL:		http://tor.eff.org
+URL:		http://www.torproject.org
 Requires:	%name-core = %version-%release
 Requires:	%name-systemd  = %version-%release
 
@@ -42,7 +42,6 @@ Requires:	%name-systemd  = %version-%release
 %package core
 Summary:	Core programs for tor
 Group:		System Environment/Daemons
-URL:		http://www.torproject.org
 Source0:	https://www.torproject.org/dist/%name-%version.tar.gz
 Source1:	https://www.torproject.org/dist/%name-%version.tar.gz.asc
 Source2:	tor.logrotate
@@ -51,7 +50,7 @@ BuildRoot:	%_tmppath/%name-%version-%release-root
 # tor-design.pdf is not shipped anymore with tor
 Obsoletes:	tor-doc < 0.2.2
 
-BuildRequires:	libevent-devel openssl-devel
+BuildRequires:	libevent-devel openssl-devel asciidoc
 BuildRequires:	fedora-usermgmt-devel
 Provides:		user(%username)  = %uid
 Provides:		group(%username) = %uid
@@ -78,12 +77,6 @@ Source10:	tor.systemd.service
 Provides:	init(%name) = systemd
 Requires:	%name-core = %version-%release
 %{?systemd_reqs}
-
-# TODO: remove me in F17
-Obsoletes:	%name-lsb < %version-%release
-Provides:	%name-lsb = %version-%release
-Obsoletes:	%name-sysv < %version-%release
-Provides:	%name-sysv = %version-%release
 %{?noarch}
 
 
@@ -178,6 +171,8 @@ mv $RPM_BUILD_ROOT%_datadir/doc/tor _doc
 mkdir _doc-torify
 mv _doc/torify.html _doc-torify
 
+%{!?with_upstart:  rm -rf $RPM_BUILD_ROOT%_sysconfdir/init}
+
 
 %pre core
 %__fe_groupadd %uid -r %username &>/dev/null || :
@@ -238,14 +233,41 @@ rm -rf $RPM_BUILD_ROOT
 %_unitdir/%name.service
 
 
+%if 0%{?with_upstart:1}
 %files upstart
-%defattr(-,root,root,-)
-%config(noreplace) /etc/init/*
-
+  %defattr(-,root,root,-)
+  %config(noreplace) /etc/init/*
+%endif
 
 %changelog
-* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.2.2.35-1703
-- 为 Magic 3.0 重建
+* Sun Dec  9 2012 Enrico Scholz <enrico.scholz@informatik.tu-chemnitz.de> - 0.2.3.25-1900
+- updated to 0.2.3.25
+
+* Sat Sep 22 2012 Enrico Scholz <enrico.scholz@informatik.tu-chemnitz.de> - 0.2.2.39-1900
+- updated to 0.2.2.29
+- CVE-2012-4419: assertion failure when comparing an address with port
+  0 to an address policy
+- CVE-2012-4422: assertion failure in tor_timegm()
+- use %%systemd macros
+
+* Sun Aug 19 2012 Enrico Scholz <enrico.scholz@informatik.tu-chemnitz.de> - 0.2.2.38-1900
+- updated to 0.2.2.38
+- conditionalized upstart and disabled it by default
+
+* Fri Jul 27 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.2.2.37-1801
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Tue Jun 12 2012 Enrico Scholz <enrico.scholz@informatik.tu-chemnitz.de> - 0.2.2.37-1800
+- updated to 0.2.2.37
+
+* Sat May 26 2012 Enrico Scholz <enrico.scholz@informatik.tu-chemnitz.de> - 0.2.2.36-1800
+- updated to 0.2.2.36
+
+* Fri Apr 13 2012 Enrico Scholz <enrico.scholz@informatik.tu-chemnitz.de> - 0.2.2.35-1800
+- build with -fPIE
+
+* Tue Mar  6 2012 Enrico Scholz <enrico.scholz@informatik.tu-chemnitz.de>
+- fixed urls (#800236)
 
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.2.2.35-1702
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
