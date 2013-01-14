@@ -13,7 +13,7 @@
 Summary: Storage Management Service
 Name: udisks
 Version: 1.0.4
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: System Environment/Libraries
 URL: http://www.freedesktop.org/wiki/Software/udisks
@@ -147,6 +147,9 @@ chmod 0644 $RPM_BUILD_ROOT%{_sysconfdir}/profile.d/udisks-bash-completion.sh
 
 # Note: please don't forget the %{?dist} in the changelog. Thanks
 %changelog
+* Mon Jan 14 2013 Liu Di <liudidi@gmail.com> - 1.0.4-5
+- 为 Magic 3.0 重建
+
 * Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.0.4-4
 - 为 Magic 3.0 重建
 
