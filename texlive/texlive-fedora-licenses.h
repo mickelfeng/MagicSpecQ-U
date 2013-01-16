@@ -5,6 +5,7 @@
 "latex-tipps-und-tricks", NULL,  	/* Removed from TeXLive - non-free */
 "russ", NULL,				/* Removed from TeXLive - non-free */
 "preview", NULL,			/* upstream in Fedora */
+"psutils", NULL,			/* in Fedora */
 "floatflt", "LPPL",
 "seetexk", "MIT",
 "texdraw", "CC-BY",

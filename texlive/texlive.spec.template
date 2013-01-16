@@ -1,6 +1,6 @@
-%global source_date 20121205_r28449
+%global source_date 20130102_r28692
 %global tl_version 2012
-%global tl_rel 10
+%global tl_rel 13
 %global tl_release %{tl_rel}.%{source_date}%{?dist}
 %global tl_noarch_release %{tl_rel}%{?dist}
 %global source_name texlive-%{source_date}-source
@@ -12,18 +12,19 @@
 %global __perl_requires %{nil}
 %global __find_provides %{nil}
 %global __os_install_post /usr/lib/rpm/brp-compress %{nil}
+%global __arch_install_post %{nil}
 
 Name: texlive
 Version: %{tl_version}
 Release: %{tl_release}
-Epoch: 1
+Epoch: 2
 Summary: TeX formatting system
 Group: Applications/Publishing
 License: Artistic 2.0 and GPLv2 and GPLv2+ and LGPLv2+ and LPPL and MIT and Public Domain and UCD and Utopia
 URL: http://tug.org/texlive/
 BuildRequires: xz libXaw-devel ncurses-devel bison flex file perl(Digest::MD5)
 BuildRequires: gd-devel teckit-devel freetype-devel t1lib-devel libpng-devel zlib-devel poppler-devel t1utils
-BuildRequires: zziplib-devel libicu-devel
+BuildRequires: zziplib-devel libicu-devel cairo-devel harfbuzz-devel pixman-devel
 Requires: texlive-scheme-basic
 Requires: texlive-collection-latexrecommended
 Requires: tex-kpathsea, tex-tetex
@@ -122,6 +123,8 @@ cd work
 --with-system-freetype2 \
 --with-system-poppler \
 --with-system-zziplib \
+--with-system-cairo \
+--with-system-harfbuzz \
 --with-system-icu \
 --with-pic \
 --with-xdvi-x-toolkit=xaw \
@@ -211,7 +214,7 @@ rm -f man
 [ ! -e mfplain ] && ln -s mpost mfplain
 [ ! -e texlua ] && ln -s luatex texlua
 [ ! -e texluac ] && ln -s luatex texluac
-for i in physe phyzzx installfont-tl pdfthumb ppower4 tcdialog dosepsbin mkjobtexmf texdiff texdirflatten; do
+for i in physe phyzzx installfont-tl pdfthumb ppower4 tcdialog latexmk; do
 	rm -f %{buildroot}%{_bindir}/$i
 done
 rm -rf %{buildroot}%{_includedir}/ptexenc
@@ -299,6 +302,19 @@ fi
 %{_libdir}/*.so
 
 %changelog
+* Fri Jan 11 2013 Jindrich Novy <jnovy@redhat.com> 2012-13-20130102
+- make dvips require latex-fonts (#879661)
+
+* Mon Jan  7 2013 Jindrich Novy <jnovy@redhat.com> 2012-12-20130102
+- fix dependencies and upgrade path (#892054, #891709)
+- do not ship windows and other unneeded files
+
+* Wed Jan  2 2013 Jindrich Novy <jnovy@redhat.com> 2012-11-20130102
+- sync with CTAN
+- added new buildrequires
+- don't use texlive's psutils
+- don't obsolete latexmk (#868996)
+
 * Thu Dec  6 2012 Jindrich Novy <jnovy@redhat.com> 2012-10-20121205
 - sync with CTAN
 - compile also C++ sources with -fno-strict-aliasing

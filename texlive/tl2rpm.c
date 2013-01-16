@@ -218,13 +218,17 @@ char *pkg_blacklist[] = {
 	"latex-tds",	// only source
 	"biber",	// no sources
 	"euro-ce",	// nonfree license
+	"latexmk",	// packaged separately
 	NULL,
 };
 
 char *rem[] = {		/* any file beginning with this will be removed */
 //	"texmf/scripts/tlgs/gswin32",
 	"texmf/doc/info/kpathsea.info",
-	"tlpkg/installer",
+	"texmf-dist/scripts/context/stubs/source",
+	"readme-txt.dir",
+	"tlpkg",
+	"install-tl",
 	NULL,
 };
 
@@ -447,7 +451,7 @@ next_name:
 			size_t sarch, sname;
 			int i, blacklisted = 0;
 			for (i=0; pkg_blacklist[i]; i++) {
-				if ( !strcmp(l+5, pkg_blacklist[i]) ) {
+				if ( !strncmp(l+5, pkg_blacklist[i], strlen(pkg_blacklist[i])) ) {
 					blacklisted = 1;
 					break;
 				}
@@ -686,7 +690,9 @@ void append_filelist( char *pkg, char *pkgsuf, int files, char **filelist, char 
 							int i;
 							*end = saved;
 							if ( strstr(&filelist[n][bin_index], arch) ) continue; /* fool texlive.infra - don't install lzma/xz */
-							if (strstr(&filelist[n][bin_index], "win32") || strstr(&filelist[n][bin_index], "Win32") || strstr(&filelist[n][bin_index], "tlmgr") || !strncmp(&filelist[n][bin_index], "texmf-dist/source/", 18)) {
+							if (strstr(&filelist[n][bin_index], "win32") || strstr(&filelist[n][bin_index], "mswin") ||
+							    strstr(&filelist[n][bin_index], "Win32") || strstr(&filelist[n][bin_index], "tlmgr") ||
+							    !strncmp(&filelist[n][bin_index], "texmf-dist/source/", 18)) {
 								fprintf(fremove, "rm -f %%{buildroot}/%s/%s\n", bin?"%{_bindir}":"%{_texdir}", &filelist[n][bin_index]);
 								printf("*** %s\n", &filelist[n][bin_index]);
 								goto next;
@@ -1053,6 +1059,18 @@ skip:
 	}
 }
 
+static char *print_noarch_version( package *p ) {
+	static char noarchver[0x100];
+
+	if ( p->catalogue_version ) {
+		snprintf(noarchver, sizeof(noarchver), "svn%s.%s", p->revision, p->catalogue_version );
+	} else {
+		snprintf(noarchver, sizeof(noarchver), "svn%s.0", p->revision);
+	}
+
+	return noarchver;
+}
+
 int level;
 void solve(char *name) {
 	unsigned long h;
@@ -1130,10 +1148,8 @@ void solve(char *name) {
 				} else {
 					fprintf(fpack, "Summary: %s package\n", name);
 				}
-				fprintf(fpack, "Version: ");
-				if ( pkg[i].catalogue_version ) fprintf(fpack, "%s.svn%s\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "0.svn%s\n", pkg[i].revision);
-				fprintf(fpack, "Release: ");
-				fprintf(fpack, "%%{tl_release}\n");
+				fprintf(fpack, "Version: %s\n", print_noarch_version(&pkg[i]));
+				fprintf(fpack, "Release: %%{tl_release}\n");
 				fprintf(fpack, "BuildArch: noarch\n");
 				fprintf(fsrc, "Source%04d: "CTAN_URL"%s.tar."UNPACK"\n", mainsrcno++, name);
 				fprintf(fpack, "Requires: texlive-base\n");
@@ -1275,8 +1291,7 @@ void solve(char *name) {
 				} else {
 					fprintf(fpack, "Summary: %s package\n", name);
 				}
-				fprintf(fpack, "Version: ");
-				if ( pkg[i].catalogue_version ) fprintf(fpack, "%s.svn%s\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "0.svn%s\n", pkg[i].revision);
+				fprintf(fpack, "Version: %s\n", print_noarch_version(&pkg[i]));
 				fprintf(fpack, "Release: %%{tl_noarch_release}\n");
 				fprintf(fpack, "BuildArch: noarch\nAutoReqProv: No\n");
 				fprintf(fsrc, "Source%04d: "CTAN_URL"%s.tar."UNPACK"\n", srcno++, name);
@@ -1401,6 +1416,7 @@ void solve(char *name) {
 				if ( !strcmp(name, "dvips") ) {
 					fprintf(fpack, "Provides: tex(dvips) = %%{tl_version}, tetex-dvips = 3.1-99, texlive-texmf-dvips = %%{tl_version}, texlive-dvips = %%{tl_version}\n");
 					fprintf(fpack, "Obsoletes: tetex-dvips < 3.1-99, texlive-texmf-dvips < %%{tl_version}\n");
+					fprintf(fpack, "Requires: texlive-latex-fonts\n");
 				}
 				if ( !strcmp(name, "tex4ht") ) {
 					fprintf(fpack, "Provides: tetex-tex4ht = %%{tl_version}\n");
@@ -1450,10 +1466,10 @@ void solve(char *name) {
 					fprintf(fpack, "Provides: tex-preview = %%{tl_version}\n");
 					fprintf(fpack, "Obsoletes: tex-preview < %%{tl_version}\n");
 				}
-				if ( !strcmp(name, "latexmk") ) {
+/*				if ( !strcmp(name, "latexmk") ) {	// rhbz#868996
 					fprintf(fpack, "Provides: latexmk = %%{tl_version}\n");
 					fprintf(fpack, "Obsoletes: latexmk < %%{tl_version}\n");
-				}
+				}*/
 				if ( !strcmp(name, "chktex") ) {	/* rhbz#864211 */
 					fprintf(fpack, "Provides: chktex = %%{tl_version}\n");
 					fprintf(fpack, "Obsoletes: chktex < %%{tl_version}\n");
@@ -1824,8 +1840,7 @@ void solve(char *name) {
 				fprintf(fpack, "%%package %s-doc\n", name);
 #endif
 				fprintf(fpack, "Summary: Documentation for %s\n", name);
-				fprintf(fpack, "Version: ");
-				if ( pkg[i].catalogue_version ) fprintf(fpack, "%s.svn%s\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "0.svn%s\n", pkg[i].revision);
+				fprintf(fpack, "Version: %s\n", print_noarch_version(&pkg[i]));
 				fprintf(fpack, "Release: %%{tl_noarch_release}\n");
 				fprintf(fpack, "Provides: tex-%s-doc\n", name);
 				fprintf(fpack, "BuildArch: noarch\nAutoReqProv: No\n");
@@ -1872,8 +1887,7 @@ void solve(char *name) {
 				fprintf(fpack, "%%package source\n");
 #endif
 				fprintf(fpack, "Summary: Sources for %s\n", name);
-				fprintf(fpack, "Version: ");
-				if ( pkg[i].catalogue_version ) fprintf(fpack, "%s.svn%s\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "0.svn%s\n", pkg[i].revision);
+				fprintf(fpack, "Version: %s\n", print_noarch_version(&pkg[i]));
 				fprintf(fpack, "Release: %%{tl_noarch_release}\n");
 				if ( strncmp(name, "kpathsea", 8) ) fprintf(fpack, "Requires: texlive-base\n");
 				fprintf(fpack, "BuildArch: noarch\nAutoReqProv: No\n");
@@ -1927,8 +1941,7 @@ void solve(char *name) {
 								fprintf(fpack, "%%package %s-fedora-fonts\n", name);
 #endif
 								fprintf(fpack, "Summary: Fonts for %s\n", name);
-								fprintf(fpack, "Version: ");
-								if ( pkg[i].catalogue_version ) fprintf(fpack, "%s.svn%s\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "0.svn%s\n", pkg[i].revision);
+								fprintf(fpack, "Version: %s\n", print_noarch_version(&pkg[i]));
 								fprintf(fpack, "Release: %%{tl_noarch_release}\n");
 								fprintf(fpack, "Requires: fontpackages-filesystem\n");
 								fprintf(fpack, "BuildRequires: fontpackages-devel\n");
@@ -2004,7 +2017,7 @@ void solve(char *name) {
 				*ar = '\0';
 				fprintf(fpack, "%%package %s-bin\n", name);
 				fprintf(fpack, "Summary: Binaries for %s\n", name);
-				fprintf(fpack, "Version: %%{tl_version}\n");
+				fprintf(fpack, "Version: %s\n", print_noarch_version(&pkg[i]));
 				if ( strncmp(name, "kpathsea", 8) ) fprintf(fpack, "Requires: texlive-base\n"); //else fprintf(fpack, "Provides: kpathsea = %%{tl_version}\nObsoletes: kpathsea < %%{tl_version}\n");
 				fprintf(fpack, "Requires: tex-%s\n", name);
 				if ( !strcmp(name, "xetex") ) {
@@ -2077,8 +2090,7 @@ void solve(char *name) {
 							exit(1);
 						}
 					}
-					fprintf(fpack, "Release: ");
-					if ( pkg[i].catalogue_version ) fprintf(fpack, "%s.svn%s.%%{tl_release}\n", pkg[i].catalogue_version, pkg[i].revision ); else fprintf(fpack, "0.svn%s.%%{tl_release}\n", pkg[i].revision);
+					fprintf(fpack, "Release: %%{tl_release}\n");
 					if ( noarch ) {
 						fprintf(fpack, "BuildArch: noarch\n");
 					}
