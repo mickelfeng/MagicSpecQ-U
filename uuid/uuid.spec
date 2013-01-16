@@ -10,7 +10,7 @@
 
 Name:           uuid
 Version:        1.6.2
-Release:        16%{?dist}
+Release:        17%{?dist}
 Summary:        Universally Unique Identifier library
 License:        MIT
 Group:          System Environment/Libraries
@@ -279,6 +279,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/libossp-uuid_dce.so
 
 %changelog
+* Wed Jan 16 2013 Liu Di <liudidi@gmail.com> - 1.6.2-17
+- 为 Magic 3.0 重建
+
 * Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 1.6.2-16
 - 为 Magic 3.0 重建
 
