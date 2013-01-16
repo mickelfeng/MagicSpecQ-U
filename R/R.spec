@@ -1,4 +1,3 @@
-%define WITH_JAVA 0
 %ifarch x86_64
 %define java_arch amd64
 %else
@@ -6,8 +5,8 @@
 %endif
 
 Name: R
-Version: 2.15.0
-Release: 5%{?dist}
+Version: 2.15.2
+Release: 3%{?dist}
 Summary: A language for data analysis and graphics
 URL: http://www.r-project.org
 Source0: ftp://cran.r-project.org/pub/R/src/base/R-2/R-%{version}.tar.gz
@@ -17,14 +16,11 @@ License: GPLv2+
 Group: Applications/Engineering
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires: gcc-gfortran
-BuildRequires: gcc-c++, tetex-latex, texinfo-tex 
+BuildRequires: gcc-c++, tex(latex), texinfo-tex 
 BuildRequires: libpng-devel, libjpeg-devel, readline-devel
 BuildRequires: tcl-devel, tk-devel, ncurses-devel
 BuildRequires: blas >= 3.0, pcre-devel, zlib-devel
-%if %{WITH_JAVA}
-BuildRequires: java-1.5.0-gcj
-%endif
-BuildRequires: lapack-devel
+BuildRequires: java-1.5.0-gcj, lapack-devel
 BuildRequires: libSM-devel, libX11-devel, libICE-devel, libXt-devel
 BuildRequires: bzip2-devel, libXmu-devel, cairo-devel, libtiff-devel
 BuildRequires: gcc-objc, pango-devel, libicu-devel
@@ -33,6 +29,8 @@ BuildRequires: less
 Requires: R-devel = %{version}-%{release}
 # libRmath-devel will pull in libRmath
 Requires: libRmath-devel = %{version}-%{release}
+# Pull in Java bits (if you don't want this, use R-core)
+Requires: R-java = %{version}-%{release}
 
 %description
 This is a metapackage that provides both core R userspace and 
@@ -55,37 +53,37 @@ and called at run time.
 Summary: The minimal R components necessary for a functional runtime
 Group: Applications/Engineering
 Requires: xdg-utils, cups
-Requires: perl, sed, gawk, texlive-latex, texlive-dvips, less, vi
+Requires: perl, sed, gawk, tex(latex), tex(dvips), less, vi
 
 # These are the submodules that R-core provides. Sometimes R modules say they
 # depend on one of these submodules rather than just R. These are provided for 
 # packager convenience.
 Provides: R-base = %{version}
-Provides: R-boot = 1.3.4
-Provides: R-class = 7.3.3
-Provides: R-cluster = 1.14.2
+Provides: R-boot = 1.3.7
+Provides: R-class = 7.3.5
+Provides: R-cluster = 1.14.3
 Provides: R-codetools = 0.2.8
 Provides: R-datasets = %{version}
-Provides: R-foreign = 0.8.49
+Provides: R-foreign = 0.8.51
 Provides: R-graphics = %{version}
 Provides: R-grDevices = %{version}
 Provides: R-grid = %{version}
-Provides: R-KernSmooth = 2.23.7
-Provides: R-lattice = 0.20.6
-Provides: R-MASS = 7.3.17
-Provides: R-Matrix = 1.0.6
+Provides: R-KernSmooth = 2.23.8
+Provides: R-lattice = 0.20.10
+Provides: R-MASS = 7.3.22
+Provides: R-Matrix = 1.0.9
 Obsoletes: R-Matrix < 0.999375-7
 Provides: R-methods = %{version}
-Provides: R-mgcv = 1.7.13
-Provides: R-nlme = 3.1.103
-Provides: R-nnet = 7.3.1
+Provides: R-mgcv = 1.7.22
+Provides: R-nlme = 3.1.105
+Provides: R-nnet = 7.3.5
 Provides: R-parallel = %{version}
-Provides: R-rpart = 3.1.52
-Provides: R-spatial = 7.3.3
+Provides: R-rpart = 3.1.55
+Provides: R-spatial = 7.3.5
 Provides: R-splines = %{version}
 Provides: R-stats = %{version}
 Provides: R-stats4 = %{version}
-Provides: R-survival = 2.36.12
+Provides: R-survival = 2.36.14
 Provides: R-tcltk = %{version}
 Provides: R-tools = %{version}
 Provides: R-utils = %{version}
@@ -109,10 +107,22 @@ Summary: Files for development of R packages
 Group: Applications/Engineering
 Requires: R-core = %{version}-%{release}
 # You need all the BuildRequires for the development version
-Requires: gcc-c++, gcc-gfortran, tetex-latex, texinfo-tex
+Requires: gcc-c++, gcc-gfortran, tex(latex), texinfo-tex
 Requires: bzip2-devel, libX11-devel, pcre-devel, zlib-devel
 Requires: tcl-devel, tk-devel, pkgconfig
-Provides: R-Matrix-devel = 1.0.6
+Requires: R-java-devel = %{version}-%{release}
+# TeX files needed
+%if 0%{?fedora} >= 18
+Requires: tex(ecrm1000.tfm)
+Requires: tex(ptmr8t.tfm)
+Requires: tex(ptmb8t.tfm)
+Requires: tex(pcrr8t.tfm)
+Requires: tex(phvr8t.tfm)
+Requires: tex(ptmri8t.tfm)
+Requires: tex(ptmro8t.tfm)
+Requires: tex(cm-super-ts1.enc)
+%endif
+Provides: R-Matrix-devel = 1.0.9
 Obsoletes: R-Matrix-devel < 0.999375-7
 
 %description devel
@@ -313,8 +323,6 @@ pushd $RPM_BUILD_ROOT%{_datadir}/texmf/tex/latex
 ln -s ../../../R/texmf/tex/latex R
 popd
 
-magic_rpm_clean.sh
-
 %files
 # Metapackage
 
@@ -337,6 +345,7 @@ magic_rpm_clean.sh
 %lang(ja) %{_datadir}/R/locale/ja/
 %lang(ko) %{_datadir}/R/locale/ko/
 %lang(nn) %{_datadir}/R/locale/nn/
+%lang(pl) %{_datadir}/R/locale/pl/
 %lang(pt) %{_datadir}/R/locale/pt*/
 %lang(ru) %{_datadir}/R/locale/ru/
 %lang(tr) %{_datadir}/R/locale/tr/
@@ -369,6 +378,8 @@ magic_rpm_clean.sh
 %lang(it) %{_libdir}/R/library/base/po/it/
 %lang(ja) %{_libdir}/R/library/base/po/ja/
 %lang(ko) %{_libdir}/R/library/base/po/ko/
+%lang(nn) %{_libdir}/R/library/base/po/nn/
+%lang(pl) %{_libdir}/R/library/base/po/pl/
 %lang(pt) %{_libdir}/R/library/base/po/pt*/
 %lang(ru) %{_libdir}/R/library/base/po/ru/
 %lang(tr) %{_libdir}/R/library/base/po/tr/
@@ -388,6 +399,7 @@ magic_rpm_clean.sh
 %lang(de) %{_libdir}/R/library/boot/po/de/
 %lang(en) %{_libdir}/R/library/boot/po/en*/
 %lang(fr) %{_libdir}/R/library/boot/po/fr/
+%lang(pl) %{_libdir}/R/library/boot/po/pl/
 %lang(ru) %{_libdir}/R/library/boot/po/ru/
 %{_libdir}/R/library/boot/R/
 # class
@@ -406,6 +418,7 @@ magic_rpm_clean.sh
 %lang(de) %{_libdir}/R/library/class/po/de/
 %lang(en) %{_libdir}/R/library/class/po/en*/
 %lang(fr) %{_libdir}/R/library/class/po/fr/
+%lang(pl) %{_libdir}/R/library/class/po/pl/
 %{_libdir}/R/library/class/R/
 # cluster
 %dir %{_libdir}/R/library/cluster/
@@ -422,6 +435,7 @@ magic_rpm_clean.sh
 %dir %{_libdir}/R/library/cluster/po/
 %lang(de) %{_libdir}/R/library/cluster/po/de/
 %lang(en) %{_libdir}/R/library/cluster/po/en*/
+%lang(pl) %{_libdir}/R/library/cluster/po/pl/
 # codetools
 %dir %{_libdir}/R/library/codetools/
 %{_libdir}/R/library/codetools/DESCRIPTION
@@ -446,6 +460,8 @@ magic_rpm_clean.sh
 %lang(en) %{_libdir}/R/library/compiler/po/en*/
 %lang(fr) %{_libdir}/R/library/compiler/po/fr/
 %lang(ja) %{_libdir}/R/library/compiler/po/ja/
+%lang(ko) %{_libdir}/R/library/compiler/po/ko/
+%lang(pl) %{_libdir}/R/library/compiler/po/pl/
 %lang(pt) %{_libdir}/R/library/compiler/po/pt*/
 %lang(ru) %{_libdir}/R/library/compiler/po/ru/
 %lang(zh) %{_libdir}/R/library/compiler/po/zh*/
@@ -473,6 +489,7 @@ magic_rpm_clean.sh
 %lang(de) %{_libdir}/R/library/foreign/po/de/
 %lang(en) %{_libdir}/R/library/foreign/po/en*/
 %lang(fr) %{_libdir}/R/library/foreign/po/fr/
+%lang(pl) %{_libdir}/R/library/foreign/po/pl/
 %{_libdir}/R/library/foreign/R/
 # graphics
 %dir %{_libdir}/R/library/graphics/
@@ -491,6 +508,7 @@ magic_rpm_clean.sh
 %lang(it) %{_libdir}/R/library/graphics/po/it/
 %lang(ja) %{_libdir}/R/library/graphics/po/ja/
 %lang(ko) %{_libdir}/R/library/graphics/po/ko/
+%lang(pl) %{_libdir}/R/library/graphics/po/pl/
 %lang(pt) %{_libdir}/R/library/graphics/po/pt*/
 %lang(ru) %{_libdir}/R/library/graphics/po/ru/
 %lang(zh) %{_libdir}/R/library/graphics/po/zh*/
@@ -515,6 +533,7 @@ magic_rpm_clean.sh
 %lang(it) %{_libdir}/R/library/grDevices/po/it/
 %lang(ja) %{_libdir}/R/library/grDevices/po/ja/
 %lang(ko) %{_libdir}/R/library/grDevices/po/ko/
+%lang(pl) %{_libdir}/R/library/grDevices/po/pl/
 %lang(pt) %{_libdir}/R/library/grDevices/po/pt*/
 %lang(ru) %{_libdir}/R/library/grDevices/po/ru/
 %lang(zh) %{_libdir}/R/library/grDevices/po/zh*/
@@ -537,6 +556,7 @@ magic_rpm_clean.sh
 %lang(it) %{_libdir}/R/library/grid/po/it/
 %lang(ja) %{_libdir}/R/library/grid/po/ja/
 %lang(ko) %{_libdir}/R/library/grid/po/ko/
+%lang(pl) %{_libdir}/R/library/grid/po/pl/
 %lang(pt) %{_libdir}/R/library/grid/po/pt*/
 %lang(ru) %{_libdir}/R/library/grid/po/ru/
 %lang(zh) %{_libdir}/R/library/grid/po/zh*/
@@ -554,6 +574,7 @@ magic_rpm_clean.sh
 %dir %{_libdir}/R/library/KernSmooth/po/
 %lang(de) %{_libdir}/R/library/KernSmooth/po/de/
 %lang(en) %{_libdir}/R/library/KernSmooth/po/en*/
+%lang(pl) %{_libdir}/R/library/KernSmooth/po/pl/
 %{_libdir}/R/library/KernSmooth/R/
 # lattice
 %dir %{_libdir}/R/library/lattice/
@@ -591,6 +612,7 @@ magic_rpm_clean.sh
 %lang(de) %{_libdir}/R/library/MASS/po/de/
 %lang(en) %{_libdir}/R/library/MASS/po/en*/
 %lang(fr) %{_libdir}/R/library/MASS/po/fr/
+%lang(pl) %{_libdir}/R/library/MASS/po/pl/
 %{_libdir}/R/library/MASS/R/
 %{_libdir}/R/library/MASS/scripts/
 # Matrix
@@ -611,6 +633,7 @@ magic_rpm_clean.sh
 %dir %{_libdir}/R/library/Matrix/po/
 %lang(de) %{_libdir}/R/library/Matrix/po/de/
 %lang(en) %{_libdir}/R/library/Matrix/po/en*/
+%lang(pl) %{_libdir}/R/library/Matrix/po/pl/
 %{_libdir}/R/library/Matrix/R/
 %{_libdir}/R/library/Matrix/test-tools.R
 %{_libdir}/R/library/Matrix/test-tools-1.R
@@ -631,6 +654,7 @@ magic_rpm_clean.sh
 %lang(fr) %{_libdir}/R/library/methods/po/fr/
 %lang(ja) %{_libdir}/R/library/methods/po/ja/
 %lang(ko) %{_libdir}/R/library/methods/po/ko/
+%lang(pl) %{_libdir}/R/library/methods/po/pl/
 %lang(pt) %{_libdir}/R/library/methods/po/pt*/
 %lang(ru) %{_libdir}/R/library/methods/po/ru/
 %lang(zh) %{_libdir}/R/library/methods/po/zh*/
@@ -664,6 +688,7 @@ magic_rpm_clean.sh
 %lang(de) %{_libdir}/R/library/nlme/po/de/
 %lang(en) %{_libdir}/R/library/nlme/po/en*/
 %lang(fr) %{_libdir}/R/library/nlme/po/fr/
+%lang(pl) %{_libdir}/R/library/nlme/po/pl/
 %{_libdir}/R/library/nlme/R/
 %{_libdir}/R/library/nlme/scripts/
 # nnet
@@ -682,6 +707,7 @@ magic_rpm_clean.sh
 %lang(de) %{_libdir}/R/library/nnet/po/de/
 %lang(en) %{_libdir}/R/library/nnet/po/en*/
 %lang(fr) %{_libdir}/R/library/nnet/po/fr/
+%lang(pl) %{_libdir}/R/library/nnet/po/pl/
 %{_libdir}/R/library/nnet/R/
 # parallel
 %dir %{_libdir}/R/library/parallel/
@@ -698,6 +724,8 @@ magic_rpm_clean.sh
 %lang(de) %{_libdir}/R/library/parallel/po/de/
 %lang(en) %{_libdir}/R/library/parallel/po/en*/
 %lang(fr) %{_libdir}/R/library/parallel/po/fr/
+%lang(ko) %{_libdir}/R/library/parallel/po/ko/
+%lang(pl) %{_libdir}/R/library/parallel/po/pl/
 %lang(ru) %{_libdir}/R/library/parallel/po/ru/
 %lang(zh) %{_libdir}/R/library/parallel/po/zh*/
 %{_libdir}/R/library/parallel/R/
@@ -715,6 +743,7 @@ magic_rpm_clean.sh
 %lang(de) %{_libdir}/R/library/rpart/po/de/
 %lang(en) %{_libdir}/R/library/rpart/po/en*/
 %lang(fr) %{_libdir}/R/library/rpart/po/fr/
+%lang(pl) %{_libdir}/R/library/rpart/po/pl/
 %lang(ru) %{_libdir}/R/library/rpart/po/ru/
 %{_libdir}/R/library/rpart/R/
 # spatial
@@ -733,6 +762,7 @@ magic_rpm_clean.sh
 %lang(de) %{_libdir}/R/library/spatial/po/de/
 %lang(en) %{_libdir}/R/library/spatial/po/en*/
 %lang(fr) %{_libdir}/R/library/spatial/po/fr/
+%lang(pl) %{_libdir}/R/library/spatial/po/pl/
 %{_libdir}/R/library/spatial/ppdata/
 %{_libdir}/R/library/spatial/PP.files
 %{_libdir}/R/library/spatial/R/
@@ -752,6 +782,7 @@ magic_rpm_clean.sh
 %lang(fr) %{_libdir}/R/library/splines/po/fr/
 %lang(ja) %{_libdir}/R/library/splines/po/ja/
 %lang(ko) %{_libdir}/R/library/splines/po/ko/
+%lang(pl) %{_libdir}/R/library/splines/po/pl/
 %lang(pt) %{_libdir}/R/library/splines/po/pt*/
 %lang(ru) %{_libdir}/R/library/splines/po/ru/
 %lang(zh) %{_libdir}/R/library/splines/po/zh*/
@@ -775,6 +806,7 @@ magic_rpm_clean.sh
 %lang(it) %{_libdir}/R/library/stats/po/it/
 %lang(ja) %{_libdir}/R/library/stats/po/ja/
 %lang(ko) %{_libdir}/R/library/stats/po/ko/
+%lang(pl) %{_libdir}/R/library/stats/po/pl/
 %lang(pt) %{_libdir}/R/library/stats/po/pt*/
 %lang(ru) %{_libdir}/R/library/stats/po/ru/
 %lang(tr) %{_libdir}/R/library/stats/po/tr/
@@ -797,6 +829,7 @@ magic_rpm_clean.sh
 %lang(it) %{_libdir}/R/library/stats4/po/it/
 %lang(ja) %{_libdir}/R/library/stats4/po/ja/
 %lang(ko) %{_libdir}/R/library/stats4/po/ko/
+%lang(pl) %{_libdir}/R/library/stats4/po/pl/
 %lang(pt) %{_libdir}/R/library/stats4/po/pt*/
 %lang(ru) %{_libdir}/R/library/stats4/po/ru/
 %lang(tr) %{_libdir}/R/library/stats4/po/tr/
@@ -835,6 +868,7 @@ magic_rpm_clean.sh
 %lang(it) %{_libdir}/R/library/tcltk/po/it/
 %lang(ja) %{_libdir}/R/library/tcltk/po/ja/
 %lang(ko) %{_libdir}/R/library/tcltk/po/ko/
+%lang(pl) %{_libdir}/R/library/tcltk/po/pl/
 %lang(pt) %{_libdir}/R/library/tcltk/po/pt*/
 %lang(ru) %{_libdir}/R/library/tcltk/po/ru/
 %lang(zh) %{_libdir}/R/library/tcltk/po/zh*/
@@ -856,6 +890,7 @@ magic_rpm_clean.sh
 %lang(it) %{_libdir}/R/library/tools/po/it/
 %lang(ja) %{_libdir}/R/library/tools/po/ja/
 %lang(ko) %{_libdir}/R/library/tools/po/ko/
+%lang(pl) %{_libdir}/R/library/tools/po/pl/
 %lang(pt) %{_libdir}/R/library/tools/po/pt*/
 %lang(ru) %{_libdir}/R/library/tools/po/ru/
 %lang(tr) %{_libdir}/R/library/tools/po/tr/
@@ -879,6 +914,7 @@ magic_rpm_clean.sh
 %lang(fr) %{_libdir}/R/library/utils/po/fr/
 %lang(ja) %{_libdir}/R/library/utils/po/ja/
 %lang(ko) %{_libdir}/R/library/utils/po/ko/
+%lang(pl) %{_libdir}/R/library/utils/po/pl/
 %lang(pt) %{_libdir}/R/library/utils/po/pt*/
 %lang(ru) %{_libdir}/R/library/utils/po/ru/
 %lang(tr) %{_libdir}/R/library/utils/po/tr/
@@ -904,13 +940,11 @@ magic_rpm_clean.sh
 # Symlink to %{_includedir}/R/
 %{_libdir}/R/include
 
-%if %{WITH_JAVA}
 %files java
 # Nothing, all files provided by R-core
 
 %files java-devel
 # Nothing, all files provided by R-devel
-%endif
 
 %files -n libRmath
 %defattr(-, root, root, -)
@@ -938,7 +972,7 @@ for doc in admin exts FAQ intro lang; do
       /sbin/install-info ${file} %{_infodir}/dir 2>/dev/null || :
    fi
 done
-/usr/sbin/ldconfig
+/sbin/ldconfig
 R CMD javareconf \
     JAVA_HOME=%{_jvmdir}/jre \
     JAVA_CPPFLAGS='-I%{_jvmdir}/java/include\ -I%{_jvmdir}/java/include/linux' \
@@ -973,7 +1007,7 @@ if [ $1 = 0 ]; then
 fi
 
 %postun core
-/usr/sbin/ldconfig
+/sbin/ldconfig
 if [ $1 -eq 0 ] ; then
     /usr/bin/mktexlsr %{_datadir}/texmf &>/dev/null || :
 fi
@@ -981,7 +1015,6 @@ fi
 %posttrans core
 /usr/bin/mktexlsr %{_datadir}/texmf &>/dev/null || :
 
-%if %{WITH_JAVA}
 %post java
 R CMD javareconf \
     JAVA_HOME=%{_jvmdir}/jre \
@@ -1001,18 +1034,30 @@ R CMD javareconf \
     -L/usr/java/packages/lib/%{java_arch}\ -L/lib\ -L/usr/lib\ -ljvm' \
     JAVA_LD_LIBRARY_PATH=%{_jvmdir}/jre/lib/%{java_arch}/server:%{_jvmdir}/jre/lib/%{java_arch}:%{_jvmdir}/java/lib/%{java_arch}:/usr/java/packages/lib/%{java_arch}:/lib:/usr/lib \
     > /dev/null 2>&1 || exit 0
-%endif
 
-%post -n libRmath -p /usr/sbin/ldconfig
+%post -n libRmath -p /sbin/ldconfig
 
-%postun -n libRmath -p /usr/sbin/ldconfig
+%postun -n libRmath -p /sbin/ldconfig
 
 %changelog
-* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 2.15.0-5
-- 为 Magic 3.0 重建
+* Tue Nov 27 2012 Tom Callaway <spot@fedoraproject.org> - 2.15.2-3
+- add Requires: tex(cm-super-ts1.enc) for R-devel
 
-* Fri Nov 23 2012 Liu Di <liudidi@gmail.com> - 2.15.0-4
-- 为 Magic 3.0 重建
+* Tue Nov 27 2012 Tom Callaway <spot@fedoraproject.org> - 2.15.2-2
+- add additional TeX font requirements to R-devel for Fedora 18+ (due to new texlive)
+
+* Mon Oct 29 2012 Tom Callaway <spot@fedoraproject.org> - 2.15.2-1
+- update to 2.15.2
+- R now Requires: R-java (for a more complete base install)
+
+* Wed Jul 18 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.15.1-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Mon Jul  2 2012 Tom Callaway <spot@fedoraproject.org> - 2.15.1-1
+- update to 2.15.1
+
+* Mon Jul  2 2012 Jindrich Novy <jnovy@redhat.com> - 2.15.0-4
+- fix LaTeX and dvips dependencies (#836817)
 
 * Mon May  7 2012 Tom Callaway <spot@fedoraproject.org> - 2.15.0-3
 - rebuild for new libtiff
