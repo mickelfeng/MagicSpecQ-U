@@ -3,12 +3,13 @@
 
 %bcond_with ksmarttray
 %bcond_without pygtk
-%bcond_without qt
+%bcond_with qt
+%bcond_without qt4
 
 Summary: Next generation package handling tool
 Name: smart
-Version: 1.3.1
-Release: 69%{?dist}
+Version: 1.4.1
+Release: 1%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: http://labix.org/smart/
@@ -57,7 +58,12 @@ Requires: smart = %{version}-%{release}
 Requires: pygtk2 >= 2.4
 Requires: usermode
 Provides: smart-gtk = %{version}-%{release}
+%if %{with qt}
 Requires: PyQt
+%endif
+%if %{with qt4}
+Requires: PyQt4
+%endif
 
 %description gui
 Graphical user interface for the smart package manager.
@@ -78,7 +84,7 @@ KDE tray program for watching updates with Smart Package Manager.
 %prep
 %setup -q
 %patch0 -p0 -b .eventscallback
-%patch1 -p0 -b .gtknothread
+#%patch1 -p0 -b .gtknothread
 # /usr/lib is hardcoded 
 perl -pi -e's,/usr/lib/,%{_libdir}/,' smart/const.py
 install -p -m 644 %{SOURCE2} .
@@ -147,22 +153,32 @@ install -p -m 644 smart/interfaces/images/smart.png \
 # distro.py and distro.d support
 install -p -m 644 %{SOURCE4} %{buildroot}%{_libdir}/smart/
 mkdir -p %{buildroot}%{_sysconfdir}/smart/distro.d
-
+magic_rpm_clean.sh
 %find_lang %{name}
 
 # Create a list w/o smart/interfaces/{gtk,qt} to avoid warning of duplicate
 # in the %files section (otherwise including all and %excluding works,
 # too
 
+%if ! %{with qt}
+rm -rf %{buildroot}%{python_sitearch}/smart/interfaces/qt
+%endif 
+
+%if ! %{with qt4}
+rm -rf %{buildroot}%{python_sitearch}/smart/interfaces/qt4
+%endif
+
 echo "%%defattr(-,root,root,-)" > %{name}.fileslist
 find %{buildroot}%{python_sitearch}/smart* -type d \
   | grep -v %{python_sitearch}/smart/interfaces/gtk \
   | grep -v %{python_sitearch}/smart/interfaces/qt \
+  | grep -v %{python_sitearch}/smart/interfaces/qt4 \
   | sed -e's,%{buildroot},%%dir ,' \
   >> %{name}.fileslist
 find %{buildroot}%{python_sitearch}/smart* \! -type d \
   | grep -v %{python_sitearch}/smart/interfaces/gtk \
   | grep -v %{python_sitearch}/smart/interfaces/qt \
+  | grep -v %{python_sitearch}/smart/interfaces/qt4 \
   | sed -e's,%{buildroot},,' \
   >> %{name}.fileslist
 
@@ -189,7 +205,12 @@ rm -rf %{buildroot}
 %files gui
 %defattr(-,root,root,-)
 %{python_sitearch}/smart/interfaces/gtk
+%if %{with qt}
 %{python_sitearch}/smart/interfaces/qt
+%endif
+%if %{with qt4}
+%{python_sitearch}/smart/interfaces/qt4
+%endif
 %{_datadir}/applications/smart.desktop
 %{_datadir}/icons/hicolor/48x48/apps/smart.png
 %else
