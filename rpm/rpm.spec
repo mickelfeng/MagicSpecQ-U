@@ -82,7 +82,7 @@ BuildRequires: fakechroot
 
 # XXX generally assumed to be installed but make it explicit as rpm
 # is a bit special...
-BuildRequires: redhat-rpm-config
+BuildRequires: magic-rpm-config
 BuildRequires: gawk
 BuildRequires: elfutils-devel%{_isa} >= 0.112
 BuildRequires: elfutils-libelf-devel%{_isa}
@@ -260,7 +260,7 @@ export CPPFLAGS CFLAGS LDFLAGS
     --libdir=%{_libdir} \
     --build=%{_target_platform} \
     --host=%{_target_platform} \
-    --with-vendor=redhat \
+    --with-vendor=magic \
     %{!?with_int_bdb: --with-external-db} \
     %{!?with_plugins: --disable-plugins} \
     --with-lua \
