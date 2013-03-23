@@ -4,7 +4,7 @@
 Summary:	Qt library to start applications only once per user
 Name:		qtsingleapplication
 Version:	2.6.1
-Release:	7%{?dist}
+Release:	8%{?dist}
 Group:		System Environment/Libraries
 License:	GPLv3 or LGPLv2 with exceptions
 URL:		http://qt.nokia.com/products/appdev/add-on-products/catalog/4/Utilities/qtsingleapplication
@@ -152,8 +152,11 @@ rm -rf $RPM_BUILD_ROOT
 %{_qt4_datadir}/mkspecs/features/qtsinglecoreapplication.prf
 
 %changelog
-* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 2.6.1-7
-- 为 Magic 3.0 重建
+* Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.6.1-8
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.6.1-7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
 * Wed Jan 11 2012 Orcan Ogetbil <oget[dot]fedora[at]gmail[dot]com> 2.6.1-6
 - gcc-4.7 compilation fix
