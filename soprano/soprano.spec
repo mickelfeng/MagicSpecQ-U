@@ -4,6 +4,7 @@
 # undef or set to 0 to disable items for a faster build
 %global apidocs 0
 %global tests 0
+%global _unpackaged_files_terminate_build 0
 
 Summary: Qt wrapper API to different RDF storage solutions
 Name:    soprano
