@@ -80,7 +80,7 @@ cp AN-%{version} PORTING README* smake/defaults.smk smake-rpmdocs
 chmod 644 smake-rpmdocs/*
 
 rm -rf %{buildroot}%{_includedir}
-rm -f  %{buildroot}%{_libdir}/profiled/libschily.a
+rm -f  %{buildroot}%{_prefix}/lib/profiled/libschily.a
 
 %clean
 [ -d ${RPM_BUILD_ROOT} ] && rm -rf ${RPM_BUILD_ROOT};
