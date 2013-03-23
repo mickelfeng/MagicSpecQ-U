@@ -579,9 +579,9 @@ for i in conv2ui findtr qt20fix qtrename140 lrelease lupdate ; do
 done
 
 # create/fix symlinks, lib64 fixes
-/usr/sbin/ldconfig -n $RPM_BUILD_ROOT%{qtdir}/%{_lib}
+/usr/sbin/ldconfig -n $RPM_BUILD_ROOT%{qtdir}/lib
 for link in qt.so qt.so.3 ; do
-  ln -sf libqt-mt.so.3.3.8 $RPM_BUILD_ROOT%{qtdir}/%{_lib}/lib${link}
+  ln -sf libqt-mt.so.3.3.8 $RPM_BUILD_ROOT%{qtdir}/lib/lib${link}
 done
 pushd mkspecs
 rm -rf default
