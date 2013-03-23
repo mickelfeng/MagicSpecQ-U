@@ -1,7 +1,7 @@
 Summary: Conversion between character sets and surfaces
 Name: recode
 Version: 3.6
-Release: 32%{?dist}
+Release: 34%{?dist}
 License: GPLv2+
 Group: Applications/File
 Source: http://recode.progiciels-bpi.ca/archives/recode-%{version}.tar.gz
@@ -9,6 +9,7 @@ Patch0: recode.patch
 Patch1: recode-3.6-getcwd.patch
 Patch2: recode-bool-bitfield.patch
 Patch3: recode-flex-m4.patch
+Patch4: recode-automake.patch
 Url: http://recode.progiciels-bpi.ca/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -29,7 +30,7 @@ characters or fall back on approximations.  Most RFC 1345 character sets
 are supported.
 
 %package devel
-Summary: Header files and static libraries for development using recode
+Summary: Header files for development using recode
 Group: Development/Libraries
 Requires: %{name} = %{version}-%{release}
 
@@ -47,6 +48,7 @@ are supported.
 %patch1 -p1 -b .getcwd
 %patch2 -p0
 %patch3 -p1
+%patch4 -p1
 rm m4/libtool.m4
 rm acinclude.m4
 
@@ -99,8 +101,15 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*
 
 %changelog
-* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 3.6-32
-- 为 Magic 3.0 重建
+* Mon Jul 23 2012 Zoltan Kota <zoltank[AT]gmail.com> 3.6-34
+- Add patch for fixing build with new automake.
+  (Fixes failed Fedora_18_Mass_Rebuild.)
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.6-33
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Mon May 21 2012 Zoltan Kota <zoltank[AT]gmail.com> 3.6-32
+- Corrected summary of the devel subpackage. Fixing bug #817947.
 
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.6-31
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
