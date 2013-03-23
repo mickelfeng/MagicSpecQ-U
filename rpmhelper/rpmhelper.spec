@@ -29,7 +29,8 @@ make
 
 %install
 rm -rf %{buildroot}
-make DESTDIR=${RPM_BUILD_ROOT} install
+python setup.py install --root=${RPM_BUILD_ROOT} --install-lib=%{python_sitearch}
+#make DESTDIR=${RPM_BUILD_ROOT} install
 
 magic_rpm_clean.sh
 #%find_lang %name
