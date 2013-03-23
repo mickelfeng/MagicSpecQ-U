@@ -66,8 +66,8 @@ rm -rf %{buildroot} %{_builddir}/%{buildsubdir}
 %defattr(-,root,root,-)
 %{_bindir}/*
 %{_libdir}/*.so.*
-%{_libdir}/ruby/site_ruby/*
-%{_datadir}/ruby/site_ruby/*
+%{ruby_sitearchdir}/*
+%{ruby_sitelibdir}/*
 
 %files devel
 %defattr(-,root,root,-)
