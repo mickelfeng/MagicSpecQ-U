@@ -6,8 +6,8 @@
 Summary: smart's config file
 Summary(zh_CN.UTF-8): smart 的配置文件
 Name: smart-config
-Version: 1.4.1
-Release: 1%{?dist}
+Version: 1.2
+Release: 8%{?dist}
 License: GPL
 Group: Applications/System
 Group(zh_CN.UTF-8): 应用程序/系统
@@ -38,10 +38,44 @@ EOF
 [all-magiclinux0]
 type = apt-rpm
 name = $name $version APT All Repository from magiclinux0
-baseurl = http://apt.linuxfans.org/magic/%{mgcver}
-components = 3 9 a b c d e f g h i j k l m n o p q r s t u v w x y z A C D F G I J M N O P R S T W X
-EOF
+baseurl = http://apt.magiclinux.org:81/magic/%{mgcver}/unstable
+components = all
  
+[all-lcuc2]
+type = apt-rpm
+name = $name $version APT All Repository from lcuc2
+baseurl = http://www.321211.net/apt/magic/%{mgcver}/unstable
+components = all
+EOF
+
+%{__cat} >extras.channel<<EOF
+[extras-magiclinux0]
+type = apt-rpm
+name = $name $version APT Extras Repository from magiclinux0
+baseurl = http://apt.magiclinux.org:81/magic/%{mgcver}/unstable
+components = extras
+
+[extras-lcuc2]
+type = apt-rpm
+name = $name $version APT Extras Repository from lcuc2
+baseurl = http://www.321211.net/apt/magic/%{mgcver}/unstable
+components = extras
+EOF
+
+%{__cat} >nosrc.channel<<EOF
+[nosrc-magiclinux0]
+type = apt-rpm
+name = $name $version APT Nosrc Repository from magiclinux0
+baseurl = http://apt.magiclinux.org:81/magic/%{mgcver}/unstable
+components = nosrc
+
+[nosrc-lcuc2]
+type = apt-rpm
+name = $name $version APT Nosrc Repository from lcuc2
+baseurl = http://www.321211.net/apt/magic/%{mgcver}/unstable
+components = nosrc
+EOF
+
 %build
 
 %install
