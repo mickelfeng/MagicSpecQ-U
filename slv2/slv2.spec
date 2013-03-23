@@ -92,7 +92,7 @@ rm -rf %{buildroot}
 %{_includedir}/%{name}/
 %{_libdir}/pkgconfig/%{name}.pc
 %{_libdir}/lib%{name}.so
-%{_mandir}/man3/%{name}*
+%{_mandir}/man3/*%{name}*
 
 %changelog
 * Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.6.6-9
