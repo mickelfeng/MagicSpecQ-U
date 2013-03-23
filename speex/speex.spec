@@ -64,7 +64,7 @@ Speex开发文件
 
 %build
 export CFLAGS='-O3'
-./configure --prefix=/usr --enable-shared --enable-static
+%configure --prefix=/usr --enable-shared --enable-static
 make
 
 %install
