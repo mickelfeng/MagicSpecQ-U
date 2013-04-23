@@ -1,21 +1,18 @@
 
-# fedora review: http://bugzilla.redhat.com/248120
-
 # undef or set to 0 to disable items for a faster build
-%global apidocs 0
-%global tests 0
-%global _unpackaged_files_terminate_build 0
+%global apidocs 1
+## upstream says tests busted, maybe to be fixed in some future point release
+#global tests 1
 
 Summary: Qt wrapper API to different RDF storage solutions
 Name:    soprano
-Version: 2.8.0
+Version: 2.9.0
 Release: 2%{?dist}
 
-Group:   System Environment/Libraries
 License: LGPLv2+
 URL:     http://sourceforge.net/projects/soprano
 %if 0%{?snap:1}
-# git clone git://git.kde.org/soprano ; cd soprano
+# git clone git://anongit.kde.org/soprano ; cd soprano
 # git archive --prefix=soprano-%{version}/ master | bzip2 > soprano-%{version}-%{snap}.tar.bz2
 Source0: soprano-%{version}-%{snap}.tar.bz2
 %else
@@ -23,24 +20,21 @@ Source0: http://downloads.sf.net/soprano/soprano-%{version}.tar.bz2
 %endif
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-# hack around doxygen-1.8.0 no longer providing 'installdox' script
-Source1: installdox
-
 ## upstreamable patches
-# nuke rpaths
-Patch50: soprano-2.5.63-rpath.patch
 
 ## upstream patches
 
 BuildRequires: clucene-core-devel >= 0.9.20-2
 BuildRequires: cmake
+#考虑加上
+#BuildRequires: kde-filesystem
 # for backends/virtuoso
 BuildRequires: libiodbc-devel
 BuildRequires: pkgconfig
 BuildRequires: pkgconfig(raptor2)
 BuildRequires: pkgconfig(rasqal) >= 0.9.22
 BuildRequires: pkgconfig(redland)
-BuildRequires: qt4-devel
+BuildRequires: pkgconfig(QtDBus) pkgconfig(QtNetwork) pkgconfig(QtXml) 
 %if 0%{?tests}
 BuildRequires: virtuoso-opensource
 %endif
@@ -52,33 +46,28 @@ BuildRequires: qt4-doc
 %endif
 
 %{?_qt4_version:Requires: qt4%{?_isa} >= %{_qt4_version}}
-%if 0%{?fedora} > 13
-## redland plugins split in f14+, though not entirely sure if this is 
-## really needed -- Rex
+## not sure if  this is really needed -- rex
 Requires: redland-virtuoso
-%endif
 ## If/When backends are packaged separately
 #Requires: soprano-backend
 ## otherwise,
+Provides: soprano-backend = %{version}-%{release}
+Provides: soprano-backend-redland =  %{version}-%{release}
 Provides: soprano-backend-virtuoso = %{version}-%{release}
-Requires: virtuoso-opensource
-
+## nepomuk upstream recommends this be in nepomuk-core, and strictly optional here -- rex
+#Requires: virtuoso-opensource
 
 %description
 %{summary}.
 
 %package devel
 Summary: Developer files for %{name}
-Group:   Development/Libraries
 Requires: %{name}%{?_isa} = %{version}-%{release}
-Requires: qt4-devel
-Requires: pkgconfig
 %description devel
 %{summary}.
 
 %package backend-redland 
 Summary: Redland backend for %{name}
-Group:   System Environment/Libraries 
 Provides: %{name}-backend = %{version}-%{release}
 Requires: %{name}%{?_isa} = %{version}-%{release}
 %description backend-redland 
@@ -86,56 +75,44 @@ Requires: %{name}%{?_isa} = %{version}-%{release}
 
 %package backend-virtuoso
 Summary: Virtuoso backend for %{name}
-Group:   System Environment/Libraries
 Provides: %{name}-backend = %{version}-%{release}
 Requires: %{name}%{?_isa} = %{version}-%{release}
-Requires: virtuoso-opensource
-%if 0%{?fedora} > 13
-# redland plugins split in f14+, though not entirely sure if this is 
-# really needed -- Rex
+## not sure if  this is really needed -- rex
 Requires: redland-virtuoso
-%endif
+## nepomuk upstream recommends this be in nepomuk-core, and strictly optional here -- rex
+#Requires: virtuoso-opensource
 %description backend-virtuoso 
 %{summary}.
 
 %package apidocs
-Group: Development/Documentation
 Summary: Soprano API documentation
-Requires: kde-filesystem
-%if 0%{?fedora} > 9 || 0%{?rhel} > 5
-# help workaround yum bug http://bugzilla.redhat.com/502401
-Obsoletes: soprano-apidocs < 2.2.3-2 
+#Requires: kde-filesystem
 BuildArch: noarch
-%endif
 %description apidocs
 This package includes the Soprano API documentation in HTML
 format for easy browsing.
 
 
 %prep
+%if 0%{?prerelease_tag:1}
+%setup -q -n soprano-%{version}-%{prerelease_tag}
+%else
 %setup -q -n soprano-%{version}
-
-#%patch50 -p1 -b .rpath
+%endif
 
 
 %build
 
 mkdir -p %{_target_platform}
 pushd %{_target_platform}
-# disable copious debug output
-export CXXFLAGS="%{optflags} -DQT_NO_DEBUG_OUTPUT"
 %{cmake} \
   -DDATA_INSTALL_DIR:PATH=%{_kde4_appsdir} \
   -DQT_DOC_DIR=%{?_qt4_docdir}%{!?_qt4_docdir:%(pkg-config --variable=docdir Qt)} \
   -DSOPRANO_BUILD_API_DOCS:BOOL=%{!?apidocs:0}%{?apidocs} \
-  -DSOPRANO_BUILD_TESTS:BOOL=%{!?tests:FALSE}%{?tests} \
+  -DSOPRANO_BUILD_TESTS:BOOL=%{?tests:ON}%{!?tests:OFF} \
+  -DSOPRANO_DISABLE_SESAME2_BACKEND:BOOL=ON \
   .. 
 popd
-
-# aka if using doxygen-1.8+
-%if 0%{?fedora} > 16
-install -D -m755 %{SOURCE1} %{_target_platform}/docs/html/installdox
-%endif
 
 make %{?_smp_mflags} -C %{_target_platform}
 
@@ -151,7 +128,7 @@ cp -a %{_target_platform}/docs/html %{buildroot}%{_kde4_docdir}/HTML/en/soprano-
 # spurious executables, pull in perl dep(s)
 find %{buildroot}%{_kde4_docdir}/HTML/en/ -name 'installdox' -exec rm -fv {} ';'
 %endif
-magic_rpm_clean.sh
+
 
 %check
 # verify pkg-config version (notoriously wrong in recent soprano releases)
@@ -180,12 +157,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %post -p /sbin/ldconfig
-
 %postun -p /sbin/ldconfig
 
-
 %files
-%defattr(-,root,root,-)
 %doc AUTHORS COPYING* README TODO
 %{_bindir}/sopranocmd
 %{_bindir}/sopranod
@@ -205,17 +179,14 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/soprano/libsoprano_*serializer.so
 
 #files backend-redland
-#defattr(-,root,root,-)
 %{_libdir}/soprano/libsoprano_redlandbackend.so
 %{_datadir}/soprano/plugins/redlandbackend.desktop
 
 #files backend-virtuoso
-#defattr(-,root,root,-)
 %{_libdir}/soprano/libsoprano_virtuosobackend.so
 %{_datadir}/soprano/plugins/virtuosobackend.desktop
 
 %files devel
-%defattr(-,root,root,-)
 %{_datadir}/soprano/cmake/
 %{_libdir}/libsoprano*.so
 %{_libdir}/pkgconfig/soprano.pc
@@ -227,14 +198,55 @@ rm -rf $RPM_BUILD_ROOT
 
 %if 0%{?apidocs}
 %files apidocs
-%defattr(-,root,root,-)
 %{_kde4_docdir}/HTML/en/soprano-apidocs/
 %endif
 
 
 %changelog
-* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 2.8.0-2
-- 为 Magic 3.0 重建
+* Fri Feb 15 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.9.0-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
+
+* Wed Jan 02 2013 Rex Dieter <rdieter@fedoraproject.org> - 2.9.0-1
+- 2.9.0
+- disable tests for now
+- omit QT_NO_DEBUG_OUTPUT hack, handled properly now
+
+* Mon Dec 24 2012 Rex Dieter <rdieter@fedoraproject.org> 2.8.0-5
+- backport some upstream fixes
+
+* Fri Aug 10 2012 Rex Dieter <rdieter@fedoraproject.org> - 2.8.0-4
+- move virtuoso dep to nepomuk-core
+- remove .spec cruft
+
+* Fri Jul 27 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.8.0-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Tue Jul 24 2012 Rex Dieter <rdieter@fedoraproject.org> 2.8.0-2
+- rebuild
+
+* Wed Jun 27 2012 Jaroslav Reznik <jreznik@redhat.com> 2.8.0-1
+- soprano-2.8.0
+
+* Fri Jun 08 2012 Rex Dieter <rdieter@fedoraproject.org> 2.7.57-1
+- soprano-2.7.57
+
+* Wed May 30 2012 Rex Dieter <rdieter@fedoraproject.org> 2.7.56-2
+- restore SC / BC with a stub impl of tcpclient 
+
+* Wed May 30 2012 Jaroslav Reznik <jreznik@redhat.com> 2.7.56-1
+- soprano-2.7.56 beta 1 release
+
+* Mon May 28 2012 Jaroslav Reznik <jreznik@redhat.com> 2.7.56-0.1.20120528
+- soprano-2.7.56-20120528 snapshot
+
+* Sat May 19 2012 Rex Dieter <rdieter@fedoraproject.org> 2.7.6-1
+- 2.7.6
+
+* Tue May 08 2012 Rex Dieter <rdieter@fedoraproject.org> 2.7.5-3
+- use/rely-on Qt pkgconfig deps
+
+* Wed Apr 18 2012 Jaroslav Reznik <jreznik@redhat.com> 2.7.5-2
+- include 'installdox' script for el
 
 * Tue Mar 06 2012 Rex Dieter <rdieter@fedoraproject.org> 2.7.5-1
 - 2.7.5
