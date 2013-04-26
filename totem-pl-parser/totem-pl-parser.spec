@@ -1,6 +1,6 @@
 Name:		totem-pl-parser
-Version:	3.4.3
-Release:	2%{?dist}
+Version:	3.4.4
+Release:	1%{?dist}
 Summary:	Totem Playlist Parser library
 
 Group:		System Environment/Libraries
@@ -67,8 +67,14 @@ find $RPM_BUILD_ROOT -name '*.la' -exec rm -f {} ';'
 %{_datadir}/gir-1.0/*.gir
 
 %changelog
-* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 3.4.3-2
-- 为 Magic 3.0 重建
+* Tue Mar 26 2013 Kalev Lember <kalevlember@gmail.com> - 3.4.4-1
+- Update to 3.4.4
+
+* Fri Feb 15 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 3.4.3-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
+
+* Thu Jan 17 2013 Tomas Bzatek <tbzatek@redhat.com> - 3.4.3-2
+- Rebuilt for new libarchive
 
 * Wed Sep 19 2012 Tomas Bzatek <tbzatek@redhat.com> - 3.4.3-1
 - Update to 3.4.3
