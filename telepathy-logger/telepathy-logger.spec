@@ -1,10 +1,10 @@
 Name:           telepathy-logger
-Version:        0.6.0
-Release:        3%{?dist}
+Version:        0.8.0
+Release:        2%{?dist}
 Summary:        Telepathy framework logging daemon
 
 Group:          Applications/Communications
-License:        LGPLv2+ 
+License:        LGPLv2+
 URL:            http://telepathy.freedesktop.org/wiki/Logger
 Source0:        http://telepathy.freedesktop.org/releases/%{name}/%{name}-%{version}.tar.bz2
 
@@ -58,17 +58,17 @@ make %{?_smp_mflags} V=1
 %install
 make install DESTDIR=$RPM_BUILD_ROOT
 find $RPM_BUILD_ROOT -name '*.la' -exec rm -f {} ';'
-magic_rpm_clean.sh
+
 
 #check
 #make check
 
 
-%post -p /usr/sbin/ldconfig
+%post -p /sbin/ldconfig
 
 
 %postun
-/usr/sbin/ldconfig
+/sbin/ldconfig
 glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas &>/dev/null ||:
 
 
@@ -99,8 +99,14 @@ glib-compile-schemas --allow-any-name %{_datadir}/glib-2.0/schemas &>/dev/null |
 
 
 %changelog
-* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 0.6.0-3
-- 为 Magic 3.0 重建
+* Fri Feb 15 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.8.0-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
+
+* Mon Jan 21 2013 Debarshi Ray <rishi@fedoraproject.org> - 0.8.0-1
+- Update to 0.8.0
+
+* Fri Nov 30 2012 Brian Pepple <bpepple@fedoraproject.org> - 0.6.0-3
+- Rebuild.
 
 * Wed Oct 31 2012 Rex Dieter <rdieter@fedoraproject.org> - 0.6.0-2
 - track sonames so bumps aren't a surprise
