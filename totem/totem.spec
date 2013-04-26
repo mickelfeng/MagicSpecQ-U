@@ -1,12 +1,12 @@
 Summary: Movie player for GNOME
 Name: totem
-Version: 3.6.3
+Version: 3.8.0
 Release: 1%{?dist}
 Epoch: 1
 License: GPLv2+ with exceptions
 Group: Applications/Multimedia
 URL: http://projects.gnome.org/totem/
-Source0: http://download.gnome.org/sources/totem/3.6/totem-%{version}.tar.xz
+Source0: http://download.gnome.org/sources/totem/3.8/totem-%{version}.tar.xz
 
 Requires: gnome-icon-theme
 # For the opensubtitles plugin
@@ -20,7 +20,8 @@ Requires: gstreamer1-plugins-base
 Requires: gstreamer1-plugins-good
 Requires: gstreamer1-plugins-bad-free
 Requires: gvfs-fuse
-Requires: gnome-dvb-daemon
+# Disabled until ported to GStreamer 1.0
+# Requires: gnome-dvb-daemon
 Requires: grilo-plugins
 Requires: gsettings-desktop-schemas
 
@@ -34,10 +35,11 @@ BuildRequires: gcc-c++, pkgconfig, gettext
 BuildRequires: perl(XML::Parser) intltool
 BuildRequires: gnome-icon-theme
 BuildRequires: gsettings-desktop-schemas-devel
+BuildRequires: itstool
 BuildRequires: libXtst-devel
 BuildRequires: libXi-devel
 BuildRequires: libXt-devel
-BuildRequires: gnome-doc-utils
+BuildRequires: pylint
 BuildRequires: python-devel
 BuildRequires: pygobject3-devel
 BuildRequires: totem-pl-parser-devel
@@ -57,7 +59,7 @@ BuildRequires: liberation-sans-fonts
 # For plugins
 BuildRequires: lirc-devel
 BuildRequires: libgdata-devel
-BuildRequires: grilo-devel
+BuildRequires: grilo-devel >= 0.2.0
 BuildRequires: libzeitgeist-devel
 
 BuildRequires: gnome-common
@@ -156,7 +158,6 @@ export BROWSER_PLUGIN_DIR=%{_libdir}/mozilla/plugins
 %configure \
   --enable-browser-plugins \
   --enable-nautilus \
-  --disable-scrollkeeper \
   --disable-static
 
 make %{?_smp_mflags}
@@ -215,7 +216,6 @@ glib-compile-schemas %{_datadir}/glib-2.0/schemas &> /dev/null || :
 %{_datadir}/totem/properties.ui
 %{_datadir}/totem/totem.ui
 %{_datadir}/totem/uri.ui
-%{_datadir}/totem/video-list.ui
 %dir %{_libexecdir}/totem
 %{_libexecdir}/totem/totem-bugreport.py
 %exclude %{_libexecdir}/totem/totem-bugreport.py[co]
@@ -230,6 +230,7 @@ glib-compile-schemas %{_datadir}/glib-2.0/schemas &> /dev/null || :
 %{_libdir}/totem/plugins/grilo
 %{_libdir}/totem/plugins/im-status
 %{_libdir}/totem/plugins/ontop
+%{_libdir}/totem/plugins/recent
 %{_libdir}/totem/plugins/rotation
 %{_libdir}/totem/plugins/screensaver
 %{_libdir}/totem/plugins/skipto
@@ -237,7 +238,6 @@ glib-compile-schemas %{_datadir}/glib-2.0/schemas &> /dev/null || :
 %{_libdir}/totem/plugins/media-player-keys
 %{_libdir}/totem/plugins/opensubtitles
 %{_libdir}/totem/plugins/pythonconsole
-%{_libdir}/totem/plugins/recent
 %{_libdir}/totem/plugins/screenshot
 %{_libdir}/totem/plugins/save-file
 %{_libdir}/totem/plugins/zeitgeist-dp
@@ -280,6 +280,22 @@ glib-compile-schemas %{_datadir}/glib-2.0/schemas &> /dev/null || :
 %{_libdir}/mozilla/plugins/libtotem-vegas-plugin.so
 
 %changelog
+* Tue Mar 26 2013 Kalev Lember <kalevlember@gmail.com> - 1:3.8.0-1
+- Update to 3.8.0
+
+* Wed Mar 20 2013 Richard Hughes <rhughes@redhat.com> - 1:3.7.93-1
+- Update to 3.7.93
+
+* Thu Feb 21 2013 Kalev Lember <kalevlember@gmail.com> 3.6.3-4
+- Rebuilt for cogl soname bump
+
+* Fri Jan 25 2013 Peter Robinson <pbrobinson@fedoraproject.org> 3.6.3-3
+- Rebuild for new cogl
+
+* Fri Jan 04 2013 Bastien Nocera <bnocera@redhat.com> 3.6.3-2
+- Remove hard dependency on gnome-dvb-daemon until it's ported
+  to GStreamer 1.0
+
 * Thu Nov 08 2012 Bastien Nocera <bnocera@redhat.com> 3.6.3-1
 - Update to 3.6.3
 
@@ -291,9 +307,6 @@ glib-compile-schemas %{_datadir}/glib-2.0/schemas &> /dev/null || :
 
 * Tue Sep 25 2012 Kalev Lember <kalevlember@gmail.com> - 1:3.6.0-1
 - Update to 3.6.0
-
-* Mon Sep 24 2012 Brian Pepple <bpepple@fedoraproject.org> - 1:3.5.92-2
-- Rebuild for gst-1.0.0
 
 * Wed Sep 19 2012 Tomas Bzatek <tbzatek@redhat.com> - 1:3.5.92-1
 - Update to 3.5.92
