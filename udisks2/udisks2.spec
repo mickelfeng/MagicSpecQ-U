@@ -1,5 +1,5 @@
 %define glib2_version                   2.31.13
-%define gobject_introspection_version   1.30.0
+%define gobject_intuirospection_version   1.30.0
 %define polkit_version                  0.101
 %define systemd_version                 184
 %define libatasmart_version             0.12
@@ -7,8 +7,8 @@
 
 Summary: Disk Manager
 Name: udisks2
-Version: 2.0.0
-Release: 1%{?dist}
+Version: 2.1.0
+Release: 2%{?dist}
 License: GPLv2+
 Group: System Environment/Libraries
 URL: http://www.freedesktop.org/wiki/Software/udisks
@@ -45,8 +45,11 @@ Requires: parted
 Requires: gdisk
 # for LUKS devices
 Requires: cryptsetup-luks
-# For ejecting removable disks
+# for ejecting removable disks
 Requires: eject
+
+# for MD-RAID
+Requires: mdadm
 
 Requires: libudisks2 = %{version}-%{release}
 
@@ -59,6 +62,12 @@ Requires: ntfsprogs
 
 # for /proc/self/mountinfo, only available in 2.6.26 or higher
 Conflicts: kernel < 2.6.26
+
+
+# Cannot mount external firewire hard drive or usb thumb drive as normal user, root required
+# https://bugzilla.redhat.com/show_bug.cgi?id=909010
+Patch0: udisks-2.1.1-firewire-ident.patch
+
 
 %description
 udisks provides a daemon, D-Bus API and command line tools for
@@ -89,8 +98,13 @@ daemon. This package is for the udisks 2.x series.
 
 %prep
 %setup -q -n udisks-%{version}
+%patch0 -p1 -b .firewire-ident
 
 %build
+# we can't use _hardened_build here, see
+# https://bugzilla.redhat.com/show_bug.cgi?id=892837
+export CFLAGS='-fPIC %optflags'
+export LDFLAGS='-pie -Wl,-z,now -Wl,-z,relro'
 %configure --enable-gtk-doc
 make
 
@@ -148,6 +162,24 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/*.a
 
 # Note: please don't forget the %{?dist} in the changelog. Thanks
 %changelog
+* Thu Mar 28 2013 Tomas Bzatek <tbzatek@redhat.com> - 2.1.0-2%{?dist}
+- Fix firewire drives identification (#909010)
+
+* Wed Mar 20 2013 Kalev Lember <kalevlember@gmail.com> - 2.1.0-1
+- Update to 2.1.0
+
+* Fri Feb 15 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.0.91-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
+
+* Tue Jan 22 2013 Matthias Clasen <mclasen@redhat.com> - 2.0.91-2%{?dist}
+- Hardened build
+
+* Mon Jan 07 2013 David Zeuthen <davidz@redhat.com> - 2.0.91-1%{?dist}
+- Update to release 2.0.91
+
+* Tue Dec 18 2012 David Zeuthen <davidz@redhat.com> - 2.0.90-1%{?dist}
+- Update to release 2.0.90
+
 * Fri Oct 02 2012 David Zeuthen <davidz@redhat.com> - 2.0.0-1%{?dist}
 - Update to release 2.0.0
 
