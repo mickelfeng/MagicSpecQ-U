@@ -1,25 +1,25 @@
 Summary:	Desktop-neutral search tool and indexer
 Name:		tracker
-Version:	0.15.0
+Version:	0.16.0
 Release:	1%{?dist}
 License:	GPLv2+
 Group:		Applications/System
 URL:		http://projects.gnome.org/tracker/
-Source0:	http://download.gnome.org/sources/tracker/0.14/%{name}-%{version}.tar.xz
+Source0:	http://download.gnome.org/sources/tracker/0.16/%{name}-%{version}.tar.xz
 
 # only autostart in Gnome, see also
 # https://bugzilla.redhat.com/show_bug.cgi?id=771601
-Patch1:  tracker-0.14.2-onlyshowin.patch
+Patch1:		tracker-0.15-onlyshowin.patch
 
-BuildRequires:	poppler-glib-devel libxml2-devel libgsf-devel
+BuildRequires:	poppler-glib-devel libxml2-devel libgsf-devel libgxps-devel
 BuildRequires:	libuuid-devel dbus-glib-devel
 BuildRequires:	nautilus-devel
 BuildRequires:	libjpeg-devel libexif-devel exempi-devel
 BuildRequires:	libiptcdata-devel libtiff-devel libpng-devel giflib-devel
 BuildRequires:	sqlite-devel vala-devel libgee06-devel
-BuildRequires:  gstreamer-plugins-base-devel gstreamer-devel
+BuildRequires:	gstreamer-plugins-base-devel gstreamer-devel
 BuildRequires:	totem-pl-parser-devel libvorbis-devel flac-devel enca-devel
-BuildRequires:	upower-devel gnome-keyring-devel NetworkManager-glib-devel
+BuildRequires:	upower-devel libsecret-devel NetworkManager-glib-devel
 BuildRequires:	libunistring-devel gupnp-dlna-devel taglib-devel rest-devel
 BuildRequires:	libosinfo-devel libcue-devel
 BuildRequires:	firefox thunderbird
@@ -29,13 +29,14 @@ BuildRequires:	gtk-doc graphviz dia
 BuildRequires:	gobject-introspection
 #BuildRequires:	evolution-devel
 
+Obsoletes: tracker-miner-flickr < 0.16.0
 
 %description
 Tracker is a powerful desktop-neutral first class object database,
 tag/metadata database, search tool and indexer.
 
 It consists of a common object database that allows entities to have an
-almost infinte number of properties, metadata (both embedded/harvested as
+almost infinite number of properties, metadata (both embedded/harvested as
 well as user definable), a comprehensive database of keywords/tags and
 links to other entities.
 
@@ -64,8 +65,7 @@ Obsoletes:	tracker-search-tool <= 0.12.0
 
 %description ui-tools
 Graphical frontend to tracker search (tracker-needle) and configuration
-(tracker-preferences) facilities. This also contains A test tool to navigate
-around objects in the database based on their relationships (tracker-explorer)
+(tracker-preferences) facilities.
 
 #%package evolution-plugin
 #Summary:	Tracker's evolution plugin
@@ -91,15 +91,7 @@ Requires:	%{name}%{?_isa} = %{version}-%{release}
 
 %description nautilus-plugin
 Tracker's nautilus plugin, provides 'tagging' functionality. Ability to perform
-search in nuautilus using tracker is built-in directly in the nautilus package.
-
-%package miner-flickr
-Summary:	Tracker's Flickr data miner
-Group:		User Interface/Desktops
-Requires:	%{name}%{?_isa} = %{version}-%{release}
-
-%description miner-flickr
-Tracker's Flickr data miner.
+search in nautilus using tracker is built-in directly in the nautilus package.
 
 %package thunderbird-plugin
 Summary:	Thunderbird extension to export mails to Tracker
@@ -112,7 +104,7 @@ A simple Thunderbird extension to export mails to Tracker.
 %package docs
 Summary:	Documentations for tracker
 Group:		Documentation
-BuildArch:      noarch
+BuildArch:	noarch
 
 %description docs
 This package contains the documentation for tracker
@@ -130,12 +122,12 @@ sed -i -e 's|"/lib /usr/lib|"/%{_lib} %{_libdir}|' configure
 
 %build
 %configure --disable-static		\
-	--disable-tracker-search-bar	\
 	--enable-gtk-doc		\
-	--disable-miner-evolution	\
-	--disable-generic-media-extractor \
 	--with-firefox-plugin-dir=%{_libdir}/firefox/extensions		\
 	--with-thunderbird-plugin-dir=%{_libdir}/thunderbird/extensions	\
+	--with-unicode-support=libunistring				\
+	--disable-qt							\
+	--disable-miner-evolution					\
 	--disable-functional-tests
 # Disable the functional tests for now, they use python bytecodes.
 
@@ -145,7 +137,7 @@ make V=1 %{?_smp_mflags}
 make DESTDIR=%{buildroot} install
 
 mkdir -p %{buildroot}%{_sysconfdir}/ld.so.conf.d
-echo "%{_libdir}/tracker-0.15"	\
+echo "%{_libdir}/tracker-0.16"	\
 	> %{buildroot}%{_sysconfdir}/ld.so.conf.d/tracker-%{_arch}.conf
 
 %if 0%{?fedora} && 0%{?fedora} < 18
@@ -157,7 +149,7 @@ desktop-file-install --delete-original			\
 
 find %{buildroot} -type f -name "*.la" -exec rm -f {} ';'
 rm -rf %{buildroot}%{_datadir}/tracker-tests
-magic_rpm_clean.sh
+
 %find_lang %{name}
 
 %post -p /sbin/ldconfig
@@ -188,17 +180,16 @@ if [ -x %{_bindir}/gtk-update-icon-cache ]; then
 fi
 
 %files -f %{name}.lang
-%defattr(-, root, root, -)
 %doc AUTHORS ChangeLog COPYING NEWS README
 %{_bindir}/tracker*
 %{_libexecdir}/tracker*
 %{_datadir}/tracker/
 %{_datadir}/dbus-1/services/org.freedesktop.Tracker*
 %{_libdir}/*.so.*
-%{_libdir}/tracker-0.15/
-%{_libdir}/girepository-1.0/Tracker-0.15.typelib
-%{_libdir}/girepository-1.0/TrackerExtract-0.15.typelib
-%{_libdir}/girepository-1.0/TrackerMiner-0.15.typelib
+%{_libdir}/tracker-0.16/
+%{_libdir}/girepository-1.0/Tracker-0.16.typelib
+%{_libdir}/girepository-1.0/TrackerExtract-0.16.typelib
+%{_libdir}/girepository-1.0/TrackerMiner-0.16.typelib
 %{_mandir}/*/tracker*.gz
 %{_sysconfdir}/ld.so.conf.d/tracker-%{_arch}.conf
 %config(noreplace) %{_sysconfdir}/xdg/autostart/tracker*.desktop
@@ -208,24 +199,17 @@ fi
 %exclude %{_bindir}/tracker-preferences
 %exclude %{_mandir}/man1/tracker-preferences.1.gz
 %exclude %{_mandir}/man1/tracker-needle.1.gz
-%exclude %{_libexecdir}/tracker-miner-flickr
-%exclude %{_sysconfdir}/xdg/autostart/tracker-miner-flickr.desktop
-%exclude %{_datadir}/dbus-1/services/org.freedesktop.Tracker1.Miner.Flickr.service
-%exclude %{_datadir}/tracker/miners/tracker-miner-flickr.desktop
 
 %files devel
-%defattr(-, root, root, -)
-%{_includedir}/tracker-0.15/
+%{_includedir}/tracker-0.16/
 %{_libdir}/*.so
 %{_libdir}/pkgconfig/*.pc
 %{_datadir}/vala/vapi/tracker*.*
-%{_datadir}/gir-1.0/Tracker-0.15.gir
-%{_datadir}/gir-1.0/TrackerExtract-0.15.gir
-%{_datadir}/gir-1.0/TrackerMiner-0.15.gir
+%{_datadir}/gir-1.0/Tracker-0.16.gir
+%{_datadir}/gir-1.0/TrackerExtract-0.16.gir
+%{_datadir}/gir-1.0/TrackerMiner-0.16.gir
 
 %files ui-tools
-%defattr(-, root, root, -)
-%{_bindir}/tracker-explorer
 %{_bindir}/tracker-needle
 %{_bindir}/tracker-preferences
 %{_datadir}/icons/*/*/apps/tracker.*
@@ -235,34 +219,22 @@ fi
 %exclude %{_datadir}/applications/trackerbird-launcher.desktop
 
 #%files evolution-plugin
-#%defattr(-, root, root, -)
 #%{evo_plugins_dir}/liborg-freedesktop-Tracker-evolution-plugin.so
 #%{evo_plugins_dir}/org-freedesktop-Tracker-evolution-plugin.eplug
 
 %files firefox-plugin
-%defattr(-, root, root, -)
 %{_datadir}/xul-ext/trackerfox/
 %{_libdir}/firefox/extensions/trackerfox@bustany.org
 
 %files nautilus-plugin
-%defattr(-, root, root, -)
 %{_libdir}/nautilus/extensions-3.0/libnautilus-tracker-tags.so
 
-%files miner-flickr
-%defattr(-, root, root, -)
-%{_libexecdir}/tracker-miner-flickr
-%{_datadir}/dbus-1/services/org.freedesktop.Tracker1.Miner.Flickr.service
-%{_datadir}/tracker/miners/tracker-miner-flickr.desktop
-%config(noreplace) %{_sysconfdir}/xdg/autostart/tracker-miner-flickr.desktop
-
 %files thunderbird-plugin
-%defattr(-, root, root, -)
 %{_datadir}/xul-ext/trackerbird/
 %{_libdir}/thunderbird/extensions/trackerbird@bustany.org
 %{_datadir}/applications/trackerbird-launcher.desktop
 
 %files docs
-%defattr(-, root, root, -)
 %doc docs/reference/COPYING
 %{_datadir}/gtk-doc/html/libtracker-miner/
 %{_datadir}/gtk-doc/html/libtracker-extract/
@@ -270,6 +242,25 @@ fi
 %{_datadir}/gtk-doc/html/ontology/
 
 %changelog
+* Thu Mar 21 2013 Kalev Lember <kalevlember@gmail.com> 0.16.0-1
+- Update to 0.16.0
+- Remove and obsolete the tracker-miner-flickr subpackage
+
+* Wed Feb 20 2013 Ville Skyttä <ville.skytta@iki.fi> 0.15.2-2
+- Build with XPS support, fix building with GNOME keyring support.
+- Be explicit about unicode=libunistring and disabling Qt.
+- Description spelling fixes (BZ #902549).
+
+* Wed Feb 20 2013 Deji Akingunola <dakingun@gmail.com> 0.15.2-1
+- Update to 0.15.2 devel release
+
+* Sat Jan 26 2013 Peter Robinson <pbrobinson@fedoraproject.org> 0.15.1-1
+- Update to 0.15.1 devel release
+- Fix up changelog dates, minor spec cleanups
+
+* Mon Jan 21 2013 Adam Tkac <atkac redhat com> - 0.14.4-2
+- rebuild due to "jpeg8-ABI" feature drop
+
 * Fri Nov 02 2012 Deji Akingunola <dakingun@gmail.com> - 0.14.4-1
 - Update to 0.14.4 (http://download.gnome.org/sources/tracker/0.14/tracker-0.14.4.changes)
 
@@ -445,7 +436,7 @@ fi
 * Thu Mar 10 2011 Deji Akingunola <dakingun@gmail.com> - 0.10.2-1
 - Update to 0.10.2
 
-* Fri Feb 17 2011 Deji Akingunola <dakingun@gmail.com> - 0.10.0-1
+* Thu Feb 17 2011 Deji Akingunola <dakingun@gmail.com> - 0.10.0-1
 - Update to 0.10.0
 - Re-enable tracker-search-bar
 
@@ -488,7 +479,7 @@ fi
 * Wed Dec 15 2010 Rex Dieter <rdieter@fedoraproject.org> - 0.9.30-2
 - rebuild (poppler)
 
-* Fri Dec 04 2010 Deji Akingunola <dakingun@gmail.com> - 0.9.28-1
+* Sat Dec 04 2010 Deji Akingunola <dakingun@gmail.com> - 0.9.28-1
 - Update to 0.9.30
 
 * Sun Nov 07 2010 Deji Akingunola <dakingun@gmail.com> - 0.9.27-1
@@ -501,7 +492,7 @@ fi
 - First update to 0.9.x series
 - Re-word the package summary (conformant to upstream wording).
 
-* Thu Sep 28 2010 Deji Akingunola <dakingun@gmail.com> - 0.8.17-3
+* Tue Sep 28 2010 Deji Akingunola <dakingun@gmail.com> - 0.8.17-3
 - Rebuild for poppler-0.15.
 
 * Tue Sep 28 2010 Deji Akingunola <dakingun@gmail.com> - 0.8.17-2
@@ -577,7 +568,7 @@ fi
 * Thu Apr 09 2009 Deji Akingunola <dakingun@gmail.com> - 0.6.93-1
 - Update to 0.6.93 release
 
-* Fri Mar 28 2009 Deji Akingunola <dakingun@gmail.com> - 0.6.92-1
+* Sat Mar 28 2009 Deji Akingunola <dakingun@gmail.com> - 0.6.92-1
 - Update to 0.6.92 release
 
 * Fri Mar 13 2009 Deji Akingunola <dakingun@gmail.com> - 0.6.91-1
@@ -638,7 +629,7 @@ fi
 * Fri Dec 14 2007 Deji Akingunola <dakingun@gmail.com> - 0.6.4-2
 - Backport crasher fixes from upstream svn trunk
 
-* Mon Dec 11 2007 Deji Akingunola <dakingun@gmail.com> - 0.6.4-1
+* Tue Dec 11 2007 Deji Akingunola <dakingun@gmail.com> - 0.6.4-1
 - Version 0.6.4
 
 * Tue Dec 04 2007 Deji Akingunola <dakingun@gmail.com> - 0.6.3-3
