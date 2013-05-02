@@ -1,11 +1,13 @@
 
 Name: qtwebkit
-Version: 2.2.2
-Release: 8%{?dist}
 Summary: Qt WebKit bindings
-Group: System Environment/Libraries
+
+Version: 2.3.0
+Release: 2%{?dist}
+
 License: LGPLv2 with exceptions or GPLv3 with exceptions
 URL: http://trac.webkit.org/wiki/QtWebKit
+## This was how qtwebkit-2.2 did it (no longer works for 2.3)
 # get make-package.py:
 # $ git clone git://qt.gitorious.org/qtwebkit/tools.git
 # get Qt WebKit source code:
@@ -18,52 +20,50 @@ URL: http://trac.webkit.org/wiki/QtWebKit
 # $ tar xzf qtwebkit-2.2.2-source.tar.gz
 # $ mv qtwebkit-2.2.2-source/include qtwebkit-2.2.2-source/Source/
 # $ tar cJf qtwebkit-2.2.2-source.tar.xz qtwebkit-2.2.2-source/
-Source0: qtwebkit-%{version}-source.tar.xz
-BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
+##
+# download from
+# https://gitorious.org/webkit/qtwebkit-23/archive-tarball/qtwebkit-2.3.0
+# repack as .xz
+Source0:  qtwebkit-%{version}.tar.xz
 
 # search /usr/lib{,64}/mozilla/plugins-wrapped for browser plugins too
 Patch1: webkit-qtwebkit-2.2-tp1-pluginpath.patch
 
-# include -debuginfo except on s390(x) during linking of libQtWebKit
-Patch3: webkit-qtwebkit-2.2-debuginfo.patch
+# smaller debuginfo s/-g/-g1/ (debian uses -gstabs) to avoid 4gb size limit
+Patch3: qtwebkit-2.3-debuginfo.patch
 
-# fix for qt-4.6.x 
-Patch5: webkit-qtwebkit-2.2tp1-qt46.patch
-
-# gcc doesn't support flag -fuse-ld=gold
-Patch7: webkit-qtwebkit-ld.gold.patch
-
-# svg infinite loop 
-# https://projects.kde.org/news/177
-# https://bugs.webkit.org/show_bug.cgi?id=97258
-Patch8: qtwebkit-svg_infinite_loop.patch
-
-# fix 64k pagesize issue
-Patch9: qtwebkit-64k-pagesize.patch
+# tweak linker flags to minimize memory usage on "small" platforms
+Patch4: qtwebkit-2.3-save_memory.patch
 
 # use SYSTEM_MALLOC on ppc/ppc64
 Patch10: qtwebkit-ppc.patch
 
-## upstream patches
-# https://bugzilla.redhat.com/891464
-# https://bugs.webkit.org/show_bug.cgi?id=72285
-Patch100: qtwebkit-webkit72285.patch
-Patch102: 0002-JSString-resolveRope-should-report-extra-memory-cost.patch
-Patch103: 0003-Fix-build-with-GLib-2.31.patch
-Patch105: 0005-Fix-build-on-linux-i386-where-gcc-would-produce-warn.patch
+# add missing function Double2Ints(), backport
+Patch11: qtwebkit-23-LLInt-C-Loop-backend-ppc.patch
 
+## upstream patches
+
+BuildRequires: bison
 BuildRequires: chrpath
+BuildRequires: flex
+BuildRequires: gperf
 BuildRequires: libicu-devel
 BuildRequires: libjpeg-devel
 BuildRequires: pkgconfig(gio-2.0) pkgconfig(glib-2.0)
+BuildRequires: pkgconfig(fontconfig)
 # gstreamer media support
 BuildRequires: pkgconfig(gstreamer-0.10) pkgconfig(gstreamer-app-0.10)
 BuildRequires: pkgconfig(libpcre)
 BuildRequires: pkgconfig(libpng)
-BuildRequires: pkgconfig(QtCore) pkgconfig(QtNetwork) 
+BuildRequires: pkgconfig(libwebp)
+BuildRequires: pkgconfig(libxslt)
+BuildRequires: pkgconfig(QtCore) pkgconfig(QtNetwork)
 BuildRequires: pkgconfig(sqlite3)
 BuildRequires: pkgconfig(xext)
 BuildRequires: pkgconfig(xrender)
+BuildRequires: perl(version)
+BuildRequires: perl(Digest::MD5)
+BuildRequires: ruby
 %if 0%{?fedora}
 # for QtLocation, QtSensors 
 BuildRequires: qt-mobility-devel >= 1.2
@@ -80,11 +80,8 @@ Provides: qt4-webkit%{?_isa} = 2:%{version}-%{release}
 
 %package devel
 Summary: Development files for %{name}
-Group: Development/Libraries
 Requires: %{name}%{?_isa} = %{version}-%{release}
 Requires: qt4-devel
-# when qt_webkit_version.pri was moved from qt-devel => qt-webkit-devel
-Conflicts: qt-devel < 1:4.7.2-9
 Obsoletes: qt-webkit-devel < 1:4.9.0
 Provides:  qt-webkit-devel = 2:%{version}-%{release}
 Provides:  qt4-webkit-devel = 2:%{version}-%{release}
@@ -94,67 +91,65 @@ Provides:  qt4-webkit-devel%{?_isa} = 2:%{version}-%{release}
 
 
 %prep
-%setup -q -n qtwebkit-%{version}-source
+%setup -q -n webkit-qtwebkit-23
 
 %patch1 -p1 -b .pluginpath
 %patch3 -p1 -b .debuginfo
-## don't unconditionally apply this anymore
-## it has side-effects ( like http://bugzilla.redhat.com/761337 )
-#patch5 -p1 -b .qt46
-%patch7 -p1 -b .ld.gold
-%patch8 -p1 -b .svn_infinite_loop
-%patch9 -p1 -b .64kpagesize
-%ifarch ppc ppc64
+%patch4 -p1 -b .save_memory
+# all big-endian arches require the Double2Ints fix
+%ifarch ppc ppc64 s390 s390x
 %patch10 -p1 -b .system-malloc
+%patch11 -p1 -b .Double2Ints
 %endif
-%patch100 -p1 -b .webkit72285
-%patch102 -p1 -b .0002
-%patch103 -p1 -b .0003
-%patch105 -p1 -b .0005
 
 
 %build 
 
 PATH=%{_qt4_bindir}:$PATH; export PATH
+QMAKEPATH=`pwd`/Tools/qmake; export QMAKEPATH
 QTDIR=%{_qt4_prefix}; export QTDIR
 
-pushd Source
-%{_qt4_qmake} 
-popd
-
-make %{?_smp_mflags} -C Source
+./Tools/Scripts/build-webkit \
+  --qt \
+  --no-webkit2 \
+  --release \
+  --qmakearg="CONFIG+=production_build DEFINES+=HAVE_LIBWEBP=1" \
+  --makeargs=%{?_smp_mflags} \
+%ifarch %{ix86}
+   --no-force-sse2
+%endif
 
   
 %install
-rm -rf %{buildroot} 
+make install INSTALL_ROOT=%{buildroot} -C WebKitBuild/Release
 
-make install INSTALL_ROOT=%{buildroot} -C Source 
+## HACK alert
+chrpath --list   %{buildroot}%{_qt4_libdir}/libQtWebKit.so.4.10.? ||:
+chrpath --delete %{buildroot}%{_qt4_libdir}/libQtWebKit.so.4.10.? ||:
 
-## HACK, there has to be a better way
-chrpath --list   %{buildroot}%{_qt4_libdir}/libQtWebKit.so.4.9.?
-chrpath --delete %{buildroot}%{_qt4_libdir}/libQtWebKit.so.4.9.? ||:
+## pkgconfig love
+# drop Libs.private, it contains buildroot references, and
+# we don't support static linking libQtWebKit anyway
+pushd %{buildroot}%{_qt4_libdir}/pkgconfig
+grep -v "^Libs.private:" QtWebKit.pc > QtWebKit.pc.new && \
+mv QtWebKit.pc.new QtWebKit.pc
+popd
 
 mkdir -p %{buildroot}%{_libdir}/pkgconfig
 mv %{buildroot}%{_qt4_libdir}/pkgconfig/*.pc %{buildroot}%{_libdir}/pkgconfig
-rm -rf %{buildroot}%{_qt4_libdir}/pkgconfig/
-
-%clean
-rm -rf %{buildroot} 
-
+rm -rf %{buildroot}%{_qt4_libdir}/pkgconfig
 
 %post -p /sbin/ldconfig
 %postun -p /sbin/ldconfig
 
 %files
-%defattr(-,root,root,-)
 %{_qt4_libdir}/libQtWebKit.so.4*
 %if 0%{?_qt4_importdir:1}
 %{_qt4_importdir}/QtWebKit/
 %endif
 
 %files devel
-%defattr(-,root,root,-)
-%{_qt4_datadir}/mkspecs/modules/qt_webkit_version.pri
+%{_qt4_datadir}/mkspecs/modules/qt_webkit.pri
 %{_qt4_headerdir}/QtWebKit/
 %{_qt4_libdir}/libQtWebKit.prl
 %{_qt4_libdir}/libQtWebKit.so
@@ -162,6 +157,36 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Mar 25 2013 Dan Horák <dan[at]danny.cz> 2.3.0-2
+- use ppc fixes also on s390
+
+* Fri Mar 15 2013 Rex Dieter <rdieter@fedoraproject.org> 2.3.0-1
+- 2.3.0 (final)
+- enable libwebp support
+- .spec cleanup
+
+* Sat Mar 09 2013 Rex Dieter <rdieter@fedoraproject.org> 2.3-0.6.rc1
+- should use libxml and libxslt (#919778)
+
+* Sat Mar 09 2013 Rex Dieter <rdieter@fedoraproject.org> 2.3-0.5.rc1
+- qt_webkit_version.pri is missing in 2.3-rc1 package (#919477)
+
+* Tue Mar 05 2013 Rex Dieter <rdieter@fedoraproject.org> 2.3-0.4.rc1
+- 2.3-rc1
+
+* Tue Mar 05 2013 Than Ngo <than@redhat.com> - 2.3-0.3.beta2
+- add missing function Double2Ints() on ppc, backport
+
+* Mon Feb 25 2013 Than Ngo <than@redhat.com> - 2.3-0.2.beta2
+- fix 64k page issue on ppc/ppc64
+- set -g1 on ppc/ppc64 to reduce archive size
+
+* Thu Feb 21 2013 Rex Dieter <rdieter@fedoraproject.org> 2.3-0.1.beta2
+- qtwebkit-2.3-beta2
+
+* Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.2.2-9
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
+
 * Tue Jan 22 2013 Rex Dieter <rdieter@fedoraproject.org> 2.2.2-8
 - fix rpath (#902571)
 
