@@ -2,6 +2,7 @@
 # 是否必须有中文翻译
 DEBUG=0
 LOG=1
+BUMP=0
 if [ $LOG = "1" ];then
 	LOGFILE=build.log
 	rm -f $LOGFILE
@@ -118,6 +119,9 @@ for i in `rpmspec -q --buildrequires $SPECNAME`;do
 		debug_run smart install $i -y
 	fi
 done
+if [ $BUMP = "1" ];then
+	rpm rpmdev-bumpspec -c "重新编译" -u "Liu Di <liudidi@gmail.com>" $SPECNAME
+fi
 #开始打包
 if ! (debug_run rpmbuild -ba $SPECNAME --define '_topdir '$(pwd)'');then
 	echo "打包过程出错，请检查 build.log 文件"	
