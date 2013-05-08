@@ -15,14 +15,10 @@ License: Shareware
 Group: Applications/Archiving
 Group(zh_CN.UTF-8): 应用程序/归档
 URL: http://www.rarlabs.com/
-%ifarch %{ix86}
 Source0: http://www.rarlabs.com/rar/rarlinux-%{version}.tar.gz
-%endif
-%ifarch x86_64
-Source0: http://www.rarlabs.com/rar/rarlinux-x64-%{version}.tar.gz
-%endif
+Source1: http://www.rarlabs.com/rar/rarlinux-x64-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
-BuildArch: i686
+BuildArch: %{ix86} x86_64
 
 %description
 RAR is a powerful tool allowing you to manage and control archive files.
@@ -34,9 +30,17 @@ RAR是一个强力工具，它允许你管理和控制归档。控制台RAR只�
 .rar扩展名的。ZIP和其它格式不支持。
 
 %prep
-%setup -n %{name}
+rm -rf rar
+%ifarch %{ix86}
+tar xvf %{SOURCE0}
+%endif
+%ifarch x86_64
+tar xvf %{SOURCE1}
+%endif
+/bin/chmod -Rf a+rX,u+w,g-w,o-w .
 
 %install
+cd rar
 %{__rm} -rf %{buildroot}
 %{__install} -D -p -m 0755 rar %{buildroot}%{_bindir}/rar
 %{__install} -D -p -m 0755 unrar %{buildroot}%{_bindir}/unrar
@@ -52,7 +56,6 @@ magic_rpm_clean.sh
 
 %files
 %defattr(-, root, root, 0755)
-%doc *.txt
 %{_sysconfdir}/rarfiles.lst
 %{_bindir}/*
 %{_libdir}/default.sfx
