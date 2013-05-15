@@ -43,24 +43,24 @@ if ! [ $DIR = $CURRENTPATH ];then
         exit 1
 fi
 #联得当前的版本号
-if ! (debug_run rpmspec -q --qf "%{VERSION}\n" 3proxy.spec | sed -n '1p');then
+if ! (debug_run rpmspec -q --qf "%{VERSION}\n" $SPECNAME | sed -n '1p');then
 	echo "spec 文件有问题"
 	exit 1
 else
-	CURVER=$( rpmspec -q --qf "%{VERSION}\n" 3proxy.spec | sed -n '1p')
+	CURVER=$( rpmspec -q --qf "%{VERSION}\n" $SPECNAME | sed -n '1p')
 fi
-debug_echo $CURVER
+debug_echo "当前版本为$CURVER"
 #联得新版本号
-URL=http://www.3proxy.ru/download/
+URL=http://ftp.acc.umu.se/pub/GNOME/sources/cantarell-fonts/0.0
 rm -f index.html && wget $URL -O index.html
-new1="proxy version is "
-new2=" ("
+new1="LATEST-IS-"
+new2="<\\/a"
 NEWVER=$(grep "$new1.*$new2" index.html | sed "s/.*$new1//" | sed "s/$new2.*//" | sed 's/^[ ]\{1,\}//;s/[ ]\{1,\}$//g')
-debug_echo $NEWVER
+debug_echo "网站版本为 $NEWVER"
 rm -f index.html
 #对比版本号，若新则修改spec，执行自动打包脚本.
 if [ $NEWVER != $CURVER ];then
-	sed -i 's/auto_ver '"$CURVER"'/auto_ver '"$NEWVER"'/g' $SPECNAME
+	sed -i 's/auto_ver '"$CURVER"'/auto_ver '"$NEWVER"'/g' $SPECNAME | sed -i 's/Version: '"$CURVER"'/Version: '"$NEWVER"'/g' $SPECNAME
 	./打包.sh
 fi
 popd
