@@ -1,17 +1,17 @@
 ### Header
 Summary: A collection of basic system utilities
 Name: util-linux
-Version: 2.22.1
-Release: 4%{?dist}
-License: GPLv2 and GPLv2+ and GPLv3+ and LGPLv2+ and BSD with advertising and Public Domain
+Version: 2.23
+Release: 1%{?dist}
+License: GPLv2 and GPLv2+ and LGPLv2+ and BSD with advertising and Public Domain
 Group: System Environment/Base
 URL: http://en.wikipedia.org/wiki/Util-linux
 
 %define upstream_version %{version}
 
 ### Macros
-%define floppyver 0.18
 %define cytune_archs %{ix86} alpha %{arm}
+%define compldir %{_datadir}/bash-completion/completions/
 
 ### Dependencies
 BuildRequires: gettext-devel
@@ -21,27 +21,24 @@ BuildRequires: zlib-devel
 BuildRequires: popt-devel
 BuildRequires: libutempter-devel
 Buildrequires: systemd-devel
-
-# because backported su(1) and runuser(1) patches
-BuildRequires: automake
-BuildRequires: autoconf
-BuildRequires: libtool
+Buildrequires: libuser-devel
+BuildRequires: libcap-ng-devel
 
 ### Sources
-Source0: ftp://ftp.kernel.org/pub/linux/utils/util-linux/v2.22/util-linux-%{upstream_version}.tar.xz
+Source0: ftp://ftp.kernel.org/pub/linux/utils/util-linux/v2.23/util-linux-%{upstream_version}.tar.xz
 Source1: util-linux-login.pamd
 Source2: util-linux-remote.pamd
 Source3: util-linux-chsh-chfn.pamd
 Source4: util-linux-60-raw.rules
 Source8: nologin.c
 Source9: nologin.8
-Source11: http://downloads.sourceforge.net/floppyutil/floppy-%{floppyver}.tar.bz2
 Source12: util-linux-su.pamd
 Source13: util-linux-su-l.pamd
 Source14: util-linux-runuser.pamd
 Source15: util-linux-runuser-l.pamd
 
 ### Obsoletes & Conflicts & Provides
+Conflicts: bash-completion < 1:2.1-1
 # su(1) and runuser(1) merged into util-linux v2.22
 Conflicts: coreutils < 8.20
 # eject has been merged into util-linux v2.22
@@ -71,57 +68,11 @@ Requires: pam >= 1.1.3-7, /etc/pam.d/system-auth
 Requires: libuuid = %{version}-%{release}
 Requires: libblkid = %{version}-%{release}
 Requires: libmount = %{version}-%{release}
-Requires: systemd >= 185
-Requires(post): systemd-units
-Requires(preun): systemd-units
-
-### Floppy patches (Fedora/RHEL specific)
-###
-# add a missing header
-Patch0: util-linux-2.19-floppy-locale.patch
-# add note about ATAPI IDE floppy to fdformat.8
-Patch1: util-linux-2.20-fdformat-man-ide.patch
-# 169628 - /usr/bin/floppy doesn't work with /dev/fd0
-Patch2: util-linux-2.19-floppy-generic.patch
 
 ### Ready for upstream?
 ###
 # 151635 - makeing /var/log/lastlog
-Patch3: util-linux-ng-2.21-login-lastlog.patch
-# 231192 - ipcs is not printing correct values on pLinux
-Patch4: util-linux-2.21-ipcs-32bit.patch
-
-
-### Upstream patches from proposed stable/v2.22.2 branch
-### (remove after update to the final 2.22.2)
-###
-Patch101: 0001-libmount-don-t-use-umount-optimization-for-l-or-f.patch
-Patch102: 0002-wipefs-use-O_EXCL.patch
-Patch103: 0003-swapon-remove-loop-declaration-smatch-scan.patch
-Patch104: 0004-libblkid-fix-compiler-warning-Wstrict-aliasing.patch
-Patch105: 0005-mount-add-c-abbreviation-for-no-canonicalize-to-man-.patch
-Patch106: 0006-mount-add-long-options-for-L-and-U-to-man-page.patch
-Patch107: 0007-lib-loopdev-improve-debug-messages.patch
-Patch108: 0008-lib-loopdev-check-for-sys.patch
-Patch109: 0009-fsck.cramfs-compile-with-DINCLUDE_FS_TESTS-for-make-.patch
-Patch110: 0010-login-fix-compiler-warning-Wunused-result.patch
-Patch111: 0011-misc-make-readlink-usage-more-robust.patch
-
-### Upstream patches from master branch (will be v2.23) for su(1) and new
-### runuser(1) implementation. This is required for the recent coreutils where
-### is no more su(1).
-###
-Patch200: 0200-su-add-group-and-supp-group-options.patch
-Patch201: 0201-su-move-generic-su-code-to-su-common.c.patch
-Patch202: 0202-runuser-new-command-derived-from-su-1.patch
-Patch203: 0203-su-more-robust-getpwuid-for-GNU-Hurt-coreutils-71b7d.patch
-Patch204: 0204-su-verify-writing-to-streams-was-successful.patch
-Patch205: 0205-su-move-long-options-to-main.patch
-Patch206: 0206-su-add-segmentation-fault-reporting-of-the-child-pro.patch
-Patch207: 0207-su-fixed-a-typo-in-pam-error-message.patch
-Patch208: 0208-runuser-add-u-to-not-execute-shell.patch
-Patch209: 0209-build-sys-move-runuser-to-sbin-dir.patch
-Patch210: 0210-su-fix-COMMAND-not-specified-error.patch
+Patch3: util-linux-ng-2.22-login-lastlog.patch
 
 %description
 The util-linux package contains a large variety of low-level system
@@ -135,6 +86,7 @@ Summary: Device mounting library
 Group: Development/Libraries
 License: LGPLv2+
 Requires: libblkid = %{version}-%{release}
+Requires: libuuid = %{version}-%{release}
 Conflicts: filesystem < 3
 
 %description -n libmount
@@ -221,7 +173,10 @@ Summary: Helper daemon to guarantee uniqueness of time-based UUIDs
 Group: System Environment/Daemons
 Requires: libuuid = %{version}-%{release}
 License: GPLv2
+Requires: systemd
 Requires(pre): shadow-utils
+Requires(post): systemd-units
+Requires(preun): systemd-units
 
 %description -n uuidd
 The uuidd package contains a userspace daemon (uuidd) which guarantees
@@ -230,7 +185,7 @@ SMP systems.
 
 
 %prep
-%setup -q -a 11 -n %{name}-%{upstream_version}
+%setup -q -n %{name}-%{upstream_version}
 cp %{SOURCE8} %{SOURCE9} .
 
 for p in %{patches}; do
@@ -240,8 +195,6 @@ done
 %build
 unset LINGUAS || :
 
-./autogen.sh
-
 export CFLAGS="-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 $RPM_OPT_FLAGS"
 export SUID_CFLAGS="-fpie"
 export SUID_LDFLAGS="-pie -Wl,-z,relro -Wl,-z,now"
@@ -249,6 +202,8 @@ export SUID_LDFLAGS="-pie -Wl,-z,relro -Wl,-z,now"
 	--with-systemdsystemunitdir=%{_unitdir} \
 	--disable-silent-rules \
 	--disable-wall \
+	--disable-bfs \
+	--disable-pg \
 	--enable-socket-activation \
 	--enable-chfn-chsh \
 	--enable-write \
@@ -257,19 +212,28 @@ export SUID_LDFLAGS="-pie -Wl,-z,relro -Wl,-z,now"
 	--without-selinux \
 	--without-audit \
 	--with-utempter \
-	--disable-makeinstall-chown
+	--disable-makeinstall-chown \
+%ifnarch %cytune_archs
+	--disable-cytune \
+%endif
+%ifarch s390 s390x
+	--disable-hwclock \
+	--disable-fdformat
+%endif
 
 # build util-linux
 make %{?_smp_mflags}
 
-# build floppy stuff
-pushd floppy-%{floppyver}
-%configure --disable-gtk2
-make %{?_smp_mflags}
-popd
-
 # build nologin
 gcc $CFLAGS -o nologin nologin.c
+
+
+%check
+#to run tests use "--with check"
+%if %{?_with_check:1}%{!?_with_check:0}
+make check
+%endif
+
 
 %install
 rm -rf ${RPM_BUILD_ROOT}
@@ -283,11 +247,6 @@ chmod 0644 ${RPM_BUILD_ROOT}/var/log/lastlog
 
 # install util-linux
 make install DESTDIR=${RPM_BUILD_ROOT}
-
-# inslall floppy stuff
-pushd floppy-%{floppyver}
-make install DESTDIR=${RPM_BUILD_ROOT}
-popd
 
 # install nologin
 install -m 755 nologin ${RPM_BUILD_ROOT}%{_sbindir}
@@ -344,23 +303,9 @@ chmod 755 ${RPM_BUILD_ROOT}%{_bindir}/sunhostid
 	popd
 }
 
+%ifnarch s390 s390x
 ln -sf hwclock ${RPM_BUILD_ROOT}%{_sbindir}/clock
 echo ".so man8/hwclock.8" > ${RPM_BUILD_ROOT}%{_mandir}/man8/clock.8
-
-# unsupported on ix86 alpha armv4l
-%ifnarch %cytune_archs
-rm -f $RPM_BUILD_ROOT%{_bindir}/cytune $RPM_BUILD_ROOT%{_mandir}/man8/cytune.8*
-%endif
-
-# unsupported on s390
-%ifarch s390 s390x
-for I in /usr/{bin,sbin}/{fdformat,tunelp,floppy} \
-	%{_mandir}/man8/{fdformat,tunelp,floppy}.8* \
-	/usr/sbin/{hwclock,clock} \
-	%{_mandir}/man8/{hwclock,clock}.8*; do
-	
-	rm -f $RPM_BUILD_ROOT$I
-done
 %endif
 
 # unsupported on SPARCs
@@ -375,33 +320,12 @@ for I in /sbin/sfdisk \
 done
 %endif
 
-# deprecated commands
-for I in /usr/sbin/mkfs.bfs /usr/sbin/sln \
-	/usr/bin/chkdupexe %{_bindir}/line %{_bindir}/pg %{_bindir}/newgrp \
-	/usr/sbin/shutdown /usr/sbin/vipw /usr/sbin/vigr; do
-	rm -f $RPM_BUILD_ROOT$I
-done
-
-# deprecated man pages
-for I in man1/chkdupexe.1 man1/line.1 man1/pg.1 man1/newgrp.1 \
-	man8/mkfs.bfs.8 man8/vipw.8 man8/vigr; do
-	rm -rf $RPM_BUILD_ROOT%{_mandir}/${I}*
-done
-
-# deprecated docs
-for I in floppy-%{floppyver}/README.html; do
-	rm -rf $I
-done
-
-# rename docs
-mv floppy-%{floppyver}/README floppy-%{floppyver}/README.floppy
-
 # we install getopt-*.{bash,tcsh} as doc files
 chmod 644 misc-utils/getopt-*.{bash,tcsh}
 rm -f ${RPM_BUILD_ROOT}%{_datadir}/getopt/*
 rmdir ${RPM_BUILD_ROOT}%{_datadir}/getopt
 
-ln -s /proc/mounts %{buildroot}/etc/mtab
+ln -sf /proc/mounts %{buildroot}/etc/mtab
 
 
 # remove static libs
@@ -439,8 +363,9 @@ if [ -x /usr/sbin/selinuxenabled ] && /usr/sbin/selinuxenabled; then
 		/usr/bin/chcon "$SECXT"  /var/log/lastlog >/dev/null 2>&1 || :
 	fi
 fi
-rm -f /etc/mtab
-ln -s /proc/mounts /etc/mtab
+if [ ! -L /etc/mtab ]; then
+	ln -fs /proc/mounts /etc/mtab
+fi
 
 %post -n libblkid
 /sbin/ldconfig
@@ -491,7 +416,7 @@ fi
 
 %files -f %{name}.files
 %defattr(-,root,root)
-%doc README */README.* NEWS AUTHORS
+%doc README NEWS AUTHORS
 %doc Documentation/deprecated.txt Documentation/licenses/*
 %doc misc-utils/getopt-*.{bash,tcsh}
 
@@ -503,7 +428,7 @@ fi
 %config(noreplace)	%{_sysconfdir}/pam.d/su-l
 %config(noreplace)	%{_sysconfdir}/pam.d/runuser
 %config(noreplace)	%{_sysconfdir}/pam.d/runuser-l
-%config(noreplace)	%{_prefix}/lib/udev/rules.d
+%config(noreplace)	%{_prefix}/lib/udev/rules.d/60-raw.rules
 
 %attr(4755,root,root)	%{_bindir}/mount
 %attr(4755,root,root)	%{_bindir}/umount
@@ -527,7 +452,6 @@ fi
 %{_bindir}/fallocate
 %{_bindir}/findmnt
 %{_bindir}/flock
-%{_bindir}/floppygtk
 %{_bindir}/getopt
 %{_bindir}/hexdump
 %{_bindir}/ionice
@@ -545,6 +469,7 @@ fi
 %{_bindir}/more
 %{_bindir}/mountpoint
 %{_bindir}/namei
+%{_bindir}/nsenter
 %{_bindir}/prlimit
 %{_bindir}/raw
 %{_bindir}/rename
@@ -553,6 +478,7 @@ fi
 %{_bindir}/script
 %{_bindir}/scriptreplay
 %{_bindir}/setarch
+%{_bindir}/setpriv
 %{_bindir}/setsid
 %{_bindir}/setterm
 %{_bindir}/tailf
@@ -590,6 +516,7 @@ fi
 %{_mandir}/man1/more.1*
 %{_mandir}/man1/mountpoint.1*
 %{_mandir}/man1/namei.1*
+%{_mandir}/man1/nsenter.1*
 %{_mandir}/man1/prlimit.1*
 %{_mandir}/man1/rename.1*
 %{_mandir}/man1/renice.1*
@@ -597,6 +524,7 @@ fi
 %{_mandir}/man1/runuser.1*
 %{_mandir}/man1/script.1*
 %{_mandir}/man1/scriptreplay.1*
+%{_mandir}/man1/setpriv.1*
 %{_mandir}/man1/setsid.1*
 %{_mandir}/man1/setterm.1*
 %{_mandir}/man1/su.1*
@@ -611,6 +539,7 @@ fi
 %{_mandir}/man5/fstab.5*
 %{_mandir}/man8/addpart.8*
 %{_mandir}/man8/agetty.8*
+%{_mandir}/man8/blkdiscard.8*
 %{_mandir}/man8/blkid.8*
 %{_mandir}/man8/blockdev.8*
 %{_mandir}/man8/chcpu.8*
@@ -620,6 +549,7 @@ fi
 %{_mandir}/man8/findfs.8*
 %{_mandir}/man8/findmnt.8*
 %{_mandir}/man8/fsck.8*
+%{_mandir}/man8/fsck.cramfs.8*
 %{_mandir}/man8/fsck.minix.8*
 %{_mandir}/man8/fsfreeze.8*
 %{_mandir}/man8/fstrim.8*
@@ -629,6 +559,7 @@ fi
 %{_mandir}/man8/lsblk.8*
 %{_mandir}/man8/lslocks.8.gz
 %{_mandir}/man8/mkfs.8*
+%{_mandir}/man8/mkfs.cramfs.8*
 %{_mandir}/man8/mkfs.minix.8*
 %{_mandir}/man8/mkswap.8*
 %{_mandir}/man8/mount.8*
@@ -651,6 +582,7 @@ fi
 %{_mandir}/man8/wipefs.8*
 %{_sbindir}/addpart
 %{_sbindir}/agetty
+%{_sbindir}/blkdiscard
 %{_sbindir}/blkid
 %{_sbindir}/blockdev
 %{_sbindir}/chcpu
@@ -683,17 +615,94 @@ fi
 %{_sbindir}/switch_root
 %{_sbindir}/wipefs
 
+%{compldir}/addpart
+%{compldir}/blkdiscard
+%{compldir}/blkid
+%{compldir}/blockdev
+%{compldir}/cal
+%{compldir}/chcpu
+%{compldir}/chfn
+%{compldir}/chrt
+%{compldir}/chsh
+%{compldir}/col
+%{compldir}/colcrt
+%{compldir}/colrm
+%{compldir}/column
+%{compldir}/ctrlaltdel
+%{compldir}/delpart
+%{compldir}/dmesg
+%{compldir}/eject
+%{compldir}/fallocate
+%{compldir}/fdisk
+%{compldir}/findmnt
+%{compldir}/flock
+%{compldir}/fsck
+%{compldir}/fsck.cramfs
+%{compldir}/fsck.minix
+%{compldir}/fsfreeze
+%{compldir}/fstrim
+%{compldir}/getopt
+%{compldir}/hexdump
+%{compldir}/ionice
+%{compldir}/ipcrm
+%{compldir}/ipcs
+%{compldir}/isosize
+%{compldir}/ldattach
+%{compldir}/logger
+%{compldir}/look
+%{compldir}/losetup
+%{compldir}/lsblk
+%{compldir}/lscpu
+%{compldir}/lslocks
+%{compldir}/mcookie
+%{compldir}/mkfs
+%{compldir}/mkfs.cramfs
+%{compldir}/mkfs.minix
+%{compldir}/mkswap
+%{compldir}/more
+%{compldir}/mountpoint
+%{compldir}/namei
+%{compldir}/nsenter
+%{compldir}/partx
+%{compldir}/pivot_root
+%{compldir}/prlimit
+%{compldir}/raw
+%{compldir}/readprofile
+%{compldir}/rename
+%{compldir}/renice
+%{compldir}/resizepart
+%{compldir}/rev
+%{compldir}/rtcwake
+%{compldir}/runuser
+%{compldir}/script
+%{compldir}/scriptreplay
+%{compldir}/setarch
+%{compldir}/setpriv
+%{compldir}/setsid
+%{compldir}/setterm
+%{compldir}/su
+%{compldir}/swaplabel
+%{compldir}/swapon
+%{compldir}/tailf
+%{compldir}/taskset
+%{compldir}/ul
+%{compldir}/unshare
+%{compldir}/utmpdump
+%{compldir}/uuidgen
+%{compldir}/wdctl
+%{compldir}/whereis
+%{compldir}/wipefs
+%{compldir}/write
+
 %ifnarch s390 s390x
 %{_sbindir}/clock
-%{_bindir}/floppy
 %{_sbindir}/fdformat
 %{_sbindir}/hwclock
-%{_sbindir}/tunelp
 %{_mandir}/man8/fdformat.8*
-%{_mandir}/man8/floppy.8*
 %{_mandir}/man8/hwclock.8*
 %{_mandir}/man8/clock.8*
-%{_mandir}/man8/tunelp.8*
+%{compldir}/fdformat
+%{compldir}/hwclock
 %endif
 
 %ifnarch %{sparc}
@@ -702,6 +711,8 @@ fi
 %{_sbindir}/sfdisk
 %{_mandir}/man8/cfdisk.8*
 %{_mandir}/man8/sfdisk.8*
+%{compldir}/cfdisk
+%{compldir}/sfdisk
 %endif
 
 %ifarch %{sparc}
@@ -711,6 +722,7 @@ fi
 %ifarch %cytune_archs
 %{_bindir}/cytune
 %{_mandir}/man8/cytune.8*
+%{compldir}/cytune
 %endif
 
 
@@ -718,10 +730,11 @@ fi
 %defattr(-,root,root)
 %doc Documentation/licenses/COPYING.GPLv2
 %{_mandir}/man8/uuidd.8*
-%attr(-, uuidd, uuidd) %{_sbindir}/uuidd
+%{_sbindir}/uuidd
 %{_unitdir}/*
 %dir %attr(2775, uuidd, uuidd) /var/lib/libuuid
 %dir %attr(2775, uuidd, uuidd) /run/uuidd
+%{compldir}/uuidd
 
 
 %files -n libmount
@@ -775,8 +788,62 @@ fi
 %{_mandir}/man3/uuid_unparse.3*
 %{_libdir}/pkgconfig/uuid.pc
 
-
 %changelog
+* Thu Apr 25 2013 Karel Zak <kzak@redhat.com> 2.23-1
+- upgrade to 2.23
+- add --with check to call make check
+
+* Mon Apr 15 2013 Karel Zak <kzak@redhat.com> 2.23-0.7
+- remove unused patches
+
+* Mon Apr 15 2013 Karel Zak <kzak@redhat.com> 2.23-0.6
+- remove floppy from util-linux
+
+* Fri Apr 12 2013 Karel Zak <kzak@redhat.com> 2.23-0.5
+- fix #948274 - interruption code 0x4003B in libmount.so.1.1.0
+
+* Wed Apr 10 2013 Karel Zak <kzak@redhat.com> 2.23-0.4
+- upgrade to the release 2.23-rc2
+
+* Wed Mar 27 2013 Karel Zak <kzak@redhat.com> 2.23-0.3
+- libblkid ntfs bugfix for build on s390
+
+* Wed Mar 27 2013 Karel Zak <kzak@redhat.com> 2.23-0.2
+- add upstream patches for to fix umount and mount.<type>
+
+* Fri Mar 22 2013 Karel Zak <kzak@redhat.com> 2.23-0.1
+- upgrade to the release 2.23-rc1
+  ftp://ftp.kernel.org/pub/linux/utils/util-linux/v2.23/v2.23-ReleaseNotes
+- add nsenter and blkdiscard
+- remove tunelp
+
+* Wed Feb 20 2013 Karel Zak <kzak@redhat.com> 2.22.2-6
+- fix  #912778 - "runuser -l" doesn't register session to systemd
+
+* Tue Feb 19 2013 Karel Zak <kzak@redhat.com> 2.22.2-5
+- fix #902512 - Dependency failed for /home (and blkid fails to tell UUID)
+- refresh old patches
+
+* Wed Feb  6 2013 Karel Zak <kzak@redhat.com> 2.22.2-4
+- improve convertion to mtab symlink in post script
+- spec file cleanup (based on #894199)
+
+* Sun Feb  3 2013 Karel Zak <kzak@redhat.com> 2.22.2-3
+- fix #882305 - agetty: unstable /dev/tty* permissions
+- fix #885314 - hexdump segfault
+- fix #896447 - No newlines in piped "cal" command
+- fix libblkid cache usage (upstream patch)
+- fix #905008 - uuidd: /usr/sbin/uuidd has incorrect file permissions
+
+* Tue Jan 15 2013 Karel Zak <kzak@redhat.com> 2.22.2-2
+- fix #889888 - wipefs does not completely wipe btrfs volume
+
+* Thu Dec 13 2012 Karel Zak <kzak@redhat.com> 2.22.2-1
+- upgrade to upstream maintenance release 2.22.2
+
+* Mon Nov 19 2012 Karel Zak <kzak@redhat.com> 2.22.1-5
+- sources cleanup
+
 * Fri Nov 16 2012 Karel Zak <kzak@redhat.com> 2.22.1-4
 - fix #872787 - su: COMMAND not specified
 
