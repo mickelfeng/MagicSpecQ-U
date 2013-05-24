@@ -1,8 +1,12 @@
 #define pre_tag rc1
 #define pre -%{pre_tag}
 
+# See http://bugzilla.redhat.com/223663
+%define multilib_archs x86_64 %{ix86} ppc64 ppc s390x s390 sparc64 sparcv9
+%define multilib_basearchs x86_64 ppc64 s390x sparc64
+
 %define real_version 4.8.4
-%define release_number 1
+%define release_number 2
 
 # switches: whether to build it or not
 %define with_phonon 1
@@ -92,21 +96,52 @@ Patch62: qt-4.6.3-indic-rendering-bz636399.patch
 
 Patch80: qt-everywhere-opensource-src-4.8.0-ld-gold.patch
 
+# upstream patches
+# http://codereview.qt-project.org/#change,22006
+Patch100: qt-everywhere-opensource-src-4.8.1-qtgahandle.patch
+#  https://bugreports.qt-project.org/browse/QTBUG-29082
+Patch101:  qt-everywhere-opensource-src-4.8.4-QTBUG-29082.patch
+# backported from Qt5 (essentially)
+# http://bugzilla.redhat.com/702493
+# https://bugreports.qt-project.org/browse/QTBUG-5545
+Patch102: qt-everywhere-opensource-src-4.8.4-qgtkstyle_disable_gtk_theme_check.patch
+# workaround for MOC issues with Boost headers (#756395,QTBUG-22829)
+Patch113: qt-everywhere-opensource-src-4.8.4-QTBUG-22829.patch
+# QSslSocket may report incorrect errors when certificate verification fails
+# https://codereview.qt-project.org/#change,42461
+Patch154: 0054-Fix-binary-incompatibility-between-openssl-versions.patch
+
+## upstream git
+# QSslSocket may report incorrect errors when certificate verification fails
+# https://codereview.qt-project.org/#change,42461
+Patch254: 0054-Fix-binary-incompatibility-between-openssl-versions.patch
+Patch257: 0057-Update-defaultNumberingSystem-value-for-some-indic-a.patch
+Patch267: 0067-Allow-qmljsdebugger-argument-and-value-to-be-separat.patch
+# http://lists.qt-project.org/pipermail/announce/2013-January/000021.html
+Patch280: 0080-SSL-certificates-blacklist-mis-issued-Turktrust-cert.patch
+# another set similar to 0080
+Patch290: 0090-QtNetwork-blacklist-two-more-certificates.patch
+Patch310: 0110-QUrl-fromUserInput-fix-for-urls-without-a-host.patch
+Patch312: 0112-Limit-the-range-of-the-QUrlPrivate-port-to-1-to-6553.patch
+Patch324: 0124-QtDBus-Garbage-collect-deleted-objects-now-and-then.patch
+Patch325: 0125-QTBUG-15319-fix-shortcuts-with-secondary-Xkb-layout.patch
+Patch414: 0214-Fix-multiselection-by-CTRL-click-in-QFileDialog-KDE.patch
+
+
 ## qt-copy patches
 # magic patches
-Patch100: qt-4.6.0-use-ft_glyph_embolden-to-fake-bold.patch
-Patch101: qt-4.5.0rc1-add-missing-bold-style.patch
-Patch102: qt-4.5.0rc1-faster-native-graphicssystem.patch
+Patch1100: qt-4.6.0-use-ft_glyph_embolden-to-fake-bold.patch
+Patch1101: qt-4.5.0rc1-add-missing-bold-style.patch
+Patch1102: qt-4.5.0rc1-faster-native-graphicssystem.patch
 # qt 标签中文竖排支持
-Patch103: qt-4.7.1-qtabbartablabel-vertical_cjk_label.patch
+Patch1103: qt-4.7.1-qtabbartablabel-vertical_cjk_label.patch
 # qt webkit 默认编码设为 gb18030
-Patch104: qt-4.7.0-qwebsettings-gb18030-default.patch
+Patch1104: qt-4.7.0-qwebsettings-gb18030-default.patch
 # qt webkit html/xml gb2312/gbk 认作为 gb18030
-Patch105: qt-4.8.0-webkit-htmlxml-gb-gb18030.patch
+Patch1105: qt-4.8.0-webkit-htmlxml-gb-gb18030.patch
 # qt webkit 在 2.31.0 以上版本的 glib 上编译的补丁
-Patch106: qt-4.8.0-webkit-newglib.patch
+Patch1106: qt-4.8.0-webkit-newglib.patch
 
-## upstream patches
 
 # kde-qt git patches
 #Patch202: 0002-This-patch-makes-override-redirect-windows-popup-men.patch
@@ -1145,14 +1180,29 @@ Requires: %name-webkit = %version-%release
 %patch80 -p1 -b .gold_ld
 
 # upstream patches
+# upstream patches
+%patch100 -p1 -b .QTgaHandler
+%patch101 -p1 -b .QTBUG-29082
+%patch102 -p1 -b .qgtkstyle_disable_gtk_theme_check
+%patch113 -p1 -b .QTBUG-22829
+%patch254 -p1 -b .0054
+%patch257 -p1 -b .0057
+%patch267 -p1 -b .0067
+%patch280 -p1 -b .0080
+%patch290 -p1 -b .0090
+%patch310 -p1 -b .0110
+%patch312 -p1 -b .0112
+%patch324 -p1 -b .0124
+%patch325 -p1 -b .0125
+%patch414 -p1 -b .0214
 
 # patches from magic
 #%patch100 -p1
 #%patch101 -p1
 #%patch102 -p0
-%patch103 -p1
-%patch104 -p1
-%patch105 -p1
+%patch1103 -p1
+%patch1104 -p1
+%patch1105 -p1
 #%patch106 -p1
 
 # opensuse patches
@@ -1224,6 +1274,7 @@ done
 	-system-libjpeg \
 	-system-libtiff \
 	-no-nis \
+	-no-rpath \
 	-cups \
 	-stl \
 	-pch \
@@ -1353,9 +1404,19 @@ for icon in tools/linguist/linguist/images/icons/linguist-*-32.png ; do
   install -p -m644 -D ${icon} %{buildroot}%{_datadir}/icons/hicolor/${size}x${size}/apps/linguist4.png
 done
 
+%ifarch %{multilib_archs}
+# multilib: qconfig.h
+  mv %{buildroot}%{_qt4_headerdir}/Qt/qconfig.h %{buildroot}%{_qt4_headerdir}/QtCore/qconfig-%{__isa_bits}.h
+  install -p -m644 -D %{SOURCE5} %{buildroot}%{_qt4_headerdir}/QtCore/qconfig-multilib.h
+  ln -sf qconfig-multilib.h %{buildroot}%{_qt4_headerdir}/QtCore/qconfig.h
+  ln -sf ../QtCore/qconfig.h %{buildroot}%{_qt4_headerdir}/Qt/qconfig.h
+%endif
+
 # ld 目录支持
-mkdir -p %{buildroot}/etc/ld.so.conf.d
-echo "%_qtdir/lib" > %{buildroot}/etc/ld.so.conf.d/qt4-%{_arch}.conf
+%if "%{_qt4_libdir}" != "%{_libdir}"
+  mkdir -p %{buildroot}/etc/ld.so.conf.d
+  echo "%{_qt4_libdir}" > %{buildroot}/etc/ld.so.conf.d/qt4-%{__isa_bits}.conf
+%endif
 
 # 添加 qt4.sh/qt4.csh 以方便编译
 mkdir -p %{buildroot}/etc/profile.d
