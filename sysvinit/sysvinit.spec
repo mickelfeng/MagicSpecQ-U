@@ -1,8 +1,7 @@
-%define WITH_SELINUX 0
 Summary: Programs which control basic system processes
 Name: sysvinit
 Version: 2.88
-Release: 8.dsf%{?dist}
+Release: 10.dsf%{?dist}
 License: GPLv2+
 Group: System Environment/Base
 Source: http://download.savannah.gnu.org/releases/sysvinit/sysvinit-%{version}dsf.tar.bz2
@@ -20,15 +19,9 @@ Patch17: sysvinit-2.88-wall-broadcast-message.patch
 Buildroot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires: pam >= 0.66-5
 Requires: filesystem >= 2.2.4-1
-%if %{WITH_SELINUX}
-Requires: libselinux >= 1.21.10-1 libsepol >= 1.3.5
-%endif
 Requires: sysvinit-tools = %{version}-%{release}
 Obsoletes: SysVinit < 2.86-17
 Provides: SysVinit = %{version}-%{release}
-%if %{WITH_SELINUX}
-BuildRequires: libselinux-devel >= 1.21.10-1 libsepol-devel >= 1.3.5
-%endif
 
 %description
 The sysvinit package contains a group of processes that control
@@ -70,19 +63,23 @@ management.
 %patch17 -p1 -b .broadcast
 
 %build
-make %{?_smp_mflags} CC="%{__cc}" CFLAGS="$RPM_OPT_FLAGS -D_GNU_SOURCE" LDFLAGS="-lcrypt" -C src
+%ifarch sparcv9 sparc64 s390 s390x
+export CFLAGS="$RPM_OPT_FLAGS -D_GNU_SOURCE -fPIE"
+%else
+export CFLAGS="$RPM_OPT_FLAGS -D_GNU_SOURCE -fpie"
+%endif
+make %{?_smp_mflags} CC="%{__cc}" LDFLAGS="-pie -Wl,-z,relro -Wl,-z,now -lcrypt" -C src
 
 %install
 rm -rf $RPM_BUILD_ROOT
-for I in bin sbin usr/{bin,sbin,include} %{_mandir}/man{1,3,5,8} etc var/run dev; do
+for I in bin sbin usr/{bin,include} %{_mandir}/man{1,3,5,8} etc var/run dev; do
 	mkdir -p $RPM_BUILD_ROOT/$I
 done
 make -C src ROOT=$RPM_BUILD_ROOT MANDIR=%{_mandir} STRIP=/bin/true \
 	BIN_OWNER=`id -nu` BIN_GROUP=`id -ng` install
 
 rm -f $RPM_BUILD_ROOT/bin/pidof
-mv $RPM_BUILD_ROOT/sbin/{killall5,sulogin} $RPM_BUILD_ROOT%{_sbindir}/
-ln -snf killall5 $RPM_BUILD_ROOT%{_sbindir}/pidof
+ln -snf killall5 $RPM_BUILD_ROOT/sbin/pidof
 rm -f $RPM_BUILD_ROOT/sbin/bootlogd
 rm -f $RPM_BUILD_ROOT/%{_mandir}/man8/bootlogd*
 chmod 755 $RPM_BUILD_ROOT/usr/bin/utmpdump
@@ -101,7 +98,11 @@ rm -f $RPM_BUILD_ROOT/%{_mandir}/man8/fstab-decode.8
 rm -f $RPM_BUILD_ROOT/bin/mountpoint
 rm -f $RPM_BUILD_ROOT/%{_mandir}/man1/mountpoint.*
 
-magic_rpm_clean.sh
+# sulogin and utmpdump are part of util-linux
+rm -f $RPM_BUILD_ROOT/sbin/sulogin
+rm -f $RPM_BUILD_ROOT/%{_mandir}/man8/sulogin.*
+rm -f $RPM_BUILD_ROOT/usr/bin/utmpdump
+rm -f $RPM_BUILD_ROOT/%{_mandir}/man1/utmpdump.*
 
 %post
 [ -x /sbin/telinit -a -p /dev/initctl -a -f /proc/1/exe -a -d /proc/1/root ] && /sbin/telinit u
@@ -115,13 +116,13 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 %doc doc/Changelog doc/Install COPYRIGHT
-#/sbin/halt
-#/sbin/init
-#/sbin/poweroff
-#/sbin/reboot
-#/sbin/runlevel
-#/sbin/shutdown
-#/sbin/telinit
+/sbin/halt
+/sbin/init
+/sbin/poweroff
+/sbin/reboot
+/sbin/runlevel
+/sbin/shutdown
+/sbin/telinit
 %{_includedir}/initreq.h
 %{_mandir}/man5/*
 %{_mandir}/man8/halt*
@@ -140,25 +141,31 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/last
 %{_bindir}/lastb
 %{_bindir}/mesg
-%{_bindir}/utmpdump
+#%{_bindir}/utmpdump
 %attr(2555,root,tty)  /usr/bin/wall
-%{_sbindir}/pidof
-%{_sbindir}/killall5
-%{_sbindir}/sulogin
+/sbin/pidof
+/sbin/killall5
+#/sbin/sulogin
 %{_mandir}/man1/*
 %{_mandir}/man8/killall5*
 %{_mandir}/man8/pidof*
-%{_mandir}/man8/sulogin*
+#%{_mandir}/man8/sulogin*
 
 %changelog
-* Sun Dec 09 2012 Liu Di <liudidi@gmail.com> - 2.88-8.dsf
-- 为 Magic 3.0 重建
+* Fri Feb 15 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.88-10.dsf
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
 
-* Fri Jul 27 2012 Liu Di <liudidi@gmail.com> - 2.88-7.dsf
-- 为 Magic 3.0 重建
+* Thu Sep 13 2012 Petr Lautrbach <plautrba@redhat.com> 2.88-9.dsf
+- rebuild with PIE and full RELRO enabled (#853183)
 
-* Sun Apr 22 2012 Liu Di <liudidi@gmail.com> - 2.88-6.dsf
-- 为 Magic 3.0 重建
+* Wed Aug 01 2012 Petr Lautrbach <plautrba@redhat.com> 2.88-8.dsf
+- disable utmpdump and sulogin, now available in util-linux
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.88-7.dsf
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.88-6.dsf
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 
 * Tue Aug 02 2011 Petr Lautrbach <plautrba@redhat.com> 2.88-5.dsf
 - disable mountpoint(1) man page
