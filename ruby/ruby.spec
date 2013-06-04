@@ -1,104 +1,144 @@
-%global major_version 1
-%global minor_version 9
-%global teeny_version 3
-%global patch_level 327
+%global major_version 2
+%global minor_version 0
+%global teeny_version 0
+%global patch_level 0
 
 %global major_minor_version %{major_version}.%{minor_version}
 
 %global ruby_version %{major_minor_version}.%{teeny_version}
 %global ruby_version_patch_level %{major_minor_version}.%{teeny_version}.%{patch_level}
-%global ruby_abi %{major_minor_version}.1
+%global ruby_release %{ruby_version}
 
-%global ruby_archive %{name}-%{ruby_version}-p%{patch_level}
+# Specify the named version. It has precedense to revision.
+#%%global milestone preview2
 
-%global ruby_libdir %{_datadir}/%{name}
-%global ruby_libarchdir %{_libdir}/%{name}
+# Keep the revision enabled for pre-releases from SVN.
+#%%global revision 39387
 
-# This is the local lib/arch and should not be used for packaging.
-%global ruby_sitedir site_ruby
-%global ruby_sitelibdir %{_prefix}/local/share/ruby/%{ruby_sitedir}
-%global ruby_sitearchdir %{_prefix}/local/%{_lib}/ruby/%{ruby_sitedir}
+%global ruby_archive %{name}-%{ruby_version}
 
-# This is the general location for libs/archs compatible with all
-# or most of the Ruby versions available in the Fedora repositories.
-%global ruby_vendordir vendor_ruby
-%global ruby_vendorlibdir %{_datadir}/ruby/%{ruby_vendordir}
-%global ruby_vendorarchdir %{_libdir}/ruby/%{ruby_vendordir}
+# If revision and milestone are removed/commented out, the official release build is expected.
+%if 0%{?milestone:1}%{?revision:1} != 0
+%global development_release %{?milestone}%{?!milestone:%{?revision:r%{revision}}}
+%global ruby_archive %{ruby_archive}-%{?milestone}%{?!milestone:%{?revision:r%{revision}}}
+%else
+%global ruby_archive %{ruby_archive}-p%{patch_level}
+%endif
 
-%global rubygems_version 1.8.23
+
+%global release 7
+%{!?release_string:%global release_string %{?development_release:0.}%{release}%{?development_release:.%{development_release}}%{?dist}}
+
+%global rubygems_version 2.0.0
 
 # The RubyGems library has to stay out of Ruby directory three, since the
 # RubyGems should be share by all Ruby implementations.
 %global rubygems_dir %{_datadir}/rubygems
 
-# Specify custom RubyGems root.
-%global gem_dir %{_datadir}/gems
-# TODO: Should we create arch specific rubygems-filesystem?
-%global gem_extdir %{_exec_prefix}/lib{,64}/gems
-
-%global rake_version 0.9.2.2
+%global rake_version 0.9.6
 # TODO: The IRB has strange versioning. Keep the Ruby's versioning ATM.
 # http://redmine.ruby-lang.org/issues/5313
 %global irb_version %{ruby_version_patch_level}
-%global rdoc_version 3.9.4
-%global bigdecimal_version 1.1.0
-%global io_console_version 0.3
-%global json_version 1.5.4
-%global minitest_version 2.5.1
+%global rdoc_version 4.0.0
+%global bigdecimal_version 1.2.0
+%global io_console_version 0.4.2
+%global json_version 1.7.7
+%global minitest_version 4.3.2
+%global psych_version 2.0.0
 
-%global	_normalized_cpu	%(echo %{_target_cpu} | sed 's/^ppc/powerpc/;s/i.86/i386/;s/sparcv./sparc/')
+# Might not be needed in the future, if we are lucky enough.
+# https://bugzilla.redhat.com/show_bug.cgi?id=888262
+%global tapset_root %{_datadir}/systemtap
+%global tapset_dir %{tapset_root}/tapset
+%global tapset_libdir %(echo %{_libdir} | sed 's/64//')*
+
+%global _normalized_cpu %(echo %{_target_cpu} | sed 's/^ppc/powerpc/;s/i.86/i386/;s/sparcv./sparc/')
+
+%global with_rubypick 1
 
 Summary: An interpreter of object-oriented scripting language
 Name: ruby
 Version: %{ruby_version_patch_level}
-# Note:
-# As seen on perl srpm, as this (ruby) srpm contains several sub-components,
-# we cannot reset the release number to 1 even when the main (ruby) version
-# is updated - because it may be that the versions of sub-components don't
-# change.
-Release: 23%{?dist}
+Release: %{release_string}
 Group: Development/Languages
 # Public Domain for example for: include/ruby/st.h, strftime.c, ...
 License: (Ruby or BSD) and Public Domain
 URL: http://ruby-lang.org/
 Source0: ftp://ftp.ruby-lang.org/pub/%{name}/%{major_minor_version}/%{ruby_archive}.tar.gz
 Source1: operating_system.rb
+# TODO: Try to push SystemTap support upstream.
+Source2: libruby.stp
+Source3: ruby-exercise.stp
+Source4: macros.ruby
+Source5: macros.rubygems
 
-# http://redmine.ruby-lang.org/issues/5231
-Patch0: ruby-1.9.3-disable-versioned-paths.patch
-# TODO: Should be submitted upstream?
-Patch1: ruby-1.9.3-arch-specific-dir.patch
-# http://redmine.ruby-lang.org/issues/5281
-Patch2: ruby-1.9.3-added-site-and-vendor-arch-flags.patch
+
+# Include the constants defined in macros files.
+# http://rpm.org/ticket/866
+%{lua:
+
+function source_macros(file)
+  local macro = nil
+
+  for line in io.lines(file) do
+    if not macro and line:match("^%%") then
+      macro = line:match("^%%(.*)$")
+      line = nil
+    end
+
+    if macro then
+      if line and macro:match("^.-%s*\\%s*$") then
+        macro = macro .. '\n' .. line
+      end
+
+      if not macro:match("^.-%s*\\%s*$") then
+        rpm.define(macro)
+        macro = nil
+      end
+    end
+  end
+end
+
+source_macros(rpm.expand("%{SOURCE4}"))
+source_macros(rpm.expand("%{SOURCE5}"))
+
+}
+
+# http://bugs.ruby-lang.org/issues/7807
+Patch0: ruby-2.0.0-Prevent-duplicated-paths-when-empty-version-string-i.patch
 # Force multiarch directories for i.86 to be always named i386. This solves
 # some differencies in build between Fedora and RHEL.
 Patch3: ruby-1.9.3-always-use-i386.patch
 # http://redmine.ruby-lang.org/issues/5465
 Patch4: ruby-1.9.3-fix-s390x-build.patch
-# Fix the uninstaller, so that it doesn't say that gem doesn't exist
-# when it exists outside of the GEM_HOME (already fixed in the upstream)
-Patch5: ruby-1.9.3-rubygems-1.8.11-uninstaller.patch
-# Already fixed upstream:
-# https://github.com/ruby/ruby/commit/f212df564a4e1025f9fb019ce727022a97bfff53
-Patch7: ruby-1.9.3-bignum-test-fix.patch
+# Fixes random WEBRick test failures.
+# https://bugs.ruby-lang.org/issues/6573.
+Patch5: ruby-1.9.3.p195-fix-webrick-tests.patch
 # Allows to install RubyGems into custom directory, outside of Ruby's tree.
 # http://redmine.ruby-lang.org/issues/5617
 Patch8: ruby-1.9.3-custom-rubygems-location.patch
 # Add support for installing binary extensions according to FHS.
 # https://github.com/rubygems/rubygems/issues/210
-Patch9: rubygems-1.8.11-binary-extensions.patch
-# Opening /dev/tty fails with ENXIO (ref: man 2 open) on koji.
-# Let's rescue this
-# Fixed in ruby 1.9.3 p327
-#Patch10: ruby-1.9.3-p286-open-devtty-on-koji.patch
-# On koji, network related tests sometimes cause internal server error,
-# ignore these
-Patch10: ruby-1.9.3-p327-ignore-internal-server-error-on-test.patch
-# http://bugs.ruby-lang.org/issues/show/7312
-# test_str_crypt fails with glibc 2.17
-Patch11: ruby-1.9.3-p327-crypt-argument-glibc217.patch
+# Note that 8th patch might be resolved by
+# https://bugs.ruby-lang.org/issues/7897
+Patch9: rubygems-2.0.0-binary-extensions.patch
 # Make mkmf verbose by default
 Patch12: ruby-1.9.3-mkmf-verbose.patch
+# This slightly changes behavior of "gem install --install-dir" behavior.
+# Without this patch, Specifications.dirs is modified and gems installed on
+# the system cannot be required anymore. This causes later issues when RDoc
+# documentation should be generated, since json gem is sudenly not accessible.
+# https://github.com/rubygems/rubygems/pull/452
+Patch13: rubygems-2.0.0-Do-not-modify-global-Specification.dirs-during-insta.patch
+# This prevents issues, when ruby configuration specifies --with-ruby-version=''.
+# https://github.com/rubygems/rubygems/pull/455
+Patch14: rubygems-2.0.0-Fixes-for-empty-ruby-version.patch
+# Fixes issues with wrong value of Rubygem's shebang introduced in r39267.
+# https://bugs.ruby-lang.org/issues/7915
+Patch15: ruby-2.0.0-revert-unexpand-exec-prefix.patch
+# Fixes test_thr_kill(TestQueue) random test failure.
+# https://bugs.ruby-lang.org/issues/7521
+Patch16: ruby-2.0.0-p57-test_thr_kill.patch
 
 Requires: %{name}-libs%{?_isa} = %{version}-%{release}
 Requires: ruby(rubygems) >= %{rubygems_version}
@@ -119,6 +159,13 @@ BuildRequires: readline-devel
 BuildRequires: tk-devel
 # Needed to pass test_set_program_name(TestRubyOptions)
 BuildRequires: procps
+BuildRequires: %{_bindir}/dtrace
+
+# This package provides %%{_bindir}/ruby-mri therefore it is marked by this
+# virtual provide. It can be installed as dependency of rubypick.
+Provides: ruby(runtime_executable) = %{ruby_release}
+
+%global __provides_exclude_from ^(%{ruby_libarchdir}|%{gem_archdir})/.*\\.so$
 
 %description
 Ruby is the interpreted scripting language for quick and easy
@@ -141,7 +188,7 @@ Ruby or an application embedding Ruby.
 Summary:    Libraries necessary to run Ruby
 Group:      Development/Libraries
 License:    Ruby or BSD
-Provides:   ruby(abi) = %{ruby_abi}
+Provides:   ruby(release) = %{ruby_release}
 
 %description libs
 This package includes the libruby, necessary to run Ruby.
@@ -152,9 +199,10 @@ Summary:    The Ruby standard for packaging ruby libraries
 Version:    %{rubygems_version}
 Group:      Development/Libraries
 License:    Ruby or MIT
-Requires:   ruby(abi) = %{ruby_abi}
+Requires:   ruby(release)
 Requires:   rubygem(rdoc) >= %{rdoc_version}
 Requires:   rubygem(io-console) >= %{io_console_version}
+Requires:   rubygem(psych) >= %{psych_version}
 Provides:   gem = %{version}-%{release}
 Provides:   ruby(rubygems) = %{version}-%{release}
 BuildArch:  noarch
@@ -181,7 +229,7 @@ Summary:    Ruby based make-like utility
 Version:    %{rake_version}
 Group:      Development/Libraries
 License:    Ruby or MIT
-Requires:   ruby(abi) = %{ruby_abi}
+Requires:   ruby(release)
 Requires:   ruby(rubygems) >= %{rubygems_version}
 Provides:   rake = %{version}-%{release}
 Provides:   rubygem(rake) = %{version}-%{release}
@@ -211,9 +259,10 @@ Summary:    A tool to generate HTML and command-line documentation for Ruby proj
 Version:    %{rdoc_version}
 Group:      Development/Libraries
 License:    GPLv2 and Ruby and MIT
-Requires:   ruby(abi) = %{ruby_abi}
+Requires:   ruby(release)
 Requires:   ruby(rubygems) >= %{rubygems_version}
 Requires:   ruby(irb) = %{irb_version}
+Requires:   rubygem(json) >= %{json_version}
 Provides:   rdoc = %{version}-%{release}
 Provides:   ri = %{version}-%{release}
 Provides:   rubygem(rdoc) = %{version}-%{release}
@@ -231,11 +280,7 @@ documentation.
 Summary:    Documentation for %{name}
 Group:      Documentation
 Requires:   %{_bindir}/ri
-# TODO: It seems that ri documentation differs from platform to platform due to
-# some encoding bugs, therefore the documentation should be split out of this gem
-# or kept platform specific.
-# https://github.com/rdoc/rdoc/issues/71
-# BuildArch:  noarch
+BuildArch:  noarch
 
 %description doc
 This package contains documentation for %{name}.
@@ -246,7 +291,7 @@ Summary:    BigDecimal provides arbitrary-precision floating point decimal arith
 Version:    %{bigdecimal_version}
 Group:      Development/Libraries
 License:    GPL+ or Artistic
-Requires:   ruby(abi) = %{ruby_abi}
+Requires:   ruby(release)
 Requires:   ruby(rubygems) >= %{rubygems_version}
 Provides:   rubygem(bigdecimal) = %{version}-%{release}
 
@@ -267,7 +312,7 @@ conversion between base 10 and base 2.
 Summary:    IO/Console is a simple console utilizing library
 Version:    %{io_console_version}
 Group:      Development/Libraries
-Requires:   ruby(abi) = %{ruby_abi}
+Requires:   ruby(release)
 Requires:   ruby(rubygems) >= %{rubygems_version}
 Provides:   rubygem(io-console) = %{version}-%{release}
 
@@ -281,7 +326,7 @@ Summary:    This is a JSON implementation as a Ruby extension in C
 Version:    %{json_version}
 Group:      Development/Libraries
 License:    Ruby or GPLv2
-Requires:   ruby(abi) = %{ruby_abi}
+Requires:   ruby(release)
 Requires:   ruby(rubygems) >= %{rubygems_version}
 Provides:   rubygem(json) = %{version}-%{release}
 
@@ -293,11 +338,11 @@ markup language.
 
 
 %package -n rubygem-minitest
-Summary:    Minitest provides a complete suite of testing facilities.
+Summary:    Minitest provides a complete suite of testing facilities
 Version:    %{minitest_version}
 Group:      Development/Libraries
 License:    MIT
-Requires:   ruby(abi) = %{ruby_abi}
+Requires:   ruby(release)
 Requires:   ruby(rubygems) >= %{rubygems_version}
 Provides:   rubygem(minitest) = %{version}-%{release}
 BuildArch:  noarch
@@ -317,6 +362,25 @@ minitest/pride shows pride in testing and adds coloring to your test
 output.
 
 
+%package -n rubygem-psych
+Summary:    A libyaml wrapper for Ruby
+Version:    %{psych_version}
+Group:      Development/Libraries
+License:    MIT
+Requires:   ruby(release)
+Requires:   ruby(rubygems) >= %{rubygems_version}
+Provides:   rubygem(psych) = %{version}-%{release}
+
+%description -n rubygem-psych
+Psych is a YAML parser and emitter. Psych leverages
+libyaml[http://pyyaml.org/wiki/LibYAML] for its YAML parsing and emitting
+capabilities. In addition to wrapping libyaml, Psych also knows how to
+serialize and de-serialize most Ruby objects to and from the YAML format.
+
+# TODO:
+# %%pacakge -n rubygem-test-unit
+
+
 %package tcltk
 Summary:    Tcl/Tk interface for scripting language Ruby
 Group:      Development/Languages
@@ -330,144 +394,152 @@ Tcl/Tk interface for the object-oriented scripting language Ruby.
 %setup -q -n %{ruby_archive}
 
 %patch0 -p1
-%patch1 -p1
-%patch2 -p1
 %patch3 -p1
 %patch4 -p1
 %patch5 -p1
-%patch7 -p1
 %patch8 -p1
 %patch9 -p1
-%patch10 -p1
-%patch11 -p1
 %patch12 -p1
+%patch13 -p1
+%patch14 -p1
+%patch15 -p1
+%patch16 -p0
+
+# Provide an example of usage of the tapset:
+cp -a %{SOURCE3} .
 
 %build
 autoconf
 
 %configure \
         --with-rubylibprefix='%{ruby_libdir}' \
-        --with-archdir='%{ruby_libarchdir}' \
+        --with-rubyarchprefix='%{ruby_libarchdir}' \
         --with-sitedir='%{ruby_sitelibdir}' \
         --with-sitearchdir='%{ruby_sitearchdir}' \
         --with-vendordir='%{ruby_vendorlibdir}' \
         --with-vendorarchdir='%{ruby_vendorarchdir}' \
         --with-rubyhdrdir='%{_includedir}' \
+        --with-rubyarchhdrdir='$(archincludedir)' \
+        --with-sitearchhdrdir='$(sitehdrdir)/$(arch)' \
+        --with-vendorarchhdrdir='$(vendorhdrdir)/$(arch)' \
         --with-rubygemsdir='%{rubygems_dir}' \
+        --with-ruby-pc='%{name}.pc' \
         --disable-rpath \
         --enable-shared \
-        --disable-versioned-paths
+        --with-ruby-version='' \
+        --enable-multiarch \
+
+
 
 # Q= makes the build output more verbose and allows to check Fedora
 # compiler options.
 make %{?_smp_mflags} COPY="cp -p" Q=
 
-
 %install
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
 
-# Dump the macros into macro.ruby to use them to build other Ruby libraries.
+# Rename the ruby executable. It is replaced by RubyPick.
+%{?with_rubypick:mv %{buildroot}%{_bindir}/%{name}{,-mri}}
+
+# Version is empty if --with-ruby-version is specified.
+# http://bugs.ruby-lang.org/issues/7807
+sed -i 's/Version: \${ruby_version}/Version: %{ruby_version}/' %{buildroot}%{_libdir}/pkgconfig/%{name}.pc
+
+# Move macros file insto proper place and replace the %%{name} macro, since it
+# would be wrongly evaluated during build of other packages.
 mkdir -p %{buildroot}%{_sysconfdir}/rpm
-cat >> %{buildroot}%{_sysconfdir}/rpm/macros.ruby << \EOF
-%%ruby_libdir %%{_datadir}/%{name}
-%%ruby_libarchdir %%{_libdir}/%{name}
-
-# This is the local lib/arch and should not be used for packaging.
-%%ruby_sitedir site_ruby
-%%ruby_sitelibdir %%{_prefix}/local/share/%{name}/%%{ruby_sitedir}
-%%ruby_sitearchdir %%{_prefix}/local/%%{_lib}/%{name}/%%{ruby_sitedir}
-
-# This is the general location for libs/archs compatible with all
-# or most of the Ruby versions available in the Fedora repositories.
-%%ruby_vendordir vendor_ruby
-%%ruby_vendorlibdir %%{ruby_libdir}/%%{ruby_vendordir}
-%%ruby_vendorarchdir %%{ruby_libarchdir}/%%{ruby_vendordir}
-EOF
-
-cat >> %{buildroot}%{_sysconfdir}/rpm/macros.rubygems << \EOF
-# The RubyGems root folder.
-%%gem_dir %{gem_dir}
-
-# Common gem locations and files.
-%%gem_instdir %%{gem_dir}/gems/%%{gem_name}-%%{version}
-%%gem_extdir %%{_libdir}/gems/exts/%%{gem_name}-%%{version}
-%%gem_libdir %%{gem_instdir}/lib
-%%gem_cache %%{gem_dir}/cache/%%{gem_name}-%%{version}.gem
-%%gem_spec %%{gem_dir}/specifications/%%{gem_name}-%%{version}.gemspec
-%%gem_docdir %%{gem_dir}/doc/%%{gem_name}-%%{version}
-EOF
+install -m 644 %{SOURCE4} %{buildroot}%{_sysconfdir}/rpm/macros.ruby
+sed -i "s/%%{name}/%{name}/" %{buildroot}%{_sysconfdir}/rpm/macros.ruby
+install -m 644 %{SOURCE5} %{buildroot}%{_sysconfdir}/rpm/macros.rubygems
+sed -i "s/%%{name}/%{name}/" %{buildroot}%{_sysconfdir}/rpm/macros.rubygems
 
 # Install custom operating_system.rb.
 mkdir -p %{buildroot}%{rubygems_dir}/rubygems/defaults
 cp %{SOURCE1} %{buildroot}%{rubygems_dir}/rubygems/defaults
 
 # Move gems root into common direcotry, out of Ruby directory structure.
-mv %{buildroot}%{ruby_libdir}/gems/%{ruby_abi} %{buildroot}%{gem_dir}
+mv %{buildroot}%{ruby_libdir}/gems %{buildroot}%{gem_dir}
 
 # Create folders for gem binary extensions.
-mkdir -p %{buildroot}%{gem_extdir}/exts
+# TODO: These folders should go into rubygem-filesystem but how to achieve it,
+# since noarch package cannot provide arch dependent subpackages?
+# http://rpm.org/ticket/78
+mkdir -p %{buildroot}%{_exec_prefix}/lib{,64}/gems/%{name}
 
-# Move bundled rubygems to %%gem_dir and %%gem_extdir
+# Move bundled rubygems to %%gem_dir and %%gem_extdir_mri
 # make symlinks for io-console and bigdecimal, which are considered to be part of stdlib by other Gems
 mkdir -p %{buildroot}%{gem_dir}/gems/rake-%{rake_version}/lib
 mv %{buildroot}%{ruby_libdir}/rake* %{buildroot}%{gem_dir}/gems/rake-%{rake_version}/lib
+mv %{buildroot}%{gem_dir}/specifications/default/rake-%{rake_version}.gemspec %{buildroot}%{gem_dir}/specifications
 
 mkdir -p %{buildroot}%{gem_dir}/gems/rdoc-%{rdoc_version}/lib
 mv %{buildroot}%{ruby_libdir}/rdoc* %{buildroot}%{gem_dir}/gems/rdoc-%{rdoc_version}/lib
+mv %{buildroot}%{gem_dir}/specifications/default/rdoc-%{rdoc_version}.gemspec %{buildroot}%{gem_dir}/specifications
 
 mkdir -p %{buildroot}%{gem_dir}/gems/bigdecimal-%{bigdecimal_version}/lib
-mkdir -p %{buildroot}%{_libdir}/gems/exts/bigdecimal-%{bigdecimal_version}/lib
+mkdir -p %{buildroot}%{_libdir}/gems/%{name}/bigdecimal-%{bigdecimal_version}/lib
 mv %{buildroot}%{ruby_libdir}/bigdecimal %{buildroot}%{gem_dir}/gems/bigdecimal-%{bigdecimal_version}/lib
-mv %{buildroot}%{ruby_libarchdir}/bigdecimal.so %{buildroot}%{_libdir}/gems/exts/bigdecimal-%{bigdecimal_version}/lib
+mv %{buildroot}%{ruby_libarchdir}/bigdecimal.so %{buildroot}%{_libdir}/gems/%{name}/bigdecimal-%{bigdecimal_version}/lib
+mv %{buildroot}%{gem_dir}/specifications/default/bigdecimal-%{bigdecimal_version}.gemspec %{buildroot}%{gem_dir}/specifications
 ln -s %{gem_dir}/gems/bigdecimal-%{bigdecimal_version}/lib/bigdecimal %{buildroot}%{ruby_libdir}/bigdecimal
-ln -s %{_libdir}/gems/exts/bigdecimal-%{bigdecimal_version}/lib/bigdecimal.so %{buildroot}%{ruby_libarchdir}/bigdecimal.so
+ln -s %{_libdir}/gems/%{name}/bigdecimal-%{bigdecimal_version}/lib/bigdecimal.so %{buildroot}%{ruby_libarchdir}/bigdecimal.so
 
 mkdir -p %{buildroot}%{gem_dir}/gems/io-console-%{io_console_version}/lib
-mkdir -p %{buildroot}%{_libdir}/gems/exts/io-console-%{io_console_version}/lib/io
+mkdir -p %{buildroot}%{_libdir}/gems/%{name}/io-console-%{io_console_version}/lib/io
 mv %{buildroot}%{ruby_libdir}/io %{buildroot}%{gem_dir}/gems/io-console-%{io_console_version}/lib
-mv %{buildroot}%{ruby_libarchdir}/io/console.so %{buildroot}%{_libdir}/gems/exts/io-console-%{io_console_version}/lib/io
+mv %{buildroot}%{ruby_libarchdir}/io/console.so %{buildroot}%{_libdir}/gems/%{name}/io-console-%{io_console_version}/lib/io
+mv %{buildroot}%{gem_dir}/specifications/default/io-console-%{io_console_version}.gemspec %{buildroot}%{gem_dir}/specifications
 ln -s %{gem_dir}/gems/io-console-%{io_console_version}/lib/io %{buildroot}%{ruby_libdir}/io
-ln -s %{_libdir}/gems/exts/io-console-%{io_console_version}/lib/io/console.so %{buildroot}%{ruby_libarchdir}/io/console.so
+ln -s %{_libdir}/gems/%{name}/io-console-%{io_console_version}/lib/io/console.so %{buildroot}%{ruby_libarchdir}/io/console.so
 
 mkdir -p %{buildroot}%{gem_dir}/gems/json-%{json_version}/lib
-mkdir -p %{buildroot}%{_libdir}/gems/exts/json-%{json_version}/lib
+mkdir -p %{buildroot}%{_libdir}/gems/%{name}/json-%{json_version}/lib
 mv %{buildroot}%{ruby_libdir}/json* %{buildroot}%{gem_dir}/gems/json-%{json_version}/lib
-mv %{buildroot}%{ruby_libarchdir}/json/ %{buildroot}%{_libdir}/gems/exts/json-%{json_version}/lib/
+mv %{buildroot}%{ruby_libarchdir}/json/ %{buildroot}%{_libdir}/gems/%{name}/json-%{json_version}/lib/
+mv %{buildroot}%{gem_dir}/specifications/default/json-%{json_version}.gemspec %{buildroot}%{gem_dir}/specifications
 
 mkdir -p %{buildroot}%{gem_dir}/gems/minitest-%{minitest_version}/lib
 mv %{buildroot}%{ruby_libdir}/minitest %{buildroot}%{gem_dir}/gems/minitest-%{minitest_version}/lib
+mv %{buildroot}%{gem_dir}/specifications/default/minitest-%{minitest_version}.gemspec %{buildroot}%{gem_dir}/specifications
+
+mkdir -p %{buildroot}%{gem_dir}/gems/psych-%{psych_version}/lib
+mkdir -p %{buildroot}%{_libdir}/gems/%{name}/psych-%{psych_version}/lib
+mv %{buildroot}%{ruby_libdir}/psych* %{buildroot}%{gem_dir}/gems/psych-%{psych_version}/lib
+mv %{buildroot}%{ruby_libarchdir}/psych.so %{buildroot}%{_libdir}/gems/%{name}/psych-%{psych_version}/lib/
+mv %{buildroot}%{gem_dir}/specifications/default/psych-%{psych_version}.gemspec %{buildroot}%{gem_dir}/specifications
 
 # Adjust the gemspec files so that the gems will load properly
-sed -i '2 a\
+sed -i '/^end$/ i\
   s.require_paths = ["lib"]' %{buildroot}%{gem_dir}/specifications/rake-%{rake_version}.gemspec
 
-sed -i '2 a\
+sed -i '/^end$/ i\
   s.require_paths = ["lib"]' %{buildroot}%{gem_dir}/specifications/rdoc-%{rdoc_version}.gemspec
 
-sed -i '2 a\
+sed -i '/^end$/ i\
   s.require_paths = ["lib"]\
   s.extensions = ["bigdecimal.so"]' %{buildroot}%{gem_dir}/specifications/bigdecimal-%{bigdecimal_version}.gemspec
 
-sed -i '2 a\
+sed -i '/^end$/ i\
   s.require_paths = ["lib"]\
   s.extensions = ["io/console.so"]' %{buildroot}%{gem_dir}/specifications/io-console-%{io_console_version}.gemspec
 
-sed -i '2 a\
+sed -i '/^end$/ i\
   s.require_paths = ["lib"]\
   s.extensions = ["json/ext/parser.so", "json/ext/generator.so"]' %{buildroot}%{gem_dir}/specifications/json-%{json_version}.gemspec
 
-sed -i '2 a\
+sed -i '/^end$/ i\
   s.require_paths = ["lib"]' %{buildroot}%{gem_dir}/specifications/minitest-%{minitest_version}.gemspec
 
-magic_rpm_clean.sh
+# Install a tapset and fix up the path to the library.
+mkdir -p %{buildroot}%{tapset_dir}
+sed -e "s|@LIBRARY_PATH@|%{tapset_libdir}/libruby.so.%{ruby_version}|" \
+  %{SOURCE2} > %{buildroot}%{tapset_dir}/libruby.so.%{ruby_version}.stp
+# Escape '*/' in comment.
+sed -i -r "s|( \*.*\*)\/(.*)|\1\\\/\2|" %{buildroot}%{tapset_dir}/libruby.so.%{ruby_version}.stp
 
 %check
 DISABLE_TESTS=""
-
-# OpenSSL 1.0.1 is breaking the drb test suite.
-# https://bugs.ruby-lang.org/issues/6221
-DISABLE_TESTS="-x test_drbssl.rb $DISABLE_TESTS"
 
 %ifarch armv7l armv7hl armv7hnl
 # test_call_double(DL::TestDL) fails on ARM HardFP
@@ -475,9 +547,17 @@ DISABLE_TESTS="-x test_drbssl.rb $DISABLE_TESTS"
 DISABLE_TESTS="-x test_dl2.rb $DISABLE_TESTS"
 %endif
 
-%ifnarch ppc ppc64
-make check TESTS="-v $DISABLE_TESTS"
+%ifarch ppc ppc64
+# test_spawn_too_long_path(TestProcess) fails with [Errno::ENOENT, Errno::E2BIG, nil] expected but nothing was raised.
+# https://bugs.ruby-lang.org/issues/7904
+DISABLE_TESTS="-x test_process.rb $DISABLE_TESTS"
 %endif
+
+# The TestRbConfig errors, which does not respect configuration options.
+# http://bugs.ruby-lang.org/issues/7912
+DISABLE_TESTS="-x test_rbconfig.rb $DISABLE_TESTS"
+
+make check TESTS="-v $DISABLE_TESTS"
 
 %post libs -p /sbin/ldconfig
 
@@ -489,7 +569,7 @@ make check TESTS="-v $DISABLE_TESTS"
 %doc GPL
 %doc LEGAL
 %{_bindir}/erb
-%{_bindir}/ruby
+%{_bindir}/%{name}%{?with_rubypick:-mri}
 %{_bindir}/testrb
 %{_mandir}/man1/erb*
 %{_mandir}/man1/ruby*
@@ -502,13 +582,14 @@ make check TESTS="-v $DISABLE_TESTS"
 %doc GPL
 %doc LEGAL
 %doc README.EXT
+%{_docdir}/ruby/*
 %lang(ja) %doc README.EXT.ja
 
-%config(noreplace) %{_sysconfdir}/rpm/macros.ruby
+%{_sysconfdir}/rpm/macros.ruby
 
 %{_includedir}/*
 %{_libdir}/libruby.so
-%{_libdir}/pkgconfig/ruby-%{major_minor_version}.pc
+%{_libdir}/pkgconfig/%{name}.pc
 
 %files libs
 %doc COPYING
@@ -546,7 +627,6 @@ make check TESTS="-v $DISABLE_TESTS"
 %{ruby_libdir}/net
 %{ruby_libdir}/openssl
 %{ruby_libdir}/optparse
-%{ruby_libdir}/psych
 %{ruby_libdir}/racc
 %{ruby_libdir}/rbconfig
 %{ruby_libdir}/rexml
@@ -554,7 +634,7 @@ make check TESTS="-v $DISABLE_TESTS"
 %{ruby_libdir}/ripper
 %{ruby_libdir}/rss
 %{ruby_libdir}/shell
-%{ruby_libdir}/syck
+%{ruby_libdir}/syslog
 %{ruby_libdir}/test
 %exclude %{ruby_libdir}/tk
 %exclude %{ruby_libdir}/tkextlib
@@ -635,12 +715,12 @@ make check TESTS="-v $DISABLE_TESTS"
 %{ruby_libarchdir}/enc/utf_32be.so
 %{ruby_libarchdir}/enc/utf_32le.so
 %{ruby_libarchdir}/enc/windows_1251.so
+%{ruby_libarchdir}/enc/windows_31j.so
 %{ruby_libarchdir}/etc.so
 %{ruby_libarchdir}/fcntl.so
 %{ruby_libarchdir}/fiber.so
 %{ruby_libarchdir}/fiddle.so
 %{ruby_libarchdir}/gdbm.so
-%{ruby_libarchdir}/iconv.so
 %dir %{ruby_libarchdir}/io
 %{ruby_libarchdir}/io/nonblock.so
 %{ruby_libarchdir}/io/wait.so
@@ -651,7 +731,6 @@ make check TESTS="-v $DISABLE_TESTS"
 %{ruby_libarchdir}/objspace.so
 %{ruby_libarchdir}/openssl.so
 %{ruby_libarchdir}/pathname.so
-%{ruby_libarchdir}/psych.so
 %{ruby_libarchdir}/pty.so
 %dir %{ruby_libarchdir}/racc
 %{ruby_libarchdir}/racc/cparse.so
@@ -662,11 +741,21 @@ make check TESTS="-v $DISABLE_TESTS"
 %{ruby_libarchdir}/socket.so
 %{ruby_libarchdir}/stringio.so
 %{ruby_libarchdir}/strscan.so
-%{ruby_libarchdir}/syck.so
 %{ruby_libarchdir}/syslog.so
 %exclude %{ruby_libarchdir}/tcltklib.so
 %exclude %{ruby_libarchdir}/tkutil.so
 %{ruby_libarchdir}/zlib.so
+
+%{tapset_root}
+
+# TODO rubygems 2.0.0 does not create test-unit gemspec
+# TODO for now put this in ruby-libs rpm
+# TODO check if the following can be removed after
+# TODO test-unit rebuild
+%dir %{gem_dir}
+%dir %{gem_dir}/specifications
+%dir %{gem_dir}/specifications/default
+%{gem_dir}/specifications/default/test-unit-*.gemspec
 
 %files -n rubygems
 %{_bindir}/gem
@@ -674,9 +763,10 @@ make check TESTS="-v $DISABLE_TESTS"
 %{gem_dir}
 %exclude %{gem_dir}/gems/*
 %{_exec_prefix}/lib*/gems
-%exclude %{_exec_prefix}/lib*/gems/exts/bigdecimal-%{bigdecimal_version}
-%exclude %{_exec_prefix}/lib*/gems/exts/io-console-%{io_console_version}
-%exclude %{_exec_prefix}/lib*/gems/exts/json-%{json_version}
+%exclude %{_exec_prefix}/lib*/gems/%{name}/bigdecimal-%{bigdecimal_version}
+%exclude %{_exec_prefix}/lib*/gems/%{name}/io-console-%{io_console_version}
+%exclude %{_exec_prefix}/lib*/gems/%{name}/json-%{json_version}
+%exclude %{_exec_prefix}/lib*/gems/%{name}/psych-%{psych_version}
 %exclude %{gem_dir}/gems/rake-%{rake_version}
 %exclude %{gem_dir}/gems/rdoc-%{rdoc_version}
 %exclude %{gem_dir}/specifications/bigdecimal-%{bigdecimal_version}.gemspec
@@ -685,9 +775,13 @@ make check TESTS="-v $DISABLE_TESTS"
 %exclude %{gem_dir}/specifications/minitest-%{minitest_version}.gemspec
 %exclude %{gem_dir}/specifications/rake-%{rake_version}.gemspec
 %exclude %{gem_dir}/specifications/rdoc-%{rdoc_version}.gemspec
+%exclude %{gem_dir}/specifications/psych-%{psych_version}.gemspec
+# TODO rubygems 2.0.0 does not create test-unit gemspec
+# TODO where to put test-unit-*.gemspec??
+%exclude %{gem_dir}/specifications/default/test-unit-*.gemspec
 
 %files -n rubygems-devel
-%config(noreplace) %{_sysconfdir}/rpm/macros.rubygems
+%{_sysconfdir}/rpm/macros.rubygems
 
 %files -n rubygem-rake
 %{_bindir}/rake
@@ -710,33 +804,39 @@ make check TESTS="-v $DISABLE_TESTS"
 
 %files doc
 %doc README
+%lang(ja) %doc README.ja
 %doc ChangeLog
 %doc doc/ChangeLog-*
+%doc ruby-exercise.stp
 %{_datadir}/ri
-%{_docdir}/ruby/html/*
 
 %files -n rubygem-bigdecimal
 %{ruby_libdir}/bigdecimal
 %{ruby_libarchdir}/bigdecimal.so
-%{_libdir}/gems/exts/bigdecimal-%{bigdecimal_version}
+%{_libdir}/gems/%{name}/bigdecimal-%{bigdecimal_version}
 %{gem_dir}/gems/bigdecimal-%{bigdecimal_version}
 %{gem_dir}/specifications/bigdecimal-%{bigdecimal_version}.gemspec
 
 %files -n rubygem-io-console
 %{ruby_libdir}/io
 %{ruby_libarchdir}/io/console.so
-%{_libdir}/gems/exts/io-console-%{io_console_version}
+%{_libdir}/gems/%{name}/io-console-%{io_console_version}
 %{gem_dir}/gems/io-console-%{io_console_version}
 %{gem_dir}/specifications/io-console-%{io_console_version}.gemspec
 
 %files -n rubygem-json
-%{_libdir}/gems/exts/json-%{json_version}
+%{_libdir}/gems/%{name}/json-%{json_version}
 %{gem_dir}/gems/json-%{json_version}
 %{gem_dir}/specifications/json-%{json_version}.gemspec
 
 %files -n rubygem-minitest
 %{gem_dir}/gems/minitest-%{minitest_version}
 %{gem_dir}/specifications/minitest-%{minitest_version}.gemspec
+
+%files -n rubygem-psych
+%{_libdir}/gems/%{name}/psych-%{psych_version}
+%{gem_dir}/gems/psych-%{psych_version}
+%{gem_dir}/specifications/psych-%{psych_version}.gemspec
 
 %files tcltk
 %{ruby_libdir}/*-tk.rb
@@ -748,6 +848,80 @@ make check TESTS="-v $DISABLE_TESTS"
 %{ruby_libdir}/tkextlib
 
 %changelog
+* Fri Apr 19 2013 Vít Ondruch <vondruch@redhat.com> - 2.0.0.0-7
+- Macro definition moved into macros.ruby and macros.rubygems files.
+- Added filtering macros.
+- Filter automatically generated provides of private libraries (rhbz#947408).
+
+* Fri Mar 22 2013 Vít Ondruch <vondruch@redhat.com> - 2.0.0.0-6
+- Fix RbConfig::CONFIG['exec_prefix'] returns empty string (rhbz#924851).
+
+* Thu Mar 21 2013 Vít Ondruch <vondruch@redhat.com> - 2.0.0.0-5
+- Make Ruby buildable without rubypick.
+- Prevent random test failures.
+
+* Fri Mar 08 2013 Mamoru TASAKA <mtasaka@fedoraproject.org> - 2.0.0.0-4
+- Don't mark rpm config file as %%config (fpc#259)
+
+* Tue Mar 05 2013 Vít Ondruch <vondruch@redhat.com> - 2.0.0.0-3
+- Avoid "method redefined;" warnings due to modified operating_system.rb.
+- Fix strange paths created during build of binary gems.
+
+* Mon Feb 25 2013 Vít Ondruch <vondruch@redhat.com> - 2.0.0.0-2
+- Prevent squash of %%gem_install with following line.
+
+* Mon Feb 25 2013 Vít Ondruch <vondruch@redhat.com> - 2.0.0.0-1
+- Update to Ruby 2.0.0-p0.
+- Change %{ruby_extdir} to %{ruby_extdir_mri} in preparation for better
+  JRuby support.
+
+* Mon Feb 25 2013 Mamoru TASAKA <mtasaka@fedoraprojec.org> - 2.0.0.0-0.3.r39387
+- Move test-unit.gemspec to -libs subpackage for now because rubygems
+  2.0.0 does not create this
+
+* Fri Feb 22 2013 Vít Ondruch <vondruch@redhat.com> - 2.0.0.0-0.2.r39387
+- Fix issues with wrong value of Rubygem's shebang introduced in r39267.
+
+* Fri Feb 22 2013 Vít Ondruch <vondruch@redhat.com> - 2.0.0.0-0.1.r39387
+- Upgrade to Ruby 2.0.0 (r39387).
+- Introduce %%gem_install macro.
+- Build against libdb instead of libdb4 (rhbz#894022).
+- Move native extensions from exts to ruby directory.
+- Enable most of the PPC test suite.
+- Change ruby(abi) -> ruby(release).
+- Rename ruby executable to ruby-mri, to be prepared for RubyPick.
+- Add ruby(runtime_executable) virtual provide, which is later used
+  by RubyPick.
+- RDoc now depends on JSON.
+- Try to make -doc subpackage noarch again, since the new RDoc should resolve
+  the arch dependent issues (https://github.com/rdoc/rdoc/issues/71).
+- Enable SystemTap support.
+- Add TapSet for Ruby.
+- Split Psych into rubygem-psych subpackage.
+
+* Mon Feb 11 2013 Mamoru TASAKA <mtasaka@fedoraproject.org> - 1.9.3.385-28
+- Update to 1.9.3 p385
+
+* Sat Jan 19 2013 Mamoru TASAKA <mtasaka@fedoraproject.org> - 1.9.3.374-27
+- Update to 1.9.3 p374
+- Fix provided variables in pkgconfig (bug 789532:
+  Vít Ondruch <vondruch@redhat.com>)
+
+* Fri Jan 18 2013 Mamoru TASAKA <mtasaka@fedoraproject.org> - 1.9.3.362-26
+- Provide non-versioned pkgconfig file (bug 789532)
+- Use db5 on F-19 (bug 894022)
+ 
+* Wed Jan 16 2013 Mamoru TASAKA <mtasaka@fedoraproject.org> - 1.9.3.362-25
+- Backport fix for the upstream PR7629, save the proc made from the given block
+  (bug 895173)
+
+* Wed Jan  2 2013 Mamoru TASAKA <mtasaka@fedoraproject.org> - 1.9.3.362-24
+- Update to 1.9.3.362
+
+* Mon Dec 03 2012 Jaromir Capik <jcapik@redhat.com> - 1.9.3.327-23
+- Skipping test_parse.rb (fails on ARM at line 787)
+- http://bugs.ruby-lang.org/issues/6899
+
 * Sun Nov 11 2012 Mamoru TASAKA <mtasaka@fedoraproject.org> - 1.9.3.327-23
 - Skip test_str_crypt (on rawhide) for now (upstream bug 7312)
 
@@ -820,18 +994,18 @@ make check TESTS="-v $DISABLE_TESTS"
 - Create and own RubyGems directories for binary extensions.
 - Fix build with GCC 4.7.
 
-* Wed Jan 16 2012 Vít Ondruch <vondruch@redhat.com> - 1.9.3.0-3
+* Mon Jan 16 2012 Vít Ondruch <vondruch@redhat.com> - 1.9.3.0-3
 - Fix RHEL build.
 - Fixed directory ownership.
 - Verose build output.
 
-* Wed Jan 15 2012 Vít Ondruch <vondruch@redhat.com> - 1.9.3.0-2
+* Sun Jan 15 2012 Vít Ondruch <vondruch@redhat.com> - 1.9.3.0-2
 - Install RubyGems outside of Ruby directory structure.
 - RubyGems has not its own -devel subpackage.
 - Enhanced macros.ruby and macros.rubygems.
 - All tests are green now (bkabrda).
 
-* Tue Jan 14 2012 Vít Ondruch <vondruch@redhat.com> - 1.9.3.0-1
+* Sat Jan 14 2012 Vít Ondruch <vondruch@redhat.com> - 1.9.3.0-1
 - Initial package
 
 * Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.8.7.357-2
@@ -845,7 +1019,7 @@ make check TESTS="-v $DISABLE_TESTS"
 - dont normalise arm cpus to arm
 - there is something weird about how ruby choses where to put bits
 
-* Thu Nov 16 2011 Mamoru Tasaka <mtasaka@fedoraproject.org> - 1.8.7.352-3
+* Thu Nov 17 2011 Mamoru Tasaka <mtasaka@fedoraproject.org> - 1.8.7.352-3
 - F-17: kill gdbm support for now due to licensing compatibility issue
 
 * Sat Oct  1 2011 Mamoru Tasaka <mtasaka@fedoraproject.org> - 1.8.7.352-2
@@ -1130,11 +1304,11 @@ make check TESTS="-v $DISABLE_TESTS"
 * Fri Aug 10 2007 Akira TAGOH <tagoh@redhat.com>
 - Update License tag.
 
-* Mon Jul 25 2007 Akira TAGOH <tagoh@redhat.com> - 1.8.6.36-3
+* Mon Jun 25 2007 Akira TAGOH <tagoh@redhat.com> - 1.8.6.36-3
 - ruby-r12567.patch: backport patch from upstream svn to get rid of
   the unnecessary declarations. (#245446)
 
-* Wed Jul 20 2007 Akira TAGOH <tagoh@redhat.com> - 1.8.6.36-2
+* Wed Jun 20 2007 Akira TAGOH <tagoh@redhat.com> - 1.8.6.36-2
 - New upstream release.
   - Fix Etc::getgrgid to get the correct gid as requested. (#236647)
 
@@ -1598,7 +1772,7 @@ make check TESTS="-v $DISABLE_TESTS"
 - Removed ruby_cvs.2000092718.patch and added ruby_cvs.2000100218.patch
   (upgraded ruby to latest cvs version).
 
-* Thu Sep 27 2000 akira yamada <akira@vinelinux.org>
+* Wed Sep 27 2000 akira yamada <akira@vinelinux.org>
 - Updated to upstream version 1.6.1.
 - Removed ruby_cvs.2000082901.patch and added ruby_cvs.2000092718.patch
   (upgraded ruby to latest cvs version).
@@ -1630,7 +1804,7 @@ make check TESTS="-v $DISABLE_TESTS"
 - Removed ruby-list.23190.patch(included into ruby_cvs.patch).
 - Added ruby-dev.10054.patch.
 
-* Tue Jun 15 2000 akira yamada <akira@redhat.com>
+* Thu Jun 15 2000 akira yamada <akira@redhat.com>
 - Updated to version 1.4.4(06/12/2000 CVS).
 - Added manuals and FAQs.
 - Split into ruby, ruby-devel, ruby-tcltk, ruby-docs, irb.
@@ -1676,7 +1850,7 @@ make check TESTS="-v $DISABLE_TESTS"
 * Fri Nov 13 1998 Toru Hoshina <hoshina@best.com>
 - Version up.
 
-* Mon Sep 22 1998 Toru Hoshina <hoshina@best.com>
+* Tue Sep 22 1998 Toru Hoshina <hoshina@best.com>
 - To make a libruby.so.
 
 * Mon Sep 21 1998 Toru Hoshina <hoshina@best.com>
