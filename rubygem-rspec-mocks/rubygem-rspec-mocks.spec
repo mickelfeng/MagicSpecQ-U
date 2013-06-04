@@ -1,41 +1,37 @@
-%global	gemdir		%{gem_dir}
-%global	majorver	2.11.3
+%global	majorver	2.13.1
 #%%global	preminorver	.rc6
 %global	rpmminorver	.%(echo %preminorver | sed -e 's|^\\.\\.*||')
 %global	fullver	%{majorver}%{?preminorver}
 
 %global	fedorarel	1
 
-%global	gemname	rspec-mocks
-%global	gem_name %{gemname}
-%global	geminstdir	%{gem_instdir}
+%global	gem_name	rspec-mocks
 
-%global	rubyabi	1.9.1
 
 # %%check section needs rspec-core, however rspec-core depends on rspec-mocks
 # runtime part of rspec-mocks does not depend on rspec-core
-%global	need_bootstrap_set	1
+%global	need_bootstrap_set	0
 
 %{!?need_bootstrap:	%global	need_bootstrap	%{need_bootstrap_set}}
 
 Summary:	Rspec-2 doubles (mocks and stubs)
-Name:		rubygem-%{gemname}
+Name:		rubygem-%{gem_name}
 Version:	%{majorver}
-Release:	%{?preminorver:0.}%{fedorarel}%{?preminorver:%{rpmminorver}}%{?dist}.1
+Release:	%{?preminorver:0.}%{fedorarel}%{?preminorver:%{rpmminorver}}%{?dist}
 
 Group:		Development/Languages
 License:	MIT
 URL:		http://github.com/rspec/rspec-mocks
-Source0:	http://rubygems.org/gems/%{gemname}-%{fullver}.gem
+Source0:	http://rubygems.org/gems/%{gem_name}-%{fullver}.gem
 
-BuildRequires:	ruby(abi) = %{rubyabi}
+BuildRequires:	ruby(release)
 BuildRequires:	rubygems-devel
 %if 0%{?need_bootstrap} < 1
 BuildRequires:	rubygem(rspec)
 %endif
-Requires:	ruby(abi) = %{rubyabi}
+Requires:	ruby(release)
 Requires:	rubygems
-Provides:	rubygem(%{gemname}) = %{version}-%{release}
+Provides:	rubygem(%{gem_name}) = %{version}-%{release}
 BuildArch:	noarch
 
 %description
@@ -54,53 +50,75 @@ This package contains documentation for %{name}.
 %prep
 %setup -q -c -T
 
-mkdir -p .%{gemdir}
-gem install \
-	-V \
-	--local \
-	--install-dir .%{gemdir} \
-	--force \
-	--rdoc \
-	%{SOURCE0}
+TOPDIR=$(pwd)
+mkdir tmpunpackdir
+pushd tmpunpackdir
 
-chmod 0644 .%{gemdir}/cache/%{gemname}-%{fullver}.gem
+gem unpack %{SOURCE0}
+cd %{gem_name}-%{version}
+gem specification -l --ruby %{SOURCE0} > %{gem_name}.gemspec
+gem build %{gem_name}.gemspec
+mv %{gem_name}-%{version}.gem $TOPDIR
+
+popd
+rm -rf tmpunpackdir
 
 %build
+%gem_install
+
+#chmod 0644 ./%{gem_cache}
 
 %install
-mkdir -p %{buildroot}%{gemdir}
-cp -a .%{gemdir}/* %{buildroot}%{gemdir}/
+mkdir -p %{buildroot}%{gem_dir}
+cp -a .%{gem_dir}/* %{buildroot}%{gem_dir}/
 
 # cleanups
-rm -f %{buildroot}%{geminstdir}/{.document,.gitignore,.travis.yml,.yardopts}
+rm -f %{buildroot}%{gem_instdir}/{.document,.gitignore,.travis.yml,.yardopts}
 
 %if 0%{?need_bootstrap} < 1
 %check
-pushd .%{geminstdir}
+pushd .%{gem_instdir}
 ruby -rubygems -Ilib/ -S rspec spec/
 %endif
 
 %files
 %defattr(-,root,root,-)
-%dir	%{geminstdir}
+%dir	%{gem_instdir}
 
-%doc	%{geminstdir}/License.txt
-%doc	%{geminstdir}/*.md
-%{geminstdir}/lib/
+%doc	%{gem_instdir}/License.txt
+%doc	%{gem_instdir}/*.md
+%{gem_instdir}/lib/
 
-%{gemdir}/cache/%{gemname}-%{fullver}.gem
-%{gemdir}/specifications/%{gemname}-%{fullver}.gemspec
-
+%exclude	%{gem_cache}
+%{gem_spec}
 
 %files	doc
 %defattr(-,root,root,-)
-%{gemdir}/doc/%{gemname}-%{fullver}
-%{geminstdir}/features/
-%{geminstdir}/spec/
+%{gem_docdir}
+%{gem_instdir}/features/
+%exclude	%{gem_instdir}/spec/
 
 %changelog
-* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 2.11.3-1.1
-- 为 Magic 3.0 重建
+* Fri Apr 12 2013 Mamoru TASAKA <mtasaka@fedoraproject.org> - 2.13.1-1
+- 2.13.1
+
+* Thu Mar 28 2013 Mamoru TASAKA <mtasaka@fedoraproject.org> - 2.13.0-2
+- Enable test suite again
+
+* Thu Mar 28 2013 Mamoru TASAKA <mtasaka@fedoraproject.org> - 2.13.0-1
+- 2.13.0
+
+* Wed Feb 20 2013 Vít Ondruch <vondruch@redhat.com> - 2.12.2-2
+- Rebuild for https://fedoraproject.org/wiki/Features/Ruby_2.0.0
+
+* Mon Feb  4 2013 Mamoru TASAKA <mtasaka@fedoraproject.org> - 2.12.2-1
+- 2.12.2
+
+* Wed Jan  2 2013 Mamoru TASAKA <mtasaka@fedoraproject.org> - 2.12.1-2
+- Enable test suite again
+
+* Wed Jan  2 2013 Mamoru TASAKA <mtasaka@fedoraproject.org> - 2.12.1-1
+- 2.12.1
 
 * Thu Oct 11 2012 Mamoru Tasaka <mtasaka@fedoraproject.org> - 2.11.3-1
 - 2.11.3
