@@ -2,8 +2,8 @@
 
 Summary: Behaviour driven development (BDD) framework for Ruby
 Name: rubygem-%{gem_name}
-Version: 2.11.0
-Release: 2%{?dist}
+Version: 2.13.0
+Release: 1%{?dist}
 Group: Development/Languages
 License: MIT
 URL: http://rspec.info
@@ -13,9 +13,9 @@ Requires: rubygems
 Requires: rubygem(rspec-core) >= %{version}
 Requires: rubygem(rspec-mocks) >= %{version}
 Requires: rubygem(rspec-expectations) >= %{version}
-Requires: ruby(abi)  = 1.9.1
+Requires: ruby(release)
 BuildRequires: rubygems-devel
-BuildRequires: ruby(abi) = 1.9.1
+BuildRequires: ruby(release)
 BuildArch: noarch
 Provides: rubygem(%{gem_name}) = %{version}
 
@@ -24,11 +24,22 @@ RSpec is a behaviour driven development (BDD) framework for Ruby.
 
 %prep
 %setup -q -c -T
-mkdir -p .%{gem_dir}
-gem install --local --install-dir .%{gem_dir} \
-            --force %{SOURCE0}
+
+TOPDIR=$(pwd)
+mkdir tmpunpackdir
+pushd tmpunpackdir
+
+gem unpack %{SOURCE0}
+cd %{gem_name}-%{version}
+gem specification -l --ruby %{SOURCE0} > %{gem_name}.gemspec
+gem build %{gem_name}.gemspec
+mv %{gem_name}-%{version}.gem $TOPDIR
+
+popd
+rm -rf tmpunpackdir
 
 %build
+%gem_install
 
 %install
 rm -rf %{buildroot}
@@ -45,8 +56,17 @@ cp -a .%{gem_dir}/* %{buildroot}%{gem_dir}
 %{gem_spec}
 
 %changelog
-* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 2.11.0-2
-- 为 Magic 3.0 重建
+* Thu Mar 28 2013 Mamoru TASAKA <mtasaka@fedoraproject.org> - 2.13.0-1
+- 2.13.0
+
+* Wed Feb 20 2013 Vít Ondruch <vondruch@redhat.com> - 2.12.0-3
+- Rebuild for https://fedoraproject.org/wiki/Features/Ruby_2.0.0
+
+* Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.12.0-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
+
+* Wed Jan  2 2013 Mamoru TASAKA <mtasaka@fedoraproject.org> - 2.12.0-1
+- Update to Rspec 2.12.0
 
 * Thu Oct 11 2012 Mamoru Tasaka <mtasaka@fedoraproject.org> - 2.11.0-1
 - Update to Rspec 2.11.0
