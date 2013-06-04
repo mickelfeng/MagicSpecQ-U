@@ -1,29 +1,22 @@
 # Generated from ZenTest-4.1.4.gem by gem2rpm -*- rpm-spec -*-
-%global gemdir %{gem_dir}
-%global gemname ZenTest
-%global	gem_name %{gemname}
-%global geminstdir %{gem_instdir}
-
-%global rubyabi 1.9.1
+%global gem_name ZenTest
 
 Summary: Automated test scaffolding for Ruby
-Name: rubygem-%{gemname}
-Version: 4.6.2
-Release: 4%{?dist}
+Name: rubygem-%{gem_name}
+Version: 4.9.0
+Release: 2%{?dist}
 Group: Development/Languages
 License: MIT
 URL: http://www.zenspider.com/ZSS/Products/ZenTest/
-Source0: http://rubygems.org/gems/%{gemname}-%{version}.gem
-#Patch0:  zentest-remove-broken-test.patch
+Source0: http://rubygems.org/gems/%{gem_name}-%{version}.gem
 
 Requires: ruby(rubygems)
-Requires: ruby(abi) = %{rubyabi}
-BuildRequires: ruby(rubygems)
+Requires: ruby(release)
 BuildRequires: rubygems-devel
-BuildRequires: ruby(abi) = %{rubyabi}
+BuildRequires: ruby(release)
 BuildRequires: rubygem(minitest)
 BuildArch: noarch
-Provides: rubygem(%{gemname}) = %{version}
+Provides: rubygem(%{gem_name}) = %{version}
 
 %description
 ZenTest is an automated test scaffolding for Ruby that provides 4 different
@@ -42,40 +35,40 @@ This package contains documentation for %{name}.
 %prep
 %setup -q -c -T
 
-mkdir -p .%{gemdir}
-gem install --local --install-dir .%{gemdir} \
-            --force -V --rdoc %{SOURCE0}
-
-pushd .%{geminstdir}
-#%%patch0 -p0
+%gem_install -n %{SOURCE0}
 
 %build
 
 %install
-mkdir -p %{buildroot}%{gemdir}
-cp -a .%{gemdir}/* %{buildroot}%{gemdir}/
+mkdir -p %{buildroot}%{gem_dir}
+cp -pa .%{gem_dir}/* \
+        %{buildroot}%{gem_dir}/
 
-mkdir -p %{buildroot}/%{_bindir}
-mv %{buildroot}%{gemdir}/bin/* %{buildroot}/%{_bindir}
-rmdir %{buildroot}%{gemdir}/bin
-find %{buildroot}%{geminstdir}/bin -type f | xargs chmod 0755
+mkdir -p %{buildroot}%{_bindir}
+cp -pa .%{_bindir}/* \
+        %{buildroot}%{_bindir}/
+
+find %{buildroot}%{gem_instdir}/bin -type f | xargs chmod a+x
 
 # Various files marked executable that shouldn't be, and remove needless
 # shebangs
-find %{buildroot}%{geminstdir}/bin -type f | \
+find %{buildroot}%{gem_instdir}/bin -type f | \
   xargs -n 1 sed -i -e 's"^#!/usr/bin/env ruby"#!/usr/bin/ruby"'
-find %{buildroot}%{geminstdir}/bin -type f | \
+find %{buildroot}%{gem_instdir}/bin -type f | \
   xargs -n 1 sed -i -e 's"^#!/usr/local/bin/ruby"#!/usr/bin/ruby"'
-find %{buildroot}%{geminstdir}/test -type f | \
+find %{buildroot}%{gem_instdir}/test -type f | \
   xargs -n 1 sed -i  -e '/^#!\/usr\/.*\/ruby.*/d'
 # Ships with extremely tight permissions, bring them inline with other gems
-find %{buildroot}%{geminstdir} -type f | \
+find %{buildroot}%{gem_instdir} -type f | \
   xargs chmod 0644
-find %{buildroot}%{geminstdir}/bin -type f | \
+find %{buildroot}%{gem_instdir}/bin -type f | \
   xargs chmod 0755
 
 %check
-pushd .%{geminstdir}
+pushd .%{gem_instdir}
+# Workarounds "NoMethodError: undefined method `maglev?'".
+# https://github.com/seattlerb/zentest/issues/34
+sed -i '559 s|^|#|' test/test_zentest.rb
 testrb -Ilib test/test_*.rb
 popd
 
@@ -86,28 +79,38 @@ popd
 %{_bindir}/multiruby_setup
 %{_bindir}/unit_diff
 %{_bindir}/zentest
-%doc %{geminstdir}/History.txt
-%doc %{geminstdir}/Manifest.txt
-%doc %{geminstdir}/README.txt
-%dir %{geminstdir}
-%{geminstdir}/bin
-%{geminstdir}/lib
-%{geminstdir}/.gemtest
-%{gemdir}/cache/%{gemname}-%{version}.gem
-%{gemdir}/specifications/%{gemname}-%{version}.gemspec
+%doc %{gem_instdir}/History.txt
+%doc %{gem_instdir}/Manifest.txt
+%doc %{gem_instdir}/README.txt
+%dir %{gem_instdir}
+%{gem_instdir}/bin
+%{gem_instdir}/lib
+%exclude %{gem_instdir}/.gemtest
+%exclude %{gem_cache}
+%{gem_spec}
 
 %files doc
-%{geminstdir}/Rakefile
-%{geminstdir}/test
-%{geminstdir}/.autotest
-%{geminstdir}/articles
-%{geminstdir}/example*.rb
-%{geminstdir}/example.txt
-%{gemdir}/doc/%{gemname}-%{version}
+%doc %{gem_docdir}
+%doc %{gem_instdir}/Rakefile
+%doc %{gem_instdir}/test
+%doc %{gem_instdir}/.autotest
+%doc %{gem_instdir}/articles
+%doc %{gem_instdir}/example*.rb
+%doc %{gem_instdir}/example.txt
 
 %changelog
-* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 4.6.2-4
-- 为 Magic 3.0 重建
+* Fri Feb 22 2013 Vít Ondruch <vondruch@redhat.com> - 4.9.0-2
+- Rebuid due to error in RubyGems stub shebang.
+
+* Tue Feb 19 2013 Vít Ondruch <vondruch@redhat.com> - 4.9.0-1
+- Rebuild for https://fedoraproject.org/wiki/Features/Ruby_2.0.0
+- Update to ZenTest 4.9.0.
+
+* Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.8.2-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
+
+* Tue Nov 13 2012 Mo Morsi <mmorsi@redhat.com> - 4.8.2-1
+- update to zentest 4.8.2
 
 * Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 4.6.2-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
