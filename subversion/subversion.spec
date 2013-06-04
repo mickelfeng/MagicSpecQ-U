@@ -21,8 +21,8 @@
 
 Summary: A Modern Concurrent Version Control System
 Name: subversion
-Version: 1.7.7
-Release: 1%{?dist}
+Version: 1.7.9
+Release: 3%{?dist}
 License: ASL 2.0
 Group: Development/Tools
 URL: http://subversion.apache.org/
@@ -40,7 +40,8 @@ Patch3: subversion-1.7.0-kwallet.patch
 Patch4: subversion-1.7.2-ruby19.patch
 Patch7: subversion-1.7.4-kwallet2.patch
 Patch8: subversion-1.7.4-sqlitever.patch
-Patch9: subversion-1.7.5-kwallet-gcc47.patch
+Patch9: subversion-1.7.9-rubybind.patch
+Patch10: subversion-1.7.9-swighash.patch
 BuildRequires: autoconf, libtool, python, python-devel, texinfo, which
 BuildRequires: %{dbdevel} >= 4.1.25, swig >= 1.3.24, gettext
 BuildRequires: apr-devel >= 1.3.0, apr-util-devel >= 1.3.0
@@ -141,7 +142,7 @@ This package includes the Perl bindings to the Subversion libraries.
 Group: Development/Libraries
 Summary: JNI bindings to the Subversion libraries
 Requires: subversion%{?_isa} = %{version}-%{release}
-BuildRequires: java-devel-openjdk
+BuildRequires: jdk
 # JAR repacking requires both zip and unzip in the buildroot
 BuildRequires: zip, unzip
 # For the tests
@@ -155,10 +156,9 @@ This package includes the JNI bindings to the Subversion libraries.
 Group: Development/Libraries
 Summary: Ruby bindings to the Subversion libraries
 BuildRequires: ruby-devel >= 1.9.1, ruby >= 1.9.1
+BuildRequires: rubygem(minitest)
 Requires: subversion%{?_isa} = %{version}-%{release}
 Conflicts: ruby-libs%{?_isa} < 1.8.2
-### this should not be hard-coded!
-Requires: ruby(abi) = 1.9.1
 
 %description ruby
 This package includes the Ruby bindings to the Subversion libraries.
@@ -179,7 +179,8 @@ This package includes supplementary tools for use with Subversion.
 %patch4 -p1 -b .ruby
 %patch7 -p1 -b .kwallet2
 %patch8 -p1 -b .sqlitever
-%patch9 -p2 -b .kwallet-gcc47
+%patch9 -p1 -b .rubybind
+%patch10 -p1 -b .swighash
 
 %build
 # Regenerate the buildsystem, so that:
@@ -206,9 +207,11 @@ export CC=gcc CXX=g++ JAVA_HOME=%{jdk_path} CFLAGS="$RPM_OPT_FLAGS"
 %configure --with-apr=%{_prefix} --with-apr-util=%{_prefix} \
         --with-swig --with-neon=%{_prefix} \
         --with-ruby-sitedir=%{ruby_vendorarchdir} \
+        --with-ruby-test-verbose=verbose \
         --with-apxs=%{_httpd_apxs} --disable-mod-activation \
         --disable-static --with-sasl=%{_prefix} \
         --disable-neon-version-check \
+        --with-libmagic=%{_prefix} \
         --with-gnome-keyring \
 %if %{with_java}
         --enable-javahl \
@@ -275,7 +278,7 @@ find $RPM_BUILD_ROOT%{_libdir}/perl5 -type f -perm 555 -print0 |
 rm -f ${RPM_BUILD_ROOT}%{_libdir}/libsvn_swig_*.{so,la,a}
 
 # Remove unnecessary ruby libraries
-rm -f ${RPM_BUILD_ROOT}%{ruby_sitearch}/svn/ext/*.*a
+rm -f ${RPM_BUILD_ROOT}%{ruby_vendorarchdir}/svn/ext/*.*a
 
 # Trim what goes in docdir
 rm -rf tools/*/*.in
@@ -332,9 +335,9 @@ cat %{name}.lang exclude.tools.files >> %{name}.files
 %check
 export LANG=C LC_ALL=C
 export LD_LIBRARY_PATH=$RPM_BUILD_ROOT%{_libdir}
-#export MALLOC_PERTURB_=171 MALLOC_CHECK_=3
-#export LIBC_FATAL_STDERR_=1
-if ! make check check-swig-pl check-swig-py CLEANUP=yes; then
+export MALLOC_PERTURB_=171 MALLOC_CHECK_=3
+export LIBC_FATAL_STDERR_=1
+if ! make check check-swig-pl check-swig-py check-swig-rb CLEANUP=yes; then
    : Test suite failure.
    cat fails.log
    exit 1
@@ -349,24 +352,13 @@ make check-javahl
 rm -rf ${RPM_BUILD_ROOT}
 
 %post
-if [ $1 -eq 1 ] ; then 
-    # Initial installation 
-    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
-fi
+%systemd_post svnserve.service
 
 %preun
-if [ $1 = 0 ]; then
-    # Package removal, not upgrade
-    /bin/systemctl --no-reload disable svnserve.service > /dev/null 2>&1 || :
-    /bin/systemctl stop svnserve.service > /dev/null 2>&1 || :
-fi
+%systemd_preun svnserve.service
 
 %postun
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
-if [ $1 -ge 1 ] ; then
-    # Package upgrade, not uninstall
-    /bin/systemctl try-restart svnserve.service >/dev/null 2>&1 || :
-fi
+%systemd_postun_with_restart svnserve.service
 
 %triggerun -- subversion < 1.7.3-2
 /usr/bin/systemd-sysv-convert --save svnserve >/dev/null 2>&1 ||:
@@ -475,6 +467,36 @@ fi
 %endif
 
 %changelog
+* Thu May  9 2013 Joe Orton <jorton@redhat.com> - 1.7.9-3
+- fix spurious failures in ruby test suite (upstream r1327373)
+
+* Thu May  9 2013 Joe Orton <jorton@redhat.com> - 1.7.9-2
+- try harder to avoid svnserve bind failures in ruby binding tests
+- enable verbose output for ruby binding tests
+
+* Tue Apr  9 2013 Joe Orton <jorton@redhat.com> - 1.7.9-1
+- update to 1.7.9
+
+* Wed Mar 27 2013 Vít Ondruch <vondruch@redhat.com> - 1.7.8-6
+- Rebuild for https://fedoraproject.org/wiki/Features/Ruby_2.0.0
+- Drop Ruby version checks from configuration script.
+- Fix and enable Ruby test suite.
+
+* Thu Mar 14 2013 Joe Orton <jorton@redhat.com> - 1.7.8-5
+- drop specific dep on ruby(abi)
+
+* Fri Feb 15 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.7.8-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
+
+* Tue Jan  8 2013 Joe Orton <jorton@redhat.com> - 1.7.8-3
+- update to latest psvn.el
+
+* Tue Jan  8 2013 Lukáš Nykrýn <lnykryn@redhat.com> - 1.7.8-2
+- Scriptlets replaced with new systemd macros (#850410)
+
+* Fri Jan  4 2013 Joe Orton <jorton@redhat.com> - 1.7.8-1
+- update to 1.7.8
+
 * Thu Oct 11 2012 Joe Orton <jorton@redhat.com> - 1.7.7-1
 - update to 1.7.7
 

@@ -5,22 +5,8 @@ Message-ID: <20111221050800.GA17350@slackware.com>
 
 --- subversion-1.7.2/configure.ac.ruby19
 +++ subversion-1.7.2/configure.ac
-@@ -1130,14 +1130,29 @@ if test "$RUBY" != "none"; then
-     ])
-     RUBY_MINOR="$svn_cv_ruby_minor"
+@@ -1130,13 +1130,6 @@ if test "$RUBY" != "none"; then
  
-+    # WHY they have not changed the version of there API, I do not know ...
-+    AC_CACHE_CHECK([for Ruby tiny version], [svn_cv_ruby_tiny],[
-+    svn_cv_ruby_tiny="`$RUBY -rrbconfig -e '
-+        begin
-+          print Config::CONFIG.fetch(%q(RUBY_PROGRAM_VERSION))
-+	rescue IndexError
-+          print Config::CONFIG.fetch(%q(TEENY))
-+	end
-+      ' | cut -d . -f 3` "
-+    ])
-+    RUBY_PROGRAM_TINY="$svn_cv_ruby_tiny"
-+
      AC_SUBST(RUBY_MAJOR)
      AC_SUBST(RUBY_MINOR)
 -    if test ! \( "$RUBY_MAJOR" -eq "1" -a "$RUBY_MINOR" -eq "8" \); then
@@ -29,18 +15,10 @@ Message-ID: <20111221050800.GA17350@slackware.com>
 -      RUBY="none"
 -      AC_MSG_WARN([The detected Ruby is too new for Subversion to use])
 -      AC_MSG_WARN([Only 1.8.x releases are supported at this time])
-+    AC_SUBST(RUBY_PROGRAM_TINY)
-+    if test ! \( "$RUBY_MAJOR" -eq "1" -a "$RUBY_MINOR" -gt "8" \); then
-+      if test \( "$RUBY_PROGRAM_TINY" -lt "3" \); then
-+	# Disallow Ruby 1.9 or later until the binding tests get fixed
-+	# to run with those versions.
-+	RUBY="none"
-+	AC_MSG_WARN([The detected Ruby version issue, for Subversion to use])
-+	AC_MSG_WARN([Only 1.8.x or > 1.9.3 releases are supported at this time])
-+      fi
-     fi
+-    fi
    else
      AC_MSG_RESULT([no])
+     RUBY="none"
 --- subversion-1.7.2/Makefile.in.ruby19
 +++ subversion-1.7.2/Makefile.in
 @@ -318,7 +318,7 @@ INSTALL_EXTRA_SWIG_RB=\
@@ -252,14 +230,14 @@ Message-ID: <20111221050800.GA17350@slackware.com>
        composed_window.ops.each do |op|
          op_size = op.offset + op.length
          case op.action_code
-@@ -174,6 +176,7 @@ class SvnDeltaTest < Test::Unit::TestCas
-     Svn::Delta.send(target_text, handler)
-     output.rewind
-     result = output.read
-+    # FIXME this is needing encoding love on ruby 1.9
-     assert_match(/\ASVN.*#{target_text}\z/, result)
+@@ -169,6 +171,7 @@
+     stream = Svn::Delta::TextDeltaStream.new(source, target)
  
-     # skip svndiff window
+     output = StringIO.new("")
++    output.set_encoding Encoding::ASCII_8BIT if output.respond_to? :set_encoding
+     handler = Svn::Delta.svndiff_handler(output)
+ 
+     Svn::Delta.send(target_text, handler)
 --- subversion-1.7.2/subversion/bindings/swig/ruby/test/test_fs.rb.ruby19
 +++ subversion-1.7.2/subversion/bindings/swig/ruby/test/test_fs.rb
 @@ -20,7 +20,7 @@
