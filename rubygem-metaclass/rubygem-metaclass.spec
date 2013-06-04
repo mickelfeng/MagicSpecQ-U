@@ -1,21 +1,20 @@
 # Generated from metaclass-0.0.1.gem by gem2rpm -*- rpm-spec -*-
 %global gem_name metaclass
 
-%global rubyabi 1.9.1
 
 Summary: Adds a metaclass method to all Ruby objects
 Name: rubygem-%{gem_name}
 Version: 0.0.1
-Release: 7%{?dist}
+Release: 8%{?dist}
 Group: Development/Languages
 # https://github.com/floehopper/metaclass/issues/1
 License: MIT
 URL: http://github.com/floehopper/metaclass
 Source0: http://rubygems.org/gems/%{gem_name}-%{version}.gem
-Requires: ruby(abi) = %{rubyabi}
+Requires: ruby(release)
 Requires: ruby(rubygems)
 Requires: ruby
-BuildRequires: ruby(abi) = %{rubyabi}
+BuildRequires: ruby(release)
 BuildRequires: rubygems-devel
 BuildRequires: ruby
 BuildRequires: rubygem(minitest)
@@ -38,9 +37,7 @@ Documentation for %{name}
 
 %prep
 %setup -q -c -T
-mkdir -p .%{gem_dir}
-gem install --local --install-dir .%{gem_dir} \
-            --force %{SOURCE0}
+%gem_install -n %{SOURCE0}
 
 %build
 
@@ -75,8 +72,11 @@ popd
 
 
 %changelog
-* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.0.1-7
-- 为 Magic 3.0 重建
+* Mon Feb 25 2013 Vít Ondruch <vondruch@redhat.com> - 0.0.1-8
+- Rebuild for https://fedoraproject.org/wiki/Features/Ruby_2.0.0
+
+* Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.0.1-7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
 
 * Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.0.1-6
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
