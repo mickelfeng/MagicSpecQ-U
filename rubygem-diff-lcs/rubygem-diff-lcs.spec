@@ -1,19 +1,24 @@
 %global gem_name diff-lcs
-%global rubyabi 1.9.1
+
+# %%check section needs rspec-expectations, however rspec-expectations depends
+# on diff-lcs.
+%{!?need_bootstrap:	%global	need_bootstrap	1}
 
 Summary: Provide a list of changes between two sequenced collections
 Name: rubygem-%{gem_name}
 Version: 1.1.3
-Release: 2%{?dist}
+Release: 2.2%{?dist}
 Group: Development/Languages
 License: GPLv2+ or Ruby or Artistic
 URL: http://rubyforge.org/projects/ruwiki/
 Source0: http://gems.rubyforge.org/gems/%{gem_name}-%{version}.gem
-Requires: ruby(abi) = %{rubyabi}
+Requires: ruby(release)
 Requires: rubygems
 BuildRequires: rubygems-devel
-BuildRequires: %{_bindir}/rspec
-BuildRequires: ruby(abi) = %{rubyabi}
+%if 0%{?need_bootstrap} < 1
+BuildRequires: rubygem(rspec)
+%endif
+BuildRequires: ruby(release)
 BuildArch: noarch
 Provides: rubygem(%{gem_name}) = %{version}
 
@@ -35,10 +40,7 @@ This package contains documentation for %{name}.
 
 %prep
 %setup -q -c  -T
-mkdir -p .%{gem_dir}
-gem install --local --install-dir .%{gem_dir} \
-            --bindir .%{_bindir} \
-            --force %{SOURCE0}
+%gem_install -n %{SOURCE0}
 
 
 %build
@@ -69,10 +71,12 @@ done
 # Fix shebangs.
 sed -i 's|^#!.*|#!/usr/bin/ruby|' %{buildroot}%{gem_instdir}/bin/{htmldiff,ldiff}
 
+%if 0%{?need_bootstrap} < 1
 %check
 pushd .%{gem_instdir}
 rspec spec
 popd
+%endif
 
 %files
 %{_bindir}/ldiff
@@ -97,8 +101,13 @@ popd
 
 
 %changelog
-* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.1.3-2
-- 为 Magic 3.0 重建
+* Wed Feb 20 2013 Vít Ondruch <vondruch@redhat.com> - 1.1.3-3
+- Rebuild for https://fedoraproject.org/wiki/Features/Ruby_2.0.0
+- Change the dependency to rubygem(rspec).
+- Add bootstrap code.
+
+* Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.1.3-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
 
 * Fri Aug 17 2012 Vít Ondruch <vondruch@redhat.com> - 1.1.3-1
 - Update to diff-lcs 1.1.3.
