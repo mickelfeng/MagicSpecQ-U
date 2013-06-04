@@ -1,16 +1,12 @@
-%global	gemdir		%{gem_dir}
-%global	majorver	2.11.1
+%global	majorver	2.13.1
 #%%global	preminorver	.rc6
 %global	rpmminorver	.%(echo %preminorver | sed -e 's|^\\.\\.*||')
 %global	fullver	%{majorver}%{?preminorver}
 
-%global	fedorarel	1
+%global	fedorarel	2
 
-%global	gemname	rspec-core
-%global	gem_name %{gemname}
-%global	geminstdir	%{gem_instdir}
+%global	gem_name	rspec-core
 
-%global	rubyabi	1.9.1
 
 # %%check section needs rspec-core, however rspec-core depends on rspec-mocks
 # runtime part of rspec-mocks does not depend on rspec-core
@@ -19,26 +15,26 @@
 %{!?need_bootstrap:	%global	need_bootstrap	%{need_bootstrap_set}}
 
 Summary:	Rspec-2 runner and formatters
-Name:		rubygem-%{gemname}
+Name:		rubygem-%{gem_name}
 Version:	%{majorver}
-Release:	%{?preminorver:0.}%{fedorarel}%{?preminorver:%{rpmminorver}}%{?dist}.1
+Release:	%{?preminorver:0.}%{fedorarel}%{?preminorver:%{rpmminorver}}%{?dist}
 
 Group:		Development/Languages
 License:	MIT
 URL:		http://github.com/rspec/rspec-mocks
-Source0:	http://rubygems.org/gems/%{gemname}-%{fullver}.gem
-# Skip some tests
-Patch0:		rubygem-rspec-core-2.11.1-skip-some-tests.patch
+Source0:	http://rubygems.org/gems/%{gem_name}-%{fullver}.gem
 
-BuildRequires:	ruby(abi) = %{rubyabi}
+BuildRequires:	ruby(release)
 BuildRequires:	rubygems-devel
 %if 0%{?need_bootstrap} < 1
 BuildRequires:	rubygem(ZenTest)
+BuildRequires:	rubygem(nokogiri)
 BuildRequires:	rubygem(rake)
 BuildRequires:	rubygem(rspec-expectations)
 BuildRequires:	rubygem(rspec-mocks)
+BuildRequires:	rubygem(aruba)
 %endif
-Requires:	ruby(abi) = %{rubyabi}
+Requires:	ruby(release)
 # When killing the below dependency, a notification to mailing list
 # is needed
 #Requires:	rubygem(rspec-expectations)
@@ -52,7 +48,7 @@ Requires:	rubygem(rake)
 #Requires:	rubygem(ruby-debug)
 # Not found in Fedora yet (and optional)
 #Requires:	rubygem(rr)
-Provides:	rubygem(%{gemname}) = %{version}-%{release}
+Provides:	rubygem(%{gem_name}) = %{version}-%{release}
 BuildArch:	noarch
 
 %description
@@ -70,38 +66,28 @@ This package contains documentation for %{name}.
 %prep
 %setup -q -c -T
 
-mkdir -p .%{gemdir}
-gem install \
-	-V \
-	--local \
-	--install-dir .%{gemdir} \
-	--bindir .%{_bindir} \
-	--force \
-	--rdoc \
-	%{SOURCE0}
+TOPDIR=$(pwd)
+mkdir tmpunpackdir
+pushd tmpunpackdir
 
-chmod 0644 .%{gemdir}/cache/%{gemname}-%{fullver}.gem
+gem unpack %{SOURCE0}
+cd %{gem_name}-%{version}
 
 # rpmlint
-pushd .%{geminstdir}
 grep -rl '^#![ \t]*/usr/bin' ./lib| \
 	xargs sed -i -e '\@^#![ \t]*/usr/bin@d'
 
-# Until rspec is updated, lets install rspec.rb
-# Kill below
-%if 0
-cat > lib/rspec.rb <<EOF
-require 'rspec/core'
-require 'rspec/expectations'
-require 'rspec/mocks'
-EOF
-%endif
-
-%patch0 -p1
+gem specification -l --ruby %{SOURCE0} > %{gem_name}.gemspec
+gem build %{gem_name}.gemspec
+mv %{gem_name}-%{version}.gem $TOPDIR
 
 popd
+rm -rf tmpunpackdir
 
 %build
+%gem_install
+
+#chmod 0644 ./%{gem_cache}
 
 %install
 mkdir -p %{buildroot}%{_prefix}
@@ -112,46 +98,57 @@ cp -a .%{_prefix}/* %{buildroot}%{_prefix}/
 mv %{buildroot}%{_bindir}/autospec{,2}
 
 # cleanups
-rm -f %{buildroot}%{geminstdir}/{.document,.gitignore,.treasure_map.rb,.rspec,.travis.yml,spec.txt,.yardopts}
+rm -f %{buildroot}%{gem_instdir}/{.document,.gitignore,.treasure_map.rb,.rspec,.travis.yml,spec.txt,.yardopts}
 
 %if 0%{?need_bootstrap} < 1
 %check
-pushd .%{geminstdir}
-# spec/autotest/failed_results_re_spec.rb (and others) fail, skipping this for now
-# (need investigating)
-# and now also some other tests fail
-ruby -rubygems -Ilib/ -S exe/rspec \
-	$(ls -1 spec/rspec/*_spec.rb spec/rspec/*/*_spec.rb | \
-		grep -v configuration_options_spec | \
-		grep -v drb_options_spec ) \
-	|| :
+pushd .%{gem_instdir}
+# Test failure needs investigation...
+# There are is some missing template for Ruby 2.0.0:
+# https://github.com/rspec/rspec-core/commits/master/spec/rspec/core/formatters/html_formatted-2.0.0.html
+ruby -rubygems -Ilib/ -S exe/rspec || :
 %endif
 
 %files
 %defattr(-,root,root,-)
-%dir	%{geminstdir}
+%dir	%{gem_instdir}
 
-%doc	%{geminstdir}/License.txt
-%doc	%{geminstdir}/*.md
+%doc	%{gem_instdir}/License.txt
+%doc	%{gem_instdir}/*.md
 
 %{_bindir}/autospec2
 %{_bindir}/rspec
-%{geminstdir}/exe/
-%{geminstdir}/lib/
+%{gem_instdir}/exe/
+%{gem_instdir}/lib/
 
-%{gemdir}/cache/%{gemname}-%{fullver}.gem
-%{gemdir}/specifications/%{gemname}-%{fullver}.gemspec
-
+%exclude	%{gem_cache}
+%{gem_spec}
 
 %files	doc
 %defattr(-,root,root,-)
-%{gemdir}/doc/%{gemname}-%{fullver}
-%{geminstdir}/features/
-%{geminstdir}/spec/
+%{gem_docdir}
+%{gem_instdir}/features/
+%exclude	%{gem_instdir}/spec/
 
 %changelog
-* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 2.11.1-1.1
-- 为 Magic 3.0 重建
+* Thu Mar 28 2013 Mamoru TASAKA <mtasaka@fedoraproject.org> - 2.13.1-2
+- Enable test suite again
+
+* Thu Mar 28 2013 Mamoru TASAKA <mtasaka@fedoraproject.org> - 2.13.1-1
+- 2.13.1
+
+* Tue Feb 19 2013 Vít Ondruch <vondruch@redhat.com> - 2.12.2-3
+- Rebuild for https://fedoraproject.org/wiki/Features/Ruby_2.0.0
+
+* Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2.12.2-2.1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
+
+* Wed Jan  2 2013 Mamoru TASAKA <mtasaka@fedoraproject.org> - 2.12.2-2
+- Use aruba, which is already in Fedora, drop no-longer-needed
+  patch
+
+* Wed Jan  2 2013 Mamoru TASAKA <mtasaka@fedoraproject.org> - 2.12.2-1
+- 2.12.2
 
 * Thu Oct 11 2012 Mamoru Tasaka <mtasaka@fedoraproject.org> - 2.11.1-1
 - 2.11.1
