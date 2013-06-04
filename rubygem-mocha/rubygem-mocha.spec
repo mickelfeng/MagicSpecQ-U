@@ -3,16 +3,16 @@
 
 Summary:        Mocking and stubbing library
 Name:           rubygem-%{gem_name}
-Version:        0.12.1
-Release:        2%{?dist}
+Version:        0.13.1
+Release:        3%{?dist}
 Group:          Development/Languages
 License:        MIT and Ruby
 URL:            http://mocha.rubyforge.org
 Source0:	http://rubygems.org/gems/%{gem_name}-%{version}.gem
-Requires:	ruby(abi) = 1.9.1
+Requires:	ruby(release)
 Requires:	ruby(rubygems)
 Requires:	rubygem(metaclass)
-BuildRequires:	ruby(abi) = 1.9.1
+BuildRequires:	ruby(release)
 BuildRequires:  rubygems-devel
 BuildRequires:	ruby
 BuildRequires:	rubygem(metaclass)
@@ -36,28 +36,32 @@ This package contains documentation for %{name}.
 
 
 %prep
+%setup -q -c -T
+%gem_install -n %{SOURCE0}
 
 %build
 
 %install
-rm -rf %{buildroot}
 mkdir -p %{buildroot}%{gem_dir}
-gem install --local --install-dir %{buildroot}%{gem_dir} \
-            --force --rdoc %{SOURCE0}
+cp -pa .%{gem_dir}/* \
+        %{buildroot}%{gem_dir}/
 
 %check 
 pushd %{buildroot}%{gem_instdir}
-ruby -e "Dir.glob('./test/**/*_test.rb').each {|t| require t}"
+# Each part of test suite must be run separately, otherwise the test suite fails.
+# https://github.com/freerange/mocha/issues/121
+ruby -e "Dir.glob('./test/unit/**/*_test.rb').each {|t| require t}"
+ruby -e "Dir.glob('./test/acceptance/**/*_test.rb').each {|t| require t}"
+ruby -e "Dir.glob('./test/integration/**/*_test.rb').each {|t| require t}"
 popd
 
 %files
-%exclude %{gem_instdir}/.gemtest
+%exclude %{gem_instdir}/.*
 %exclude %{gem_instdir}/init.rb
-%exclude %{gem_instdir}/mocha.gemspec
-%doc %{gem_instdir}/COPYING.rdoc
-%doc %{gem_instdir}/README.rdoc
-%doc %{gem_instdir}/MIT-LICENSE.rdoc
-%doc %{gem_instdir}/RELEASE.rdoc
+%doc %{gem_instdir}/COPYING.md
+%doc %{gem_instdir}/README.md
+%doc %{gem_instdir}/MIT-LICENSE.md
+%doc %{gem_instdir}/RELEASE.md
 %dir %{gem_instdir}
 %{gem_libdir}
 %{gem_cache}
@@ -68,14 +72,20 @@ popd
 %doc %{gem_docdir}
 %{gem_instdir}/Rakefile
 %{gem_instdir}/build-matrix.rb
-%{gem_instdir}/examples/
+%{gem_instdir}/mocha.gemspec
 %{gem_instdir}/gemfiles/
 %{gem_instdir}/test/
 
 
 %changelog
-* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.12.1-2
-- 为 Magic 3.0 重建
+* Mon Feb 25 2013 Vít Ondruch <vondruch@redhat.com> - 0.13.1-3
+- Rebuild for https://fedoraproject.org/wiki/Features/Ruby_2.0.0
+
+* Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.13.1-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
+
+* Wed Jan 02 2013 Vít Ondruch <vondruch@redhat.com> - 0.13.1-1
+- Updated to the Mocha 0.13.1.
 
 * Mon Jul 23 2012 Bohuslav Kabrda <bkabrda@redhat.com> - 0.12.1-1
 - Update to Mocha 0.12.1, as this version is needed by ActionPack 3.2.6 tests.
