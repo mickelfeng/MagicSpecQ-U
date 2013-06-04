@@ -18,22 +18,28 @@
 Summary: Round Robin Database Tool to store and display time-series data
 Name: rrdtool
 Version: 1.4.7
-Release: 4%{?dist}
+Release: 16%{?dist}
 License: GPLv2+ with exceptions
 Group: Applications/Databases
 URL: http://oss.oetiker.ch/rrdtool/
 Source0: http://oss.oetiker.ch/%{name}/pub/%{name}-%{version}.tar.gz
 Source1: php4-%{svnrev}.tar.gz
 Patch1: rrdtool-1.4.4-php54.patch
+# workaround for rhbz#92165
+Patch2: rrdtool-1.4.7-ruby-2-fix.patch
+# disable logo for php 5.5.
+Patch3: rrdtool-1.4.7-php55.patch
+Patch4: rrdtool-1.4.7-autoconf-fix.patch
+Patch5: rrdtool-1.4.7-lua-5.2.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-Requires: dejavu-sans-mono-fonts, dejavu-lgc-sans-mono-fonts
+Requires: dejavu-sans-mono-fonts
 BuildRequires: gcc-c++, openssl-devel, freetype-devel
 BuildRequires: libpng-devel, zlib-devel, intltool >= 0.35.0
 BuildRequires: cairo-devel >= 1.4.6, pango-devel >= 1.17
 BuildRequires: libtool, groff
 BuildRequires: gettext, libxml2-devel
-BuildRequires: perl-ExtUtils-MakeMaker, perl-devel
+BuildRequires: perl-ExtUtils-MakeMaker, perl-devel, automake, autoconf
 
 %description
 RRD is the Acronym for Round Robin Database. RRD is a system to store and
@@ -131,13 +137,11 @@ The %{name}-tcl package includes RRDtool bindings for Tcl.
 %endif
 
 %if %{with_ruby}
-%{!?ruby_sitearch: %define ruby_sitearch %(ruby -rrbconfig -e 'puts Config::CONFIG["sitearchdir"]')}
 
 %package ruby
 Summary: Ruby RRDtool bindings
 Group: Development/Languages
 BuildRequires: ruby, ruby-devel
-Requires: ruby(abi) = 1.9.1
 Requires: %{name} = %{version}-%{release}
 
 %description ruby
@@ -145,7 +149,7 @@ The %{name}-ruby package includes RRDtool bindings for Ruby.
 %endif
 
 %if %{with_lua}
-%define luaver 5.1
+%define luaver 5.2
 %define lualibdir %{_libdir}/lua/%{luaver}
 %define luapkgdir %{_datadir}/lua/%{luaver}
 
@@ -164,7 +168,11 @@ The %{name}-lua package includes RRDtool bindings for Lua.
 %setup -q -n %{name}-%{version} %{?with_php: -a 1}
 %if %{with_php}
 %patch1 -p1 -b .php54
+%patch3 -p1 -b .php55
 %endif
+%patch2 -p1 -b .ruby-2-fix
+%patch4 -p1 -b .autoconf-fix
+%patch5 -p1 -b .lua-52
 
 # Fix to find correct python dir on lib64
 %{__perl} -pi -e 's|get_python_lib\(0,0,prefix|get_python_lib\(1,0,prefix|g' \
@@ -185,6 +193,7 @@ The %{name}-lua package includes RRDtool bindings for Lua.
 cp -p /usr/lib/rpm/config.{guess,sub} php4/
 
 %build
+./autogen.sh
 %configure \
     --with-perl-options='INSTALLDIRS="vendor"' \
     --disable-rpath \
@@ -201,6 +210,8 @@ cp -p /usr/lib/rpm/config.{guess,sub} php4/
 %endif
 %if %{with_ruby}
     --enable-ruby \
+%else
+    --disable-ruby \
 %endif
     --disable-static \
     --with-pic
@@ -213,6 +224,7 @@ cp -p /usr/lib/rpm/config.{guess,sub} php4/
 # Remove Rpath from Ruby
 %{__perl} -pi.orig -e 's|-Wl,--rpath -Wl,\$\(EPREFIX\)/lib||g' \
     bindings/ruby/extconf.rb
+sed -i 's| extconf.rb| extconf.rb --vendor |' bindings/Makefile
 %endif
 
 # Force RRDp bits where we want 'em, not sure yet why the
@@ -264,10 +276,10 @@ __EOF__
 %endif
 
 # Pesky RRDp.pm...
-#%{__mv} $RPM_BUILD_ROOT%{perl_vendorlib}/RRDp.pm $RPM_BUILD_ROOT%{perl_vendorarch}/
+%{__mv} $RPM_BUILD_ROOT%{perl_vendorlib}/RRDp.pm $RPM_BUILD_ROOT%{perl_vendorarch}/
 
 # Dunno why this is getting installed here...
-#%{__rm} -f $RPM_BUILD_ROOT%{perl_vendorlib}/leaktest.pl
+%{__rm} -f $RPM_BUILD_ROOT%{perl_vendorlib}/leaktest.pl
 
 # We only want .txt and .html files for the main documentation
 %{__mkdir_p} doc2/html doc2/txt
@@ -290,7 +302,6 @@ find examples/ -type f -exec chmod 0644 {} \;
         $RPM_BUILD_ROOT%{perl_archlib}/perllocal.pod \
         $RPM_BUILD_ROOT%{_datadir}/%{name}/examples \
         $RPM_BUILD_ROOT%{perl_vendorarch}/auto/*/{.packlist,*.bs}
-magic_rpm_clean.sh
 
 %check
 # minimal load test for the PHP extension
@@ -332,7 +343,6 @@ LD_LIBRARY_PATH=%{buildroot}%{_libdir} php -n \
 %defattr(-,root,root,-)
 %doc doc3/html
 %{_mandir}/man3/*
-%{perl_vendorlib}/*.pm
 %{perl_vendorarch}/*.pm
 %attr(0755,root,root) %{perl_vendorarch}/auto/RRDs/
 
@@ -363,26 +373,69 @@ LD_LIBRARY_PATH=%{buildroot}%{_libdir} php -n \
 %if %{with_ruby}
 %files ruby
 %defattr(-,root,root,-)
-#%doc bindings/ruby/README
-%{ruby_sitearch}/RRD.so
+%doc bindings/ruby/README
+%{ruby_vendorarchdir}/RRD.so
 %endif
 
 %if %{with_lua}
 %files lua
 %defattr(-,root,root,-)
-#%doc bindings/lua/README
+%doc bindings/lua/README
+%exclude %{lualibdir}/*.la
 %{lualibdir}/*
 %endif
 
 %changelog
-* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 1.4.7-4
-- 为 Magic 3.0 重建
+* Wed May 15 2013 Tom Callaway <spot@fedoraproject.org> - 1.4.7-16
+- lua 5.2
 
-* Thu Oct 18 2012 Liu Di <liudidi@gmail.com> - 1.4.7-3
-- 为 Magic 3.0 重建
+* Tue May  7 2013 Jaroslav Škarvada <jskarvad@redhat.com> - 1.4.7-15
+- Removed unneccassary dejavu-lgc-sans-mono-fonts requirement
+  Resolves: rhbz#922467
 
-* Thu Apr 05 2012 Liu Di <liudidi@gmail.com> - 1.4.7-2
-- 为 Magic 3.0 重建
+* Tue Mar 26 2013 Jaroslav Škarvada <jskarvad@redhat.com> - 1.4.7-14
+- Fixed autoconf (by autoconf-fix patch)
+- Added support for aarch64
+  Resolves: rhbz#926455
+
+* Mon Mar 25 2013 Jaroslav Škarvada <jskarvad@redhat.com> - 1.4.7-13
+- Fixed build failure
+  Resolves: rhbz#926037
+
+* Fri Mar 22 2013 Remi Collet <rcollet@redhat.com> - 1.4.7-12
+- rebuild for http://fedoraproject.org/wiki/Features/Php55
+- remove rrdtool_logo_guid function
+
+* Tue Mar 19 2013 Jaroslav Škarvada <jskarvad@redhat.com> - 1.4.7-11
+- Dropped ruby(abi) explicit requirement
+
+* Mon Mar 18 2013 Jaroslav Škarvada <jskarvad@redhat.com> - 1.4.7-10
+- Fixed build failure with ruby-2.0 (by ruby-2-fix patch)
+- Fixed bogus date in changelog
+
+* Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.4.7-9
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
+
+* Tue Jan  8 2013 Jaroslav Škarvada <jskarvad@redhat.com> - 1.4.7-8
+- Removed libtool archive from the lua subpackage
+
+* Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.4.7-7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Mon Jun 11 2012 Petr Pisar <ppisar@redhat.com> - 1.4.7-6
+- Perl 5.16 rebuild
+
+* Thu Feb  9 2012 Jaroslav Škarvada <jskarvad@redhat.com> - 1.4.7-5
+- Changed ruby(abi) to 1.9.1
+
+* Wed Feb  8 2012 Jaroslav Škarvada <jskarvad@redhat.com> - 1.4.7-4
+- Used ruby_vendorarchdir instead of ruby_sitearch
+
+* Wed Feb  8 2012 Jaroslav Škarvada <jskarvad@redhat.com> - 1.4.7-3
+- Fixed ruby(abi) requires
+
+* Tue Feb  7 2012 Jaroslav Škarvada <jskarvad@redhat.com> - 1.4.7-2
+- Rebuilt for new ruby
 
 * Thu Jan 26 2012 Jaroslav Škarvada <jskarvad@redhat.com> - 1.4.7-1
 - New version
@@ -682,7 +735,7 @@ LD_LIBRARY_PATH=%{buildroot}%{_libdir} php -n \
 * Thu Jan 13 2005 Matthias Saou <http://freshrpms.net/> 1.0.49-2
 - Minor cleanups.
 
-* Thu Aug 25 2004 Dag Wieers <dag@wieers.com> - 1.0.49-1
+* Wed Aug 25 2004 Dag Wieers <dag@wieers.com> - 1.0.49-1
 - Updated to release 1.0.49.
 
 * Wed Aug 25 2004 Dag Wieers <dag@wieers.com> - 1.0.48-3
