@@ -1,20 +1,20 @@
 Name:           ruby-augeas
-Version:        0.4.1
-Release:        5%{?dist}
+Version:        0.5.0
+Release:        1%{?dist}
 Summary:        Ruby bindings for Augeas
 Group:          Development/Languages
 
 License:        LGPLv2+
 URL:            http://augeas.net
-Source0:        http://augeas.net/download/ruby/ruby-augeas-%{version}.tgz
+Source0:        http://download.augeas.net/ruby/ruby-augeas-%{version}.tgz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  ruby rubygem(rake) rubygem(minitest)
 BuildRequires:  ruby-devel
-BuildRequires:  augeas-devel >= 0.8.0
+BuildRequires:  augeas-devel >= 1.0.0
 BuildRequires:  pkgconfig
-Requires:       ruby(abi) = 1.9.1
-Requires:       augeas-libs >= 0.8.0
+Requires:       ruby(release)
+Requires:       augeas-libs >= 1.0.0
 Provides:       ruby(augeas) = %{version}
 
 %description
@@ -25,7 +25,7 @@ Ruby bindings for augeas.
 
 
 %build
-export CFLAGS="$RPM_OPT_FLAGS"
+export CONFIGURE_ARGS="--with-cflags='%{optflags}'"
 rake build
 
 %install
@@ -50,8 +50,11 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
-* Sat Dec 08 2012 Liu Di <liudidi@gmail.com> - 0.4.1-5
-- 为 Magic 3.0 重建
+* Wed Mar 13 2013 David Lutterkort <lutter@redhat.com> - 0.5.0-1
+- New version; updated spec file for latest guidelines
+
+* Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.4.1-5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
 
 * Sat Jul 21 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.4.1-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
