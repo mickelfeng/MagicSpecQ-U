@@ -1,9 +1,5 @@
-# XXX docs override, bz864730
-%{!?with_docs: %global with_docs 0}
-%{!?with_publican: %global with_publican 0}
-# XXX end docs override
 %{!?with_sqlite: %global with_sqlite 1}
-%{!?with_docs: %global with_docs 1}
+%{!?with_docs: %global with_docs 0}
 # crash is not available
 %ifarch ppc ppc64 %{sparc}
 %{!?with_crash: %global with_crash 0}
@@ -18,7 +14,7 @@
 %ifarch ppc ppc64 %{sparc}
 %{!?with_publican: %global with_publican 0}
 %else
-%{!?with_publican: %global with_publican 1}
+%{!?with_publican: %global with_publican 0}
 %endif
 %if 0%{?rhel}
 %{!?publican_brand: %global publican_brand RedHat}
@@ -28,12 +24,15 @@
 %ifnarch s390 s390x %{arm}
 %{!?with_dyninst: %global with_dyninst 0%{?fedora} >= 18 || 0%{?rhel} >= 7}
 %else
-%global with_dyninst 0
+%{!?with_dyninst: %global with_dyninst 0}
 %endif
+%{!?with_systemd: %global with_systemd 0%{?fedora} >= 19}
+%{!?with_emacsvim: %global with_emacsvim 1}
+%{!?with_java: %global with_java 1}
 
 Name: systemtap
-Version: 2.0
-Release: 4%{?dist}
+Version: 2.2.1
+Release: 1%{?dist}
 # for version, see also configure.ac
 
 
@@ -47,6 +46,7 @@ Release: 4%{?dist}
 # systemtap-initscript   /etc/init.d/systemtap, req:systemtap
 # systemtap-sdt-devel    /usr/include/sys/sdt.h /usr/bin/dtrace
 # systemtap-testsuite    /usr/share/systemtap/testsuite*, req:systemtap, req:sdt-devel
+# systemtap-runtime-java libHelperSDT.so, HelperSDT.jar, stapbm, req:-runtime
 #
 # Typical scenarios:
 #
@@ -63,7 +63,7 @@ Summary: Programmable system-wide instrumentation system
 Group: Development/System
 License: GPLv2+
 URL: http://sourceware.org/systemtap/
-Source: ftp://sourceware.org/pub/%{name}/releases/%{name}-%{version}.tar.gz
+Source: ftp://sourceware.org/pub/systemtap/releases/systemtap-%{version}.tar.gz
 
 # Build*
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -72,8 +72,6 @@ BuildRequires: gettext-devel
 BuildRequires: nss-devel avahi-devel pkgconfig
 %if %{with_dyninst}
 BuildRequires: dyninst-devel >= 8.0
-BuildRequires: libdwarf-devel
-BuildRequires: libselinux-devel
 %endif
 %if %{with_sqlite}
 BuildRequires: sqlite-devel
@@ -98,6 +96,9 @@ BuildRequires: elfutils-devel >= %{elfutils_version}
 %endif
 %if %{with_docs}
 BuildRequires: /usr/bin/latex /usr/bin/dvips /usr/bin/ps2pdf latex2html
+%if 0%{?fedora} >= 18 || 0%{?rhel} >= 7
+BuildRequires: tex(fullpage.sty) tex(fancybox.sty) tex(bchr7t.tfm)
+%endif
 # On F10, xmlto's pdf support was broken off into a sub-package,
 # called 'xmlto-tex'.  To avoid a specific F10 BuildReq, we'll do a
 # file-based buildreq on '/usr/share/xmlto/format/fo/pdf'.
@@ -107,9 +108,12 @@ BuildRequires: publican
 BuildRequires: /usr/share/publican/Common_Content/%{publican_brand}/defaults.cfg
 %endif
 %endif
-
-# fix minor changes for dyninst 8.0 final
-Patch2: systemtap-2.0-dyninst-fixes.patch
+%if %{with_emacsvim}
+BuildRequires: emacs
+%endif
+%if %{with_java}
+BuildRequires: jpackage-utils java-devel
+%endif
 
 # Install requirements
 Requires: systemtap-client = %{version}-%{release}
@@ -260,6 +264,22 @@ suite.  This may be used by system administrators to thoroughly check
 systemtap on the current system.
 
 
+%if %{with_java}
+%package runtime-java
+Summary: Systemtap Java Runtime Support
+Group: Development/System
+License: GPLv2+
+URL: http://sourceware.org/systemtap/
+Requires: systemtap-runtime = %{version}-%{release}
+Requires: byteman > 2.0
+
+%description runtime-java
+This package includes support files needed to run systemtap scripts
+that probe Java processes running on the OpenJDK 1.6 and OpenJDK 1.7
+runtimes using Byteman.
+%endif
+
+
 # ------------------------------------------------------------------------
 
 %prep
@@ -274,8 +294,6 @@ sleep 1
 find . \( -name configure -o -name config.h.in \) -print | xargs touch
 cd ..
 %endif
-
-%patch2 -p1
 
 %build
 
@@ -341,9 +359,18 @@ cd ..
 %global publican_config --disable-publican
 %endif
 
+%if %{with_java}
+%global java_config --with-java=%{_jvmdir}/java
+%else
+%global java_config --without-java
+%endif
 
-%configure %{?elfutils_config} %{dyninst_config} %{sqlite_config} %{crash_config} %{docs_config} %{pie_config} %{publican_config} %{rpm_config} --disable-silent-rules --with-extra-version="rpm %{version}-%{release}"
+%configure %{?elfutils_config} %{dyninst_config} %{sqlite_config} %{crash_config} %{docs_config} %{pie_config} %{publican_config} %{rpm_config} %{java_config} --disable-silent-rules --with-extra-version="rpm %{version}-%{release}"
 make %{?_smp_mflags}
+
+%if %{with_emacsvim}
+%{_emacs_bytecompile} emacs/systemtap-mode.el
+%endif
 
 %install
 rm -rf ${RPM_BUILD_ROOT}
@@ -387,24 +414,46 @@ mv $RPM_BUILD_ROOT%{_datadir}/doc/systemtap/SystemTap_Beginners_Guide docs.insta
 %endif
 %endif
 
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/stap-server
+mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/lib/stap-server
+mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/lib/stap-server/.systemtap
+mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/log/stap-server
+touch $RPM_BUILD_ROOT%{_localstatedir}/log/stap-server/log
+mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/cache/systemtap
+mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/run/systemtap
+mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d
+install -m 644 initscript/logrotate.stap-server $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d/stap-server
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/rc.d/init.d/
 install -m 755 initscript/systemtap $RPM_BUILD_ROOT%{_sysconfdir}/rc.d/init.d/
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/systemtap
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/systemtap/conf.d
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/systemtap/script.d
 install -m 644 initscript/config.systemtap $RPM_BUILD_ROOT%{_sysconfdir}/systemtap/config
-mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/cache/systemtap
-mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/run/systemtap
-
+%if %{with_systemd}
+mkdir -p $RPM_BUILD_ROOT%{_unitdir}
+touch $RPM_BUILD_ROOT%{_unitdir}/stap-server.service
+install -m 644 stap-server.service $RPM_BUILD_ROOT%{_unitdir}/stap-server.service
+mkdir -p $RPM_BUILD_ROOT/usr/lib/tmpfiles.d
+install -m 644 stap-server.conf $RPM_BUILD_ROOT/usr/lib/tmpfiles.d/stap-server.conf
+%else
 install -m 755 initscript/stap-server $RPM_BUILD_ROOT%{_sysconfdir}/rc.d/init.d/
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/stap-server
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/stap-server/conf.d
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig
 install -m 644 initscript/config.stap-server $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/stap-server
-mkdir -p $RPM_BUILD_ROOT%{_localstatedir}/log/stap-server
-touch $RPM_BUILD_ROOT%{_localstatedir}/log/stap-server/log
-mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d
-install -m 644 initscript/logrotate.stap-server $RPM_BUILD_ROOT%{_sysconfdir}/logrotate.d/stap-server
+%endif
+
+%if %{with_emacsvim}
+mkdir -p $RPM_BUILD_ROOT%{_emacs_sitelispdir}
+install -p -m 644 emacs/systemtap-mode.el* $RPM_BUILD_ROOT%{_emacs_sitelispdir}
+mkdir -p $RPM_BUILD_ROOT%{_emacs_sitestartdir}
+install -p -m 644 emacs/systemtap-init.el $RPM_BUILD_ROOT%{_emacs_sitestartdir}/systemtap-init.el
+for subdir in ftdetect ftplugin indent syntax
+do
+    mkdir -p $RPM_BUILD_ROOT%{_datadir}/vim/vimfiles/$subdir
+    install -p -m 644 vim/$subdir/*.vim $RPM_BUILD_ROOT%{_datadir}/vim/vimfiles/$subdir
+done
+%endif
+
 
 %clean
 rm -rf ${RPM_BUILD_ROOT}
@@ -418,8 +467,11 @@ exit 0
 %pre server
 getent group stap-server >/dev/null || groupadd -g 155 -r stap-server 2>/dev/null || groupadd -r stap-server
 getent passwd stap-server >/dev/null || \
-  useradd -c "Systemtap Compile Server" -u 155 -g stap-server -d %{_localstatedir}/lib/stap-server -m -r -s /sbin/nologin stap-server 2>/dev/null || \
-  useradd -c "Systemtap Compile Server" -g stap-server -d %{_localstatedir}/lib/stap-server -m -r -s /sbin/nologin stap-server
+  useradd -c "Systemtap Compile Server" -u 155 -g stap-server -d %{_localstatedir}/lib/stap-server -r -s /sbin/nologin stap-server 2>/dev/null || \
+  useradd -c "Systemtap Compile Server" -g stap-server -d %{_localstatedir}/lib/stap-server -r -s /sbin/nologin stap-server
+
+%post server
+
 test -e ~stap-server && chmod 755 ~stap-server
 
 if [ ! -f ~stap-server/.systemtap/rc ]; then
@@ -428,9 +480,7 @@ if [ ! -f ~stap-server/.systemtap/rc ]; then
   echo "--rlimit-as=614400000 --rlimit-cpu=60 --rlimit-nproc=20 --rlimit-stack=1024000 --rlimit-fsize=51200000" > ~stap-server/.systemtap/rc
   chown stap-server:stap-server ~stap-server/.systemtap/rc
 fi
-exit 0
 
-%post server
 test -e %{_localstatedir}/log/stap-server/log || {
      touch %{_localstatedir}/log/stap-server/log
      chmod 664 %{_localstatedir}/log/stap-server/log
@@ -439,17 +489,22 @@ test -e %{_localstatedir}/log/stap-server/log || {
 # If it does not already exist, as stap-server, generate the certificate
 # used for signing and for ssl.
 if test ! -e ~stap-server/.systemtap/ssl/server/stap.cert; then
-   runuser -s /bin/sh - stap-server -c %{_libexecdir}/%{name}/stap-gen-cert >/dev/null
+   runuser -s /bin/sh - stap-server -c %{_libexecdir}/systemtap/stap-gen-cert >/dev/null
 fi
 # Activate the service
-/sbin/chkconfig --add stap-server
+%if %{with_systemd}
+     /bin/systemctl enable stap-server.service >/dev/null 2>&1 || :
+     /bin/systemd-tmpfiles --create >/dev/null 2>&1 || :
+%else
+    /sbin/chkconfig --add stap-server
+%endif
 exit 0
 
 %triggerin client -- systemtap-server
 if test -e ~stap-server/.systemtap/ssl/server/stap.cert; then
    # echo Authorizing ssl-peer/trusted-signer certificate for local systemtap-server
-   %{_libexecdir}/%{name}/stap-authorize-cert ~stap-server/.systemtap/ssl/server/stap.cert %{_sysconfdir}/systemtap/ssl/client >/dev/null
-   %{_libexecdir}/%{name}/stap-authorize-cert ~stap-server/.systemtap/ssl/server/stap.cert %{_sysconfdir}/systemtap/staprun >/dev/null
+   %{_libexecdir}/systemtap/stap-authorize-cert ~stap-server/.systemtap/ssl/server/stap.cert %{_sysconfdir}/systemtap/ssl/client >/dev/null
+   %{_libexecdir}/systemtap/stap-authorize-cert ~stap-server/.systemtap/ssl/server/stap.cert %{_sysconfdir}/systemtap/staprun >/dev/null
 fi
 exit 0
 # XXX: corresponding %triggerun?
@@ -458,8 +513,13 @@ exit 0
 # Check that this is the actual deinstallation of the package, as opposed to
 # just removing the old package on upgrade.
 if [ $1 = 0 ] ; then
-    /sbin/service stap-server stop >/dev/null 2>&1
-    /sbin/chkconfig --del stap-server
+    %if %{with_systemd}
+       /bin/systemctl --no-reload disable stap-server.service >/dev/null 2>&1 || :
+       /bin/systemctl stop stap-server.service >/dev/null 2>&1 || :
+    %else
+        /sbin/service stap-server stop >/dev/null 2>&1
+    	/sbin/chkconfig --del stap-server
+    %endif
 fi
 exit 0
 
@@ -467,20 +527,34 @@ exit 0
 # Check whether this is an upgrade of the package.
 # If so, restart the service if it's running
 if [ "$1" -ge "1" ] ; then
-    /sbin/service stap-server condrestart >/dev/null 2>&1 || :
+    %if %{with_systemd}
+    	/bin/systemctl restart stap-server.service >/dev/null 2>&1 || :
+    %else
+        /sbin/service stap-server condrestart >/dev/null 2>&1 || :
+    %endif
 fi
 exit 0
 
 %post initscript
-/sbin/chkconfig --add systemtap
+%if %{with_systemd}
+    /bin/systemctl enable stap-server.service >/dev/null 2>&1 || :
+     /bin/systemd-tmpfiles --create >/dev/null 2>&1 || :
+%else
+    /sbin/chkconfig --add systemtap
+%endif
 exit 0
 
 %preun initscript
 # Check that this is the actual deinstallation of the package, as opposed to
 # just removing the old package on upgrade.
 if [ $1 = 0 ] ; then
-    /sbin/service systemtap stop >/dev/null 2>&1
-    /sbin/chkconfig --del systemtap
+    %if %{with_systemd}
+    	/bin/systemctl --no-reload disable stap-server.service >/dev/null 2>&1 || :
+	/bin/systemctl stop stap-server.service >/dev/null 2>&1 || :
+    %else
+        /sbin/service systemtap stop >/dev/null 2>&1
+    	/sbin/chkconfig --del systemtap
+    %endif
 fi
 exit 0
 
@@ -488,43 +562,92 @@ exit 0
 # Check whether this is an upgrade of the package.
 # If so, restart the service if it's running
 if [ "$1" -ge "1" ] ; then
-    /sbin/service systemtap condrestart >/dev/null 2>&1 || :
+    %if %{with_systemd}
+        /bin/systemctl restart stap-server.service >/dev/null 2>&1 || :
+    %else
+        /sbin/service systemtap condrestart >/dev/null 2>&1 || :
+    %endif
 fi
 exit 0
 
 %post
 # Remove any previously-built uprobes.ko materials
-(make -C %{_datadir}/%{name}/runtime/uprobes clean) >/dev/null 2>&1 || true
+(make -C %{_datadir}/systemtap/runtime/uprobes clean) >/dev/null 2>&1 || true
 (/sbin/rmmod uprobes) >/dev/null 2>&1 || true
 
 %preun
 # Ditto
-(make -C %{_datadir}/%{name}/runtime/uprobes clean) >/dev/null 2>&1 || true
+(make -C %{_datadir}/systemtap/runtime/uprobes clean) >/dev/null 2>&1 || true
 (/sbin/rmmod uprobes) >/dev/null 2>&1 || true
 
 # ------------------------------------------------------------------------
 
-%files -f %{name}.lang
+%if %{with_java}
+
+%triggerin runtime-java -- java-1.7.0-openjdk, java-1.6.0-openjdk
+for f in %{_libexecdir}/systemtap/libHelperSDT_*.so; do
+    arch=`basename $f | cut -f2 -d_ | cut -f1 -d.`
+    for archdir in %{_jvmdir}/*openjdk*/jre/lib/${arch}; do
+        ln -sf %{_libexecdir}/systemtap/libHelperSDT_${arch}.so ${archdir}/libHelperSDT_${arch}.so
+        ln -sf %{_libexecdir}/systemtap/HelperSDT.jar ${archdir}/../ext/HelperSDT.jar
+    done
+done
+
+%triggerun runtime-java -- java-1.7.0-openjdk, java-1.6.0-openjdk
+for f in %{_libexecdir}/systemtap/libHelperSDT_*.so; do
+    arch=`basename $f | cut -f2 -d_ | cut -f1 -d.`
+    for archdir in %{_jvmdir}/*openjdk*/jre/lib/${arch}; do
+        rm -f ${archdir}/libHelperSDT_${arch}.so
+        rm -f ${archdir}/../ext/HelperSDT.jar
+    done
+done
+
+%triggerpostun runtime-java -- java-1.7.0-openjdk, java-1.6.0-openjdk
+# Restore links for any JDKs remaining after a package removal:
+for f in %{_libexecdir}/systemtap/libHelperSDT_*.so; do
+    arch=`basename $f | cut -f2 -d_ | cut -f1 -d.`
+    for archdir in %{_jvmdir}/*openjdk*/jre/lib/${arch}; do
+        ln -sf %{_libexecdir}/systemtap/libHelperSDT_${arch}.so ${archdir}/libHelperSDT_${arch}.so
+        ln -sf %{_libexecdir}/systemtap/HelperSDT.jar ${archdir}/../ext/HelperSDT.jar
+    done
+done
+
+# XXX: analogous support for other types of JRE/JDK??
+
+%endif
+
+# ------------------------------------------------------------------------
+
+%files -f systemtap.lang
 # The master "systemtap" rpm doesn't include any files.
 
-%files server -f %{name}.lang
+%files server -f systemtap.lang
 %defattr(-,root,root)
 %{_bindir}/stap-server
-%dir %{_libexecdir}/%{name}
-%{_libexecdir}/%{name}/stap-serverd
-%{_libexecdir}/%{name}/stap-start-server
-%{_libexecdir}/%{name}/stap-stop-server
-%{_libexecdir}/%{name}/stap-gen-cert
-%{_libexecdir}/%{name}/stap-sign-module
-%{_libexecdir}/%{name}/stap-authorize-cert
-%{_libexecdir}/%{name}/stap-env
+%dir %{_libexecdir}/systemtap
+%{_libexecdir}/systemtap/stap-serverd
+%{_libexecdir}/systemtap/stap-start-server
+%{_libexecdir}/systemtap/stap-stop-server
+%{_libexecdir}/systemtap/stap-gen-cert
+%{_libexecdir}/systemtap/stap-sign-module
+%{_libexecdir}/systemtap/stap-authorize-cert
+%{_libexecdir}/systemtap/stap-env
+%{_mandir}/man7/error*
 %{_mandir}/man7/stappaths.7*
+%{_mandir}/man7/warning*
 %{_mandir}/man8/stap-server.8*
+%if %{with_systemd}
+%{_unitdir}/stap-server.service
+/usr/lib/tmpfiles.d/stap-server.conf
+%else
 %{_sysconfdir}/rc.d/init.d/stap-server
-%config(noreplace) %{_sysconfdir}/logrotate.d/stap-server
-%dir %{_sysconfdir}/stap-server
 %dir %{_sysconfdir}/stap-server/conf.d
 %config(noreplace) %{_sysconfdir}/sysconfig/stap-server
+%endif
+%config(noreplace) %{_sysconfdir}/logrotate.d/stap-server
+%dir %{_sysconfdir}/stap-server
+%dir %attr(0750,stap-server,stap-server) %{_localstatedir}/lib/stap-server
+%dir %attr(0700,stap-server,stap-server) %{_localstatedir}/lib/stap-server/.systemtap
 %dir %attr(0755,stap-server,stap-server) %{_localstatedir}/log/stap-server
 %ghost %config(noreplace) %attr(0644,stap-server,stap-server) %{_localstatedir}/log/stap-server/log
 %ghost %attr(0755,stap-server,stap-server) %{_localstatedir}/run/stap-server
@@ -532,23 +655,35 @@ exit 0
 %doc README README.unprivileged AUTHORS NEWS COPYING
 
 
-%files devel -f %{name}.lang
+%files devel -f systemtap.lang
 %{_bindir}/stap
 %{_bindir}/stap-prep
 %{_bindir}/stap-report
-%dir %{_datadir}/%{name}
-%{_datadir}/%{name}/runtime
-%{_datadir}/%{name}/tapset
+%dir %{_datadir}/systemtap
+%{_datadir}/systemtap/runtime
+%{_datadir}/systemtap/tapset
 %{_mandir}/man1/stap.1*
+%{_mandir}/man1/stap-prep.1*
+%{_mandir}/man7/error*
 %{_mandir}/man7/stappaths.7*
+%{_mandir}/man7/warning*
 %doc README README.unprivileged AUTHORS NEWS COPYING
+%if %{with_java}
+%dir %{_libexecdir}/systemtap
+%{_libexecdir}/systemtap/libHelperSDT_*.so
+%endif
 %if %{with_bundled_elfutils}
-%dir %{_libdir}/%{name}
-%{_libdir}/%{name}/lib*.so*
+%dir %{_libdir}/systemtap
+%{_libdir}/systemtap/lib*.so*
+%endif
+%if %{with_emacsvim}
+%{_emacs_sitelispdir}/*.el*
+%{_emacs_sitestartdir}/systemtap-init.el
+%{_datadir}/vim/vimfiles/*/*.vim
 %endif
 
 
-%files runtime -f %{name}.lang
+%files runtime -f systemtap.lang
 %defattr(-,root,root)
 %attr(4110,root,stapusr) %{_bindir}/staprun
 %{_bindir}/stapsh
@@ -557,19 +692,21 @@ exit 0
 %if %{with_dyninst}
 %{_bindir}/stapdyn
 %endif
-%dir %{_libexecdir}/%{name}
-%{_libexecdir}/%{name}/stapio
-%{_libexecdir}/%{name}/stap-authorize-cert
+%dir %{_libexecdir}/systemtap
+%{_libexecdir}/systemtap/stapio
+%{_libexecdir}/systemtap/stap-authorize-cert
 %if %{with_crash}
-%dir %{_libdir}/%{name}
-%{_libdir}/%{name}/staplog.so*
+%dir %{_libdir}/systemtap
+%{_libdir}/systemtap/staplog.so*
 %endif
+%{_mandir}/man7/error*
 %{_mandir}/man7/stappaths.7*
+%{_mandir}/man7/warning*
 %{_mandir}/man8/staprun.8*
 %doc README README.security AUTHORS NEWS COPYING
 
 
-%files client -f %{name}.lang
+%files client -f systemtap.lang
 %defattr(-,root,root)
 %doc README README.unprivileged AUTHORS NEWS COPYING examples
 %if %{with_docs}
@@ -583,11 +720,14 @@ exit 0
 %{_bindir}/stap-prep
 %{_bindir}/stap-report
 %{_mandir}/man1/stap.1*
+%{_mandir}/man1/stap-prep.1*
 %{_mandir}/man1/stap-merge.1*
 %{_mandir}/man3/*
+%{_mandir}/man7/error*
 %{_mandir}/man7/stappaths.7*
-%dir %{_datadir}/%{name}
-%{_datadir}/%{name}/tapset
+%{_mandir}/man7/warning*
+%dir %{_datadir}/systemtap
+%{_datadir}/systemtap/tapset
 
 
 
@@ -603,7 +743,7 @@ exit 0
 %doc initscript/README.systemtap
 
 
-%files sdt-devel -f %{name}.lang
+%files sdt-devel
 %defattr(-,root,root)
 %{_bindir}/dtrace
 %{_includedir}/sys/sdt.h
@@ -614,74 +754,40 @@ exit 0
 
 %files testsuite
 %defattr(-,root,root)
-%dir %{_datadir}/%{name}
-%{_datadir}/%{name}/testsuite
+%dir %{_datadir}/systemtap
+%{_datadir}/systemtap/testsuite
+
+
+%if %{with_java}
+%files runtime-java
+%dir %{_libexecdir}/systemtap
+%{_libexecdir}/systemtap/libHelperSDT_*.so
+%{_libexecdir}/systemtap/HelperSDT.jar
+%{_libexecdir}/systemtap/stapbm
+%endif
 
 
 # ------------------------------------------------------------------------
 
 %changelog
-* Mon Nov 19 2012 Josh Stone <jistone@redhat.com> 2.0-4
-- Rebuild for the final dyninst 8.0.
-- As with rawhide, disable docs due to bz864730
+* Thu May 16 2013 Frank Ch. Eigler <fche@redhat.com> - 2.2.1-1
+- Upstream release.
 
-* Mon Nov 19 2012 Karsten Hopp <karsten@redhat.com> 2.0-3
-- systemtap got compiled with an old dyninst library on ppc, bump release and rebuild
+* Tue May 14 2013 Frank Ch. Eigler <fche@redhat.com> - 2.2-1
+- Upstream release.
 
-* Mon Oct 29 2012 Josh Stone <jistone@redhat.com> - 2.0-2
-- Rebuild for the new ABI in the dyninst snapshot
+* Wed Feb 13 2013 Serguei Makarov <smakarov@redhat.com> - 2.1-1
+- Upstream release.
 
 * Tue Oct 09 2012 Josh Stone <jistone@redhat.com> - 2.0-1
 - Upstream release.
 
-* Thu Sep 20 2012 Josh Stone <jistone@redhat.com> 2.0-0.4.gitec12f84
-- Update to a new snapshot towards 2.0.
-
-* Fri Aug 31 2012 Lukas Berk <lberk@redhat.com> 2.0-0.3.git10c737f
-- Correct the location of stap-env
-
-* Wed Aug 15 2012 Dan Horák <dan[at]danny.cz> 2.0-0.2.git10c737f
-- dyninst not available on s390(x) and arm
-
-* Tue Aug 07 2012 Josh Stone <jistone@redhat.com> 2.0-0.1.git10c737f
-- Update to a snapshot of the upcoming 2.0 release.
-
-* Wed Jul 18 2012 Josh Stone <jistone@redhat.com> - 1.8-5
-- bz840902 ppc build fix (related to bz837641)
-
-* Fri Jul 13 2012 Peter Robinson <pbrobinson@fedoraproject.org> - 1.8-4
+* Fri Jul 13 2012 Peter Robinson <pbrobinson@fedoraproject.org>
 - Fix ifarch statement
 - use file based requires for glibc-devel on x86_64 so that we work in koji
 
-* Wed Jul 11 2012 Frank Ch. Eigler <fche@redhat.com> - 1.8-3
-- PR14348 task_work_add race condition fix
-
-* Mon Jul 09 2012 Josh Stone <jistone@redhat.com>
-- bz837641 build fix
-
 * Sun Jun 17 2012 Frank Ch. Eigler <fche@redhat.com> - 1.8-1
 - Upstream release.
-
-* Mon Apr 30 2012 Peter Robinson <pbrobinson@fedoraproject.org> - 1.7-7
-- Enable crash support on ARM, cleanup spec
-
-* Thu Apr 19 2012 Karsten Hopp <karsten@redhat.com> - 1.7-6.1
-- rebuild on PPC(64) without crash, publican
-
-* Thu Mar 29 2012 Richard W.M. Jones <rjones@redhat.com> - 1.7-6
-- Rebuild for rpm soname bump.
-
-* Fri Mar 16 2012 Frank Ch. Eigler <fche@redhat.com> - 1.7-5
-- dbhole advises ARM publican/fop/java is a go for launch.
-
-* Thu Mar 01 2012 Mark Wielaard <mjw@redhat.com> - 1.7-4
-- ARM currently doesn't have publican/fop/java and no prelink.
-
-* Tue Feb 28 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.7-3
-- Rebuilt for c++ ABI breakage
-
-* Wed Feb 22 2012 Frank Ch. Eigler <fche@redhat.com> - 1.7-2
-- CVE-2012-0875 (kernel panic when processing malformed DWARF unwind data)
 
 * Wed Feb 01 2012 Frank Ch. Eigler <fche@redhat.com> - 1.7-1
 - Upstream release.
@@ -692,7 +798,7 @@ exit 0
 * Mon Jul 25 2011 Stan Cox <scox@redhat.com> - 1.6-1
 - Upstream release.
 
-* Tue May 23 2011 Stan Cox <scox@redhat.com> - 1.5-1
+* Mon May 23 2011 Stan Cox <scox@redhat.com> - 1.5-1
 - Upstream release.
 
 * Mon Jan 17 2011 Frank Ch. Eigler <fche@redhat.com> - 1.4-1
@@ -751,7 +857,7 @@ exit 0
 * Wed Jul 11 2007 Will Cohen <wcohen@redhat.com> - 0.5.14-2
 - Fix Requires and BuildRequires for sqlite.
 
-* Tue Jul  2 2007 Frank Ch. Eigler <fche@redhat.com> - 0.5.14-1
+* Mon Jul  2 2007 Frank Ch. Eigler <fche@redhat.com> - 0.5.14-1
 - Many robustness improvements: 1117, 1134, 1305, 1307, 1570, 1806,
   2033, 2116, 2224, 2339, 2341, 2406, 2426, 2438, 2583, 3037,
   3261, 3282, 3331, 3428 3519, 3545, 3625, 3648, 3880, 3888, 3911,
@@ -814,7 +920,7 @@ exit 0
 * Wed Sep  7 2005 Frank Ch. Eigler <fche@redhat.com>
 - Bump version.
 
-* Wed Aug 16 2005 Frank Ch. Eigler <fche@redhat.com>
+* Tue Aug 16 2005 Frank Ch. Eigler <fche@redhat.com>
 - Bump version.
 
 * Wed Aug  3 2005 Martin Hunt <hunt@redhat.com> - 0.2.2-1
@@ -835,5 +941,5 @@ exit 0
 - Fix up some of the path names.
 - Add Requires and BuildRequires.
 
-* Wed Jul 19 2005 Will Cohen <wcohen@redhat.com>
+* Tue Jul 19 2005 Will Cohen <wcohen@redhat.com>
 - Initial creation of RPM.
