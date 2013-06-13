@@ -4,7 +4,7 @@
 Name:    qyoto 
 Summary: .NET/Mono bindings for the Qt libraries 
 Version: %{rversion}
-Release: 2%{?dist}
+Release: 1%{?dist}
 
 # libqyoto LGPLv2+, mono bindings GPLv2+
 License: LGPLv2+ and GPLv2+
