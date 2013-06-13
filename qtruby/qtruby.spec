@@ -10,7 +10,7 @@ Summary(zh_CN.UTF-8): qtruby
 Group: System Environment/Libraries
 Group(zh_CN.UTF-8): 系统环境/库
 Version: %{rversion}
-Release: 2%{?dist}
+Release: 1%{?dist}
 License: LGPL
 URL: http://extragear.kde.org/apps/kipi
 Source0: http://mirrors.ustc.edu.cn/kde/stable/%{version}/src/%{real_name}-%{version}.tar.xz
