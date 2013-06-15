@@ -7,13 +7,12 @@ Summary: smart's config file
 Summary(zh_CN.UTF-8): smart 的配置文件
 Name: smart-config
 Version: 1.2
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPL
 Group: Applications/System
 Group(zh_CN.UTF-8): 应用程序/系统
 URL: http://www.smartpm.org/
 
-BuildArch: noarch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
 Requires: smart >= %{version}
