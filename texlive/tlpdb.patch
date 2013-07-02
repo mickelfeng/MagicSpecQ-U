@@ -1,5 +1,5 @@
---- texlive.tlpdb.orig	2013-01-02 08:21:41.455532160 +0100
-+++ texlive.tlpdb	2013-01-05 08:00:56.258989841 +0100
+--- texlive.tlpdb.orig	2013-06-01 08:42:24.769943751 +0200
++++ texlive.tlpdb	2013-06-12 14:53:37.749724366 +0200
 @@ -76,7 +76,7 @@
  catalogue-ctan /macros/latex/contrib/abc
  catalogue-date 2008-03-08 20:47:21 +0100
@@ -9,7 +9,7 @@
  
  name abntex2
  category Package
-@@ -7053,7 +7053,7 @@
+@@ -7237,7 +7237,7 @@
  catalogue-license pd
  catalogue-version 1.0a
  
@@ -18,13 +18,13 @@
  category Package
  revision 27228
  shortdesc A font to typeset maths in Xe(La)TeX and Lua(La)TeX.
-@@ -10993,38 +10993,6 @@
+@@ -11745,38 +11745,6 @@
  catalogue-date 2006-12-29 13:11:21 +0100
  catalogue-license gpl
  
 -name biber
 -category Package
--revision 28554
+-revision 30591
 -shortdesc A BibTeX replacement for users of biblatex.
 -longdesc Biber is a BibTeX replacement for users of biblatex. Biber
 -longdesc supports full UTF-8, can (re)-encode input and output, supports
@@ -36,45 +36,45 @@
 -longdesc from an earlier (now apparently moribund) project called
 -longdesc "biber".
 -depend biber.ARCH
--docfiles size=70
+-docfiles size=80
 - texmf-dist/doc/bibtex/biber/biber.pdf
--srcfiles size=512
+-srcfiles size=525
 - texmf-dist/source/bibtex/biber/Changes
 - texmf-dist/source/bibtex/biber/biblatex-biber.tar.gz
-- texmf-dist/source/bibtex/biber/recode_data.xml.html
+- texmf-dist/source/bibtex/biber/utf8-macro-map.html
 -catalogue-ctan /biblio/biber
--catalogue-date 2012-11-28 14:04:13 +0100
+-catalogue-date 2013-05-09 11:57:32 +0200
 -catalogue-license artistic
--catalogue-version 1.4
+-catalogue-version 1.6
 -
 -name biber.i386-linux
 -category Package
--revision 28403
+-revision 30357
 -shortdesc i386-linux files of biber
--binfiles arch=i386-linux size=3090
+-binfiles arch=i386-linux size=4308
 - bin/i386-linux/biber
 -
  name bibexport
  category Package
- revision 26313
-@@ -24885,7 +24853,6 @@
- shortdesc TeX Live documentation
- relocated 1
+ revision 29349
+@@ -25705,7 +25673,6 @@
+ depend tex
+ depend texconfig
  depend texlive-common
 -depend texlive-docindex
  depend texlive-en
- 
- name collection-documentation-bulgarian
-@@ -25184,7 +25151,7 @@
- revision 28587
- shortdesc Extra fonts
+ depend texlive-msg-translations
+ depend texlive-scripts
+@@ -25919,7 +25886,7 @@
+ shortdesc Additional fonts
  relocated 1
+ depend collection-basic
 -depend Asana-Math
 +depend asana-math
  depend adforn
  depend adfsymbols
  depend aecc
-@@ -25304,7 +25271,7 @@
+@@ -26041,7 +26008,7 @@
  depend libertine
  depend librebaskerville
  depend libris
@@ -83,16 +83,7 @@
  depend lxfonts
  depend ly1
  depend mathabx
-@@ -25663,7 +25630,7 @@
- depend cns
- depend ctex
- depend dnp
--depend fonts-tlwg
-+depend tlwg
- depend garuda-c90
- depend hyphen-chinese
- depend ipaex
-@@ -27193,7 +27160,7 @@
+@@ -28051,7 +28018,7 @@
  depend m-tx
  depend musixguit
  depend musixtex
@@ -100,10 +91,10 @@
 +depend musixtex-fnts
  depend pmx
  depend songbook
- depend collection-latex
-@@ -27634,25 +27601,6 @@
- depend texinfo
- depend collection-basic
+ depend songs
+@@ -28505,25 +28472,6 @@
+ depend unitsdef
+ depend youngtab
  
 -name collection-texworks
 -category Collection
@@ -116,8 +107,8 @@
 -
 -name collection-wintools
 -category Collection
--revision 13822
--shortdesc Windows support programs
+-revision 30307
+-shortdesc Windows-only support programs
 -relocated 1
 -longdesc Utilities for Windows, since they are not readily available
 -longdesc there: chktex, unzip, wget, xpdf, and the dviout previewer.
@@ -126,8 +117,8 @@
 -
  name collection-xetex
  category Collection
- revision 28124
-@@ -36207,7 +36155,7 @@
+ revision 30396
+@@ -37324,7 +37272,7 @@
   texmf-dist/source/support/dosepsbin/install-sh
  catalogue-ctan /support/dosepsbin
  catalogue-date 2012-03-22 21:51:23 +0100
@@ -136,16 +127,7 @@
  catalogue-version 1.2
  
  name dosepsbin.i386-linux
-@@ -49571,7 +49519,7 @@
- catalogue-license lppl1.3
- catalogue-version v2.2b
- 
--name fonts-tlwg
-+name tlwg
- category Package
- revision 25417
- shortdesc Thai fonts for LaTeX from TLWG.
-@@ -60634,13 +60582,6 @@
+@@ -62147,13 +62095,6 @@
  catalogue-license lppl
  catalogue-version v1.6b
  
@@ -159,7 +141,7 @@
  name interactiveworkbook
  category Package
  revision 15878
-@@ -69904,7 +69845,7 @@
+@@ -72637,7 +72578,7 @@
  catalogue-ctan /macros/latex/contrib/labels
  catalogue-date 2009-09-29 00:01:21 +0200
  catalogue-license lppl1.2
@@ -168,13 +150,13 @@
  
  name lacheck
  category TLCore
-@@ -71081,68 +71022,6 @@
+@@ -73852,68 +73793,6 @@
  catalogue-license lppl
  catalogue-version 1.13
  
 -name latexmk
 -category Package
--revision 28264
+-revision 29752
 -shortdesc Fully automated LaTeX document generation.
 -longdesc Latexmk completely automates the process of generating a LaTeX
 -longdesc document. Given the source files for a document, latexmk issues
@@ -189,6 +171,8 @@
 -runfiles size=78
 - texmf-dist/scripts/latexmk/latexmk.pl
 -docfiles size=167
+- texmf-dist/doc/man/man1/latexmk.1
+- texmf-dist/doc/man/man1/latexmk.man1.pdf
 - texmf-dist/doc/support/latexmk/CHANGES
 - texmf-dist/doc/support/latexmk/COPYING
 - texmf-dist/doc/support/latexmk/INSTALL
@@ -218,14 +202,12 @@
 - texmf-dist/doc/support/latexmk/extra-scripts/startacroread
 - texmf-dist/doc/support/latexmk/latexmk.pdf
 - texmf-dist/doc/support/latexmk/latexmk.txt
-- texmf/doc/man/man1/latexmk.1
-- texmf/doc/man/man1/latexmk.man1.pdf
 -srcfiles size=1
 - texmf-dist/source/support/latexmk/latexmk.bat
 -catalogue-ctan /support/latexmk
--catalogue-date 2012-08-20 08:32:37 +0200
+-catalogue-date 2012-11-17 01:32:51 +0100
 -catalogue-license gpl
--catalogue-version 4.33c
+-catalogue-version 4.35
 -
 -name latexmk.i386-linux
 -category Package
@@ -237,7 +219,7 @@
  name latexmp
  category Package
  revision 15878
-@@ -75987,7 +75866,7 @@
+@@ -78787,7 +78666,7 @@
  catalogue-date 2007-01-08 23:14:30 +0100
  catalogue-license lppl
  
@@ -246,16 +228,16 @@
  category Package
  revision 15878
  shortdesc Linear A script fonts.
-@@ -78219,7 +78098,7 @@
+@@ -81097,7 +80976,7 @@
  catalogue-ctan /info/lshort/persian
  catalogue-date 2009-11-09 23:05:00 +0100
  catalogue-license pd
 -catalogue-version 4.26:2009-08-04
-+catalogue-version 4.26-2009-08-04
++catalogue-version 4.26_2009-08-04
  
  name lshort-polish
  category Package
-@@ -85212,7 +85091,7 @@
+@@ -88673,7 +88552,7 @@
   texmf-dist/source/generic/mkjobtexmf/install-sh
  catalogue-ctan /support/mkjobtexmf
  catalogue-date 2011-11-16 11:07:17 +0100
@@ -264,35 +246,35 @@
  catalogue-version 0.8
  
  name mkjobtexmf.i386-linux
-@@ -87188,7 +87067,7 @@
+@@ -90734,7 +90613,7 @@
  catalogue-license lppl1.3
  catalogue-version 1.2.2
  
 -name musixtex-fonts
 +name musixtex-fnts
  category Package
- revision 24517
+ revision 28934
  shortdesc Fonts used by MusixTeX.
-@@ -102399,7 +102278,7 @@
+@@ -108215,7 +108094,7 @@
  catalogue-ctan /graphics/pstricks/contrib/pst-layout
- catalogue-date 2011-05-27 12:35:46 +0200
+ catalogue-date 2012-04-27 12:45:13 +0200
  catalogue-license lppl
 -catalogue-version .95
 +catalogue-version 95
  
  name pst-lens
  category Package
-@@ -120511,7 +120390,7 @@
-  texmf/doc/man/man1/texdiff.man1.pdf
- catalogue-ctan /support/texdiff
- catalogue-date 2009-11-10 00:58:07 +0100
--catalogue-license artistic
-+catalogue-license gpl
- catalogue-version 0.4
- 
- name texdiff.i386-linux
-@@ -120538,7 +120417,7 @@
-  texmf/doc/man/man1/texdirflatten.man1.pdf
+@@ -120497,7 +120376,7 @@
+ depend kurier
+ depend poltawski
+ depend xits
+-depend Asana-Math
++depend asana-math
+ depend txfonts
+ depend pxfonts
+ depend eulervm
+@@ -127547,7 +127426,7 @@
+  texmf-dist/doc/man/man1/texdirflatten.man1.pdf
  catalogue-ctan /support/texdirflatten
  catalogue-date 2012-01-12 19:29:56 +0100
 -catalogue-license artistic
@@ -300,15 +282,24 @@
  catalogue-version 1.1
  
  name texdirflatten.i386-linux
-@@ -122079,7 +121958,6 @@
- revision 13663
+@@ -129107,7 +128986,6 @@
+ revision 29741
  shortdesc i386-linux files of texlive-scripts
  binfiles arch=i386-linux size=2
 - bin/i386-linux/man
   bin/i386-linux/rungs
  
  name texlive-sr
-@@ -131180,7 +131058,7 @@
+@@ -134494,7 +134372,7 @@
+ revision 30088
+ shortdesc i386-linux files of tex4ht
+ binfiles arch=i386-linux size=68
+- bin/i386-linux/ht
++ bin/i386-linux/t4ht
+  bin/i386-linux/htcontext
+  bin/i386-linux/htlatex
+  bin/i386-linux/htmex
+@@ -138272,7 +138150,7 @@
  catalogue-ctan /macros/latex209/contrib/trees/tree-dvips
  catalogue-date 2011-03-14 14:09:23 +0100
  catalogue-license lppl1
@@ -317,10 +308,10 @@
  
  name treetex
  category Package
-@@ -142519,7 +142397,6 @@
- revision 26912
+@@ -149885,7 +149763,6 @@
+ revision 30634
  shortdesc i386-linux files of xetex
- binfiles arch=i386-linux size=4837
+ binfiles arch=i386-linux size=5497
 - bin/i386-linux/teckit_compile
   bin/i386-linux/xdvipdfmx
   bin/i386-linux/xelatex

@@ -223,11 +223,10 @@ char *pkg_blacklist[] = {
 };
 
 char *rem[] = {		/* any file beginning with this will be removed */
-//	"texmf/scripts/tlgs/gswin32",
-	"texmf/doc/info/kpathsea.info",
+	"texmf-dist/doc/info/kpathsea.info",
 	"texmf-dist/scripts/context/stubs/source",
 	"readme-txt.dir",
-	"tlpkg",
+	"tlpkg/installer",
 	"install-tl",
 	NULL,
 };
@@ -332,7 +331,7 @@ void parse() {
 				asprintf(&new_l, "texmf-dist%s", rel+5);
 				l = new_l;
 			}
-			if (!strncmp(l, "texmf/doc/man/man", 17)) {  /* does package have any man pages? */
+			if (!strncmp(l, "texmf-dist/doc/man/man", 22)) {  /* does package have any man pages? */
 				pkg[p-1].has_man = 1;
 				if ( l[strlen(l)-2] == '.' && l[strlen(l)-1] >= '0' && l[strlen(l)-1] <= '9' ) {
 					pkg[p-1].runf = realloc(pkg[p-1].runf, (pkg[p-1].runfs+1)*sizeof(char *));
@@ -343,7 +342,7 @@ void parse() {
 				}
 				goto skip;
 			}
-			if (!strncmp(l, "texmf/doc/info/", 15)) {  /* does package have any info pages? */
+			if (!strncmp(l, "texmf-dist/doc/info/", 20)) {  /* does package have any info pages? */
 				pkg[p-1].has_info = 1;
 				if ( !strncmp(&l[strlen(l)-5], ".info", 5) ) {
 					pkg[p-1].runf = realloc(pkg[p-1].runf, (pkg[p-1].runfs+1)*sizeof(char *));
@@ -608,12 +607,13 @@ int installed, srcno=100, mainsrcno = 6000, mainpkg;
 FILE *fpack, *ffile, *funpack, *fsrc, *fremove, *ffont;
 
 char *cnf_files[] = {
-	"texmf/web2c/fmtutil.cnf",
-	"texmf/web2c/updmap.cfg",
-	"texmf/web2c/texmf.cnf",
-	"texmf/web2c/context.cnf",
-	"texmf/web2c/mktex.cnf",
-	"texmf/dvips/config/config.ps",		/* rhbz#441171 */
+	"texmf-dist/web2c/fmtutil.cnf",
+	"texmf-dist/web2c/updmap.cfg",
+	"texmf-dist/web2c/texmf.cnf",
+	"texmf-dist/web2c/context.cnf",
+	"texmf-dist/web2c/mktex.cnf",
+	"texmf-dist/dvips/config/config.ps",		/* rhbz#441171 */
+	"texmf-dist/tex/generic/config/language.dat",	/* rhbz#929367 */
 	NULL,
 };
 
@@ -704,35 +704,35 @@ void append_filelist( char *pkg, char *pkgsuf, int files, char **filelist, char 
 									goto next;
 								}
 							}
-							if (!strncmp(&filelist[n][bin_index], "texmf/doc/man/man", 17)) {  /* relocate man pages to correct paths */
+							if (!strncmp(&filelist[n][bin_index], "texmf-dist/doc/man/man", 22)) {  /* relocate man pages to correct paths */
 								size_t sz = strlen(&filelist[n][bin_index]);
 								char *man = &filelist[n][bin_index];
 								if (man[sz-1] >= '0' && man[sz-1] <= '9') {
-									fprintf(ffile, "%%{_mandir}/%s*\n", &filelist[n][bin_index+14]);
+									fprintf(ffile, "%%{_mandir}/%s*\n", &filelist[n][bin_index+19]);
 								}
 								goto next;
 							}
-							if (!strncmp(&filelist[n][bin_index], "texmf/doc/info", 14)) {  /* relocate path for info files, ignore all other files such as 'dir' */
+							if (!strncmp(&filelist[n][bin_index], "texmf-dist/doc/info", 19)) {  /* relocate path for info files, ignore all other files such as 'dir' */
 								if (!strncmp(&filelist[n][strlen(filelist[n])-5], ".info", 5)) {
-									fprintf(ffile, "%%{_infodir}/%s*\n", &filelist[n][bin_index+15]);
+									fprintf(ffile, "%%{_infodir}/%s*\n", &filelist[n][bin_index+20]);
 								}
 								goto next;
 							}
-							if (!strcmp(&filelist[n][bin_index], "texmf/web2c/updmap.cfg")) {
+							if (!strcmp(&filelist[n][bin_index], "texmf-dist/web2c/updmap.cfg")) {
 								fprintf(fremove, "\n# disable all Maps/MixedMaps we add them by scriptlets\n");
-								fprintf(fremove, "sed -i '/^M/d' %%{buildroot}%%{_texdir}/texmf/web2c/updmap.cfg\n");
+								fprintf(fremove, "sed -i '/^M/d' %%{buildroot}%%{_texdir}/texmf-dist/web2c/updmap.cfg\n");
 							} else
-							if (!strcmp(&filelist[n][bin_index], "texmf/web2c/fmtutil.cnf")) {
+							if (!strcmp(&filelist[n][bin_index], "texmf-dist/web2c/fmtutil.cnf")) {
 								fprintf(fremove, "\n# disable all formats\n");
-								fprintf(fremove, "sed -i '/^[a-z].*$/s/^/\\#\\!\\ /' %%{buildroot}%%{_texdir}/texmf/web2c/fmtutil.cnf\n");
+								fprintf(fremove, "sed -i '/^[a-z].*$/s/^/\\#\\!\\ /' %%{buildroot}%%{_texdir}/texmf-dist/web2c/fmtutil.cnf\n");
 							} else
-							if (!strcmp(&filelist[n][bin_index], "texmf/tex/generic/config/language.us")) {
+							if (!strcmp(&filelist[n][bin_index], "texmf-dist/tex/generic/config/language.us")) {
 								fprintf(fremove, "\n# disable all hyphenations\n");
-								fprintf(fremove, "cp -f %%{buildroot}%%{_texdir}/texmf/tex/generic/config/language.us %%{buildroot}%%{_texdir}/texmf/tex/generic/config/language.dat\n");
+								fprintf(fremove, "cp -f %%{buildroot}%%{_texdir}/texmf-dist/tex/generic/config/language.us %%{buildroot}%%{_texdir}/texmf-dist/tex/generic/config/language.dat\n");
 							} else
-							if (!strcmp(&filelist[n][bin_index], "texmf/tex/generic/config/language.us.def")) {
+							if (!strcmp(&filelist[n][bin_index], "texmf-dist/tex/generic/config/language.us.def")) {
 								fprintf(fremove, "\n# disable all hyphenations\n");
-								fprintf(fremove, "cp -f %%{buildroot}%%{_texdir}/texmf/tex/generic/config/language.us.def %%{buildroot}%%{_texdir}/texmf/tex/generic/config/language.def\n");
+								fprintf(fremove, "cp -f %%{buildroot}%%{_texdir}/texmf-dist/tex/generic/config/language.us.def %%{buildroot}%%{_texdir}/texmf-dist/tex/generic/config/language.def\n");
 							}
 							{			/* add %config(noreplace) for config files */
 								int i;
@@ -1193,11 +1193,14 @@ void solve(char *name) {
 				}
 				/* write virtual provides */
 				if ( !strncmp(name, "collection-", 11) ) {
-					if (!strcmp(name+11, "latex")) {
+					if (!strcmp(name+11, "latexrecommended")) {
 						fprintf(fpack, "Provides: tex(latex) = %%{tl_version}, texlive-latex = %%{tl_version}\n");
+						fprintf(fpack, "Requires: texlive-collection-fontsrecommended\n");
+					} else if (!strcmp(name+11, "latex")) {
+						fprintf(fpack, "Provides: tex(latex-base) = %%{tl_version}\n");
 					} else if (!strcmp(name+11, "basic")) {
 						fprintf(fpack, "Provides: tex(tex) = %%{tl_version}, tex = %%{tl_version}\n");
-						fprintf(fpack, "Requires: dvipdfm, dvipdfmx, xdvik\n");
+						fprintf(fpack, "Requires: dvipdfmx, xdvik\n");
 					} else if (!strcmp(name+11, "langcjk")) {
 						fprintf(fpack, "Provides: tex(japanese) = %%{tl_version}\n");
 						fprintf(fpack, "Provides: tex(east-asian) = %%{tl_version}\n");
@@ -1314,7 +1317,7 @@ void solve(char *name) {
 					fprintf(fpack, "Provides: kpathsea = %%{tl_version}\n");
 					fprintf(fpack, "Obsoletes: kpathsea < %%{tl_version}\n");
 					fprintf(funpack, "\n# add reference to support old texmf tree\n"
-					"sed -i 's|TEXMFLOCAL = $SELFAUTOPARENT/../texmf-local|TEXMFLOCAL = $SELFAUTOPARENT/../texmf|g' %%{buildroot}%%{_texdir}/texmf/web2c/texmf.cnf\n\n");
+					"sed -i 's|TEXMFLOCAL = $SELFAUTOPARENT/../texmf-local|TEXMFLOCAL = $SELFAUTOPARENT/../texmf|g' %%{buildroot}%%{_texdir}/texmf-dist/web2c/texmf.cnf\n\n");
 				}
 				if ( !strncmp(name, "asana-math", 10) ) {
 					fprintf(fpack, "Provides: texlive-Asana-Math = %%{tl_version}.1\n");
@@ -1340,8 +1343,10 @@ void solve(char *name) {
 				fprintf(fpack, REQ_POSTTRANS"texlive-kpathsea-bin, tex-kpathsea\n");
 				if ( pkg[i].exes ) {
 					fprintf(fpack, REQ_POSTTRANS"texlive-tetex-bin, tex-tetex\n");
-					fprintf(fpack, REQ_POST_POSTUN"texlive-tetex-bin, tex-tetex, tex-hyphen-base, texlive-base\n");
+					fprintf(fpack, REQ_POST_POSTUN"texlive-tetex-bin, tex-tetex, tex-hyphen-base, texlive-base, texlive-texlive.infra\n");
 				}
+				/* require coreutils if there is %post scriptlet present */
+				if ( pkg[i].exes || pkg[i].runfs ) fprintf(fpack, REQ_POST_POSTUN"coreutils\n");
 //				if ( pkg[i].runfs ) fprintf(fpack, REQ_POST_POSTUN"texlive-kpathsea-bin, tex-kpathsea\n");
 				if ( pkg[i].has_info ) fprintf(fpack, REQ_POST_POSTUN"/sbin/install-info\n");
 				for (n=0; n<pkg[i].reqs; n++) {
@@ -1478,6 +1483,40 @@ void solve(char *name) {
 					fprintf(fpack, "Provides: metapost-metauml = %%{tl_version}\n");
 					fprintf(fpack, "Obsoletes: metapost-metauml < %%{tl_version}\n");
 				}
+				if ( !strcmp(name, "cm-lgc") ) {	/* rhbz#907728 */
+					fprintf(fpack, "Obsoletes: tex-cm-lgc < %%{tl_version}\n");
+				}
+				if ( !strcmp(name, "simplecv") ) {	/* rhbz#907728 */
+					fprintf(fpack, "Obsoletes: tex-simplecv < %%{tl_version}\n");
+				}
+				if ( !strcmp(name, "kerkis") ) {	/* rhbz#907728 */
+					fprintf(fpack, "Obsoletes: tex-kerkis < %%{tl_version}\n");
+				}
+				if ( !strcmp(name, "detex") ) {		/* rhbz#913678 */
+					fprintf(fpack, "Obsoletes: detex < %%{tl_version}\n");
+				}
+				if ( !strcmp(name, "latexdiff") ) {	/* rhbz#913678 */
+					fprintf(fpack, "Obsoletes: latexdiff < %%{tl_version}\n");
+				}
+				if ( !strcmp(name, "pdfjam") ) {	/* rhbz#913678 */
+					fprintf(fpack, "Obsoletes: pdfbook < %%{tl_version}1212\n");
+				}
+				if ( !strcmp(name, "musixtex-fnts") ) {
+					fprintf(fpack, "Provides: ctan-musixtex-fonts = %%{tl_version}\n");
+					fprintf(fpack, "Obsoletes: ctan-musixtex-fonts < %%{tl_version}\n");
+				}
+				if ( !strcmp(name, "musixtex-doc") ) {
+					fprintf(fpack, "Provides: tex-musixtex-doc = %%{tl_version}\n");
+					fprintf(fpack, "Obsoletes: tex-musixtex-doc < %%{tl_version}\n");
+				}
+				if ( !strcmp(name, "musixtex") ) {
+					fprintf(fpack, "Provides: tex-musixtex = %%{tl_version}\n");
+					fprintf(fpack, "Obsoletes: tex-musixtex < %%{tl_version}\n");
+				}
+				if ( !strcmp(name, "dvipdfmx") ) {	/* rhbz#968358 */
+					fprintf(fpack, "Provides: texlive-dvipdfm = 3:%%{tl_version}\n");
+					fprintf(fpack, "Obsoletes: texlive-dvipdfm < 3:%%{tl_version}\n");
+				}
 				/* description */
 #ifndef SRPMS
 				fprintf(fpack, "\n%%description %s\n", name);
@@ -1493,16 +1532,15 @@ void solve(char *name) {
 				/* preun/post/postun scriptlets */
 				if ( pkg[i].has_info ) {
 					int k;
-
 #ifndef SRPMS
 					fprintf(fpack, "%%preun %s\n", name);
 #else
 					fprintf(fpack, "%%preun\n");
 #endif
-					fprintf(fpack, "if [ \"$1\" = \"0\" ]; then\n");
+					fprintf(fpack, "if [ \"$1\" == \"0\" ]; then\n");
 					for (k=0; k<pkg[i].runfs; k++) {
-						if (!strncmp(pkg[i].runf[k], "texmf/doc/info/", 15)) {
-							fprintf(fpack, "  /sbin/install-info --delete %%{_infodir}/%s %%{_infodir}/dir 2>/dev/null || :\n", &pkg[i].runf[k][15]);
+						if (!strncmp(pkg[i].runf[k], "texmf-dist/doc/info/", 20)) {
+							fprintf(fpack, "  /sbin/install-info --delete %%{_infodir}/%s %%{_infodir}/dir 2>/dev/null || :\n", &pkg[i].runf[k][20]);
 						}
 					}
 					fprintf(fpack, "fi\n\n");
@@ -1519,8 +1557,8 @@ void solve(char *name) {
 						int k;
 
 						for (k=0; k<pkg[i].runfs; k++) {
-							if (!strncmp(pkg[i].runf[k], "texmf/doc/info/", 15)) {
-								fprintf(fpack, "/sbin/install-info %%{_infodir}/%s %%{_infodir}/dir 2>/dev/null\n", &pkg[i].runf[k][15]);
+							if (!strncmp(pkg[i].runf[k], "texmf-dist/doc/info/", 20)) {
+								fprintf(fpack, "/sbin/install-info %%{_infodir}/%s %%{_infodir}/dir 2>/dev/null\n", &pkg[i].runf[k][20]);
 							}
 						}
 					}
@@ -1530,25 +1568,22 @@ void solve(char *name) {
 							continue;
 						}
 						if ( !strncmp(pkg[i].exe[n], "addMap ", 7) ) {
-							fprintf(fpack, "sed -i '/^Map %s/d' %%{_texdir}/texmf/web2c/updmap.cfg\n", &pkg[i].exe[n][7]);
-							fprintf(fpack, "echo \"Map %s\" >> %%{_texdir}/texmf/web2c/updmap.cfg\n", &pkg[i].exe[n][7]);
+							fprintf(fpack, "%%{_bindir}/updmap-sys --quiet --enable Map=%s > /dev/null 2>&1\n", &pkg[i].exe[n][7]);
 							run_updmap = 1;
 							continue;
 						}
 						if ( !strncmp(pkg[i].exe[n], "addMixedMap ", 12) ) {
-							fprintf(fpack, "sed -i '/^MixedMap %s/d' %%{_texdir}/texmf/web2c/updmap.cfg\n", &pkg[i].exe[n][12]);
-							fprintf(fpack, "echo \"MixedMap %s\" >> %%{_texdir}/texmf/web2c/updmap.cfg\n", &pkg[i].exe[n][12]);
+							fprintf(fpack, "%%{_bindir}/updmap-sys --quiet --enable MixedMap=%s > /dev/null 2>&1\n", &pkg[i].exe[n][12]);
 							run_updmap = 1;
 							continue;
 						}
 						if ( !strncmp(pkg[i].exe[n], "addKanjiMap ", 12) ) {
-							fprintf(fpack, "sed -i '/^KanjiMap %s/d' %%{_texdir}/texmf/web2c/updmap.cfg\n", &pkg[i].exe[n][12]);
-							fprintf(fpack, "echo \"KanjiMap %s\" >> %%{_texdir}/texmf/web2c/updmap.cfg\n", &pkg[i].exe[n][12]);
+							fprintf(fpack, "%%{_bindir}/updmap-sys --quiet --enable KanjiMap=%s  > /dev/null 2>&1\n", &pkg[i].exe[n][12]);
 							run_updmap = 1;
 							continue;
 						}
 						if ( !strncmp(pkg[i].exe[n], "BuildFormat ", 12) ) {
-							fprintf(fpack, "sed -i 's/^\\#\\!\\ %s/%s/' %%{_texdir}/texmf/web2c/fmtutil.cnf\n", &pkg[i].exe[n][12], &pkg[i].exe[n][12]);
+							fprintf(fpack, "%%{_bindir}/fmtutil-sys --enablefmt %s > /dev/null 2>&1\n", &pkg[i].exe[n][12]);
 							run_fmtutil = 1;
 							continue;
 						}
@@ -1580,7 +1615,7 @@ void solve(char *name) {
 							opt_char = *opt;
 							*opt = '\0';
 
-							fprintf(fpack, "sed -i 's/^\\#\\!\\ %s.*$/%s %s %s %s/' %%{_texdir}/texmf/web2c/fmtutil.cnf\n", name, name, engine, patterns?patterns:"-", options);
+							fprintf(fpack, "sed -i 's/^\\#\\!\\ %s.*$/%s %s %s %s/' %%{_texdir}/texmf-dist/web2c/fmtutil.cnf\n", name, name, engine, patterns?patterns:"-", options);
 
 							name[strlen(name)] = ' ';
 							engine[strlen(engine)] = ' ';
@@ -1609,33 +1644,33 @@ void solve(char *name) {
 							file += 5;
 							for (k=10; pkg[i].exe[n][k]; k++) if ( pkg[i].exe[n][k] == ' ' ) pkg[i].exe[n][k] = '\0';
 
-							fprintf(fpack, "sed -i '/%s.*/d' %%{_texdir}/texmf/tex/generic/config/language.dat\n", name);
-							fprintf(fpack, "echo \"%s %s\" >> %%{_texdir}/texmf/tex/generic/config/language.dat\n", name, file);
+							fprintf(fpack, "sed -i '/%s.*/d' %%{_texdir}/texmf-dist/tex/generic/config/language.dat\n", name);
+							fprintf(fpack, "echo \"%s %s\" >> %%{_texdir}/texmf-dist/tex/generic/config/language.dat\n", name, file);
 							if ( synonyms ) {
 								char *syn = synonyms, *s;
 								while ( (s=strchr(syn, ',')) ) {
 									*s = '\0';
-									fprintf(fpack, "sed -i '/=%s/d' %%{_texdir}/texmf/tex/generic/config/language.dat\n", syn);
-									fprintf(fpack, "echo \"=%s\" >> %%{_texdir}/texmf/tex/generic/config/language.dat\n", syn);
+									fprintf(fpack, "sed -i '/=%s/d' %%{_texdir}/texmf-dist/tex/generic/config/language.dat\n", syn);
+									fprintf(fpack, "echo \"=%s\" >> %%{_texdir}/texmf-dist/tex/generic/config/language.dat\n", syn);
 									*s = ',';
 									syn = s+1;
 								}
-								fprintf(fpack, "sed -i '/=%s/d' %%{_texdir}/texmf/tex/generic/config/language.dat\n", syn);
-								fprintf(fpack, "echo \"=%s\" >> %%{_texdir}/texmf/tex/generic/config/language.dat\n", syn);
+								fprintf(fpack, "sed -i '/=%s/d' %%{_texdir}/texmf-dist/tex/generic/config/language.dat\n", syn);
+								fprintf(fpack, "echo \"=%s\" >> %%{_texdir}/texmf-dist/tex/generic/config/language.dat\n", syn);
 							}
-							fprintf(fpack, "sed -i '/\\\\addlanguage{%s}.*/d' %%{_texdir}/texmf/tex/generic/config/language.def\n", name);
-							fprintf(fpack, "echo \"\\addlanguage{%s}{%s}{}{%s}{%s}\" >> %%{_texdir}/texmf/tex/generic/config/language.def\n", name, file, lefthyphenmin, righthyphenmin);
+							fprintf(fpack, "sed -i '/\\\\addlanguage{%s}.*/d' %%{_texdir}/texmf-dist/tex/generic/config/language.def\n", name);
+							fprintf(fpack, "echo \"\\addlanguage{%s}{%s}{}{%s}{%s}\" >> %%{_texdir}/texmf-dist/tex/generic/config/language.def\n", name, file, lefthyphenmin, righthyphenmin);
 							if ( synonyms ) {
 								char *syn = synonyms, *s;
 								while ( (s=strchr(syn, ',')) ) {
 									*s = '\0';
-									fprintf(fpack, "sed -i '/\\\\addlanguage{%s}.*/d' %%{_texdir}/texmf/tex/generic/config/language.def\n", syn);
-									fprintf(fpack, "echo \"\\addlanguage{%s}{%s}{}{%s}{%s}\" >> %%{_texdir}/texmf/tex/generic/config/language.def\n", syn, file, lefthyphenmin, righthyphenmin);
+									fprintf(fpack, "sed -i '/\\\\addlanguage{%s}.*/d' %%{_texdir}/texmf-dist/tex/generic/config/language.def\n", syn);
+									fprintf(fpack, "echo \"\\addlanguage{%s}{%s}{}{%s}{%s}\" >> %%{_texdir}/texmf-dist/tex/generic/config/language.def\n", syn, file, lefthyphenmin, righthyphenmin);
 									*s = ',';
 									syn = s+1;
 								}
-								fprintf(fpack, "sed -i '/\\\\addlanguage{%s}.*/d' %%{_texdir}/texmf/tex/generic/config/language.def\n", syn);
-								fprintf(fpack, "echo \"\\addlanguage{%s}{%s}{}{%s}{%s}\" >> %%{_texdir}/texmf/tex/generic/config/language.def\n", syn, file, lefthyphenmin, righthyphenmin);
+								fprintf(fpack, "sed -i '/\\\\addlanguage{%s}.*/d' %%{_texdir}/texmf-dist/tex/generic/config/language.def\n", syn);
+								fprintf(fpack, "echo \"\\addlanguage{%s}{%s}{}{%s}{%s}\" >> %%{_texdir}/texmf-dist/tex/generic/config/language.def\n", syn, file, lefthyphenmin, righthyphenmin);
 							}
 							for (--k; k>=10; k--) if ( pkg[i].exe[n][k] == '\0' ) pkg[i].exe[n][k] = ' ';
 							run_fmtutil = 1;
@@ -1659,22 +1694,22 @@ void solve(char *name) {
 							continue;
 						}
 						if ( !strncmp(pkg[i].exe[n], "addMap ", 7) ) {
-							fprintf(fpack, "sed -i '/^Map %s/d' %%{_texdir}/texmf/web2c/updmap.cfg > /dev/null 2>&1\n", &pkg[i].exe[n][7]);
+							fprintf(fpack, "%%{_bindir}/updmap-sys --disable Map=%s > /dev/null 2>&1\n", &pkg[i].exe[n][7]);
 							run_updmap = 1;
 							continue;
 						}
 						if ( !strncmp(pkg[i].exe[n], "addMixedMap ", 12) ) {
-							fprintf(fpack, "sed -i '/^MixedMap %s/d' %%{_texdir}/texmf/web2c/updmap.cfg > /dev/null 2>&1\n", &pkg[i].exe[n][12]);
+							fprintf(fpack, "%%{_bindir}/updmap-sys --disable MixedMap=%s > /dev/null 2>&1\n", &pkg[i].exe[n][12]);
 							run_updmap = 1;
 							continue;
 						}
 						if ( !strncmp(pkg[i].exe[n], "addKanjiMap ", 12) ) {
-							fprintf(fpack, "sed -i '/^KanjiMap %s/d' %%{_texdir}/texmf/web2c/updmap.cfg > /dev/null 2>&1\n", &pkg[i].exe[n][12]);
+							fprintf(fpack, "%%{_bindir}/updmap-sys --disable KanjiMap=%s > /dev/null 2>&1\n", &pkg[i].exe[n][12]);
 							run_updmap = 1;
 							continue;
 						}
 						if ( !strncmp(pkg[i].exe[n], "BuildFormat ", 12) ) {
-							fprintf(fpack, "sed -i 's/^%s.*$/\\#\\!\\ %s/'  %%{_texdir}/texmf/web2c/fmtutil.cnf > /dev/null 2>&1\n", &pkg[i].exe[n][12], &pkg[i].exe[n][12]);
+							fprintf(fpack, "%%{_bindir}/fmtutil-sys --disablefmt %s > /dev/null 2>&1\n", &pkg[i].exe[n][12]);
 							run_fmtutil = 1;
 							continue;
 						}
@@ -1706,7 +1741,7 @@ void solve(char *name) {
 							opt_char = *opt;
 							*opt = '\0';
 
-							fprintf(fpack, "sed -i 's/^%s.*$/\\#\\!\\ %s %s %s %s/' %%{_texdir}/texmf/web2c/fmtutil.cnf > /dev/null 2>&1\n", name, name, engine, patterns?patterns:"-", options);
+							fprintf(fpack, "sed -i 's/^%s.*$/\\#\\!\\ %s %s %s %s/' %%{_texdir}/texmf-dist/web2c/fmtutil.cnf > /dev/null 2>&1\n", name, name, engine, patterns?patterns:"-", options);
 
 							name[strlen(name)] = ' ';
 							engine[strlen(engine)] = ' ';
@@ -1735,27 +1770,27 @@ void solve(char *name) {
 							file += 5;
 							for (k=10; pkg[i].exe[n][k]; k++) if ( pkg[i].exe[n][k] == ' ' ) pkg[i].exe[n][k] = '\0';
 
-							fprintf(fpack, "sed -i '/%s.*/d' %%{_texdir}/texmf/tex/generic/config/language.dat > /dev/null 2>&1\n", name);
+							fprintf(fpack, "sed -i '/%s.*/d' %%{_texdir}/texmf-dist/tex/generic/config/language.dat > /dev/null 2>&1\n", name);
 							if ( synonyms ) {
 								char *syn = synonyms, *s;
 								while ( (s=strchr(syn, ',')) ) {
 									*s = '\0';
-									fprintf(fpack, "  sed -i '/=%s/d' %%{_texdir}/texmf/tex/generic/config/language.dat > /dev/null 2>&1\n", syn);
+									fprintf(fpack, "  sed -i '/=%s/d' %%{_texdir}/texmf-dist/tex/generic/config/language.dat > /dev/null 2>&1\n", syn);
 									*s = ',';
 									syn = s+1;
 								}
-								fprintf(fpack, "  sed -i '/=%s/d' %%{_texdir}/texmf/tex/generic/config/language.dat > /dev/null 2>&1\n", syn);
+								fprintf(fpack, "  sed -i '/=%s/d' %%{_texdir}/texmf-dist/tex/generic/config/language.dat > /dev/null 2>&1\n", syn);
 							}
-							fprintf(fpack, "sed -i '/\\\\addlanguage{%s}.*/d' %%{_texdir}/texmf/tex/generic/config/language.def > /dev/null 2>&1\n", name);
+							fprintf(fpack, "sed -i '/\\\\addlanguage{%s}.*/d' %%{_texdir}/texmf-dist/tex/generic/config/language.def > /dev/null 2>&1\n", name);
 							if ( synonyms ) {
 								char *syn = synonyms, *s;
 								while ( (s=strchr(syn, ',')) ) {
 									*s = '\0';
-									fprintf(fpack, "sed -i '/\\\\addlanguage{%s}.*/d' %%{_texdir}/texmf/tex/generic/config/language.def > /dev/null 2>&1\n", syn);
+									fprintf(fpack, "sed -i '/\\\\addlanguage{%s}.*/d' %%{_texdir}/texmf-dist/tex/generic/config/language.def > /dev/null 2>&1\n", syn);
 									*s = ',';
 									syn = s+1;
 								}
-								fprintf(fpack, "sed -i '/\\\\addlanguage{%s}.*/d' %%{_texdir}/texmf/tex/generic/config/language.def > /dev/null 2>&1\n", syn);
+								fprintf(fpack, "sed -i '/\\\\addlanguage{%s}.*/d' %%{_texdir}/texmf-dist/tex/generic/config/language.def > /dev/null 2>&1\n", syn);
 							}
 							for (--k; k>=10; k--) if ( pkg[i].exe[n][k] == '\0' ) pkg[i].exe[n][k] = ' ';
 							run_fmtutil = 1;
@@ -1771,10 +1806,10 @@ void solve(char *name) {
 #else
 					fprintf(fpack, "%%posttrans\n");
 #endif
-					fprintf(fpack, "[ -e /var/run/texlive/run-texhash ] && %%{_bindir}/texhash 2> /dev/null; rm -f /var/run/texlive/run-texhash\n");
-					if ( run_updmap ) fprintf(fpack, "[ -e /var/run/texlive/run-updmap ] && %%{_bindir}/updmap-sys --nohash --quiet &> /dev/null; rm -f /var/run/texlive/run-updmap\n");
-					if ( run_fmtutil ) fprintf(fpack, "[ -e /var/run/texlive/run-fmtutil ] && %%{_bindir}/fmtutil-sys --all &> /dev/null; rm -f /var/run/texlive/run-fmtutil\n");
-					fprintf(fpack, "[ -e /var/run/texlive/run-mtxrun ] && export TEXMF=/usr/share/texlive/texmf-dist; export TEXMFCNF=/usr/share/texlive/texmf/web2c; export TEXMFCACHE=/var/lib/texmf; %%{_bindir}/mtxrun --generate &> /dev/null; rm -f /var/run/texlive/run-mtxrun\n");
+					fprintf(fpack, "if [ -e /var/run/texlive/run-texhash ]; then %%{_bindir}/texhash 2> /dev/null; rm -f /var/run/texlive/run-texhash; fi\n");
+					if ( run_updmap ) fprintf(fpack, "if [ -e /var/run/texlive/run-updmap ]; then %%{_bindir}/updmap-sys --quiet &> /dev/null; %%{_bindir}/updmap-sys --syncwithtrees --quiet &> /dev/null;rm -f /var/run/texlive/run-updmap; fi\n");
+					if ( run_fmtutil ) fprintf(fpack, "if [ -e /var/run/texlive/run-fmtutil ]; then %%{_bindir}/fmtutil-sys --all &> /dev/null; rm -f /var/run/texlive/run-fmtutil; fi\n");
+					fprintf(fpack, "if [ -e /var/run/texlive/run-mtxrun ]; then export TEXMF=/usr/share/texlive/texmf-dist; export TEXMFCNF=/usr/share/texlive/texmf-dist/web2c; export TEXMFCACHE=/var/lib/texmf; %%{_bindir}/mtxrun --generate &> /dev/null; rm -f /var/run/texlive/run-mtxrun; fi\n");
 					fprintf(fpack, ":\n\n");
 				} else if ( pkg[i].runfs ) {
 #ifndef SRPMS
@@ -1787,8 +1822,8 @@ void solve(char *name) {
 						int k;
 
 						for (k=0; k<pkg[i].runfs; k++) {
-							if (!strncmp(pkg[i].runf[k], "texmf/doc/info/", 15)) {
-								fprintf(fpack, "/sbin/install-info %%{_infodir}/%s %%{_infodir}/dir 2>/dev/null\n", &pkg[i].runf[k][15]);
+							if (!strncmp(pkg[i].runf[k], "texmf-dist/doc/info/", 20)) {
+								fprintf(fpack, "/sbin/install-info %%{_infodir}/%s %%{_infodir}/dir 2>/dev/null\n", &pkg[i].runf[k][20]);
 							}
 						}
 					}
@@ -1805,8 +1840,8 @@ void solve(char *name) {
 #else
 					fprintf(fpack, "%%posttrans\n");
 #endif
-					fprintf(fpack, "[ -e /var/run/texlive/run-texhash ] && [ -e %%{_bindir}/texhash ] && %%{_bindir}/texhash 2> /dev/null; rm -f /var/run/texlive/run-texhash\n");
-					fprintf(fpack, "[ -e /var/run/texlive/run-mtxrun ] && export TEXMF=/usr/share/texlive/texmf-dist; export TEXMFCNF=/usr/share/texlive/texmf/web2c; export TEXMFCACHE=/var/lib/texmf; %%{_bindir}/mtxrun --generate &> /dev/null; rm -f /var/run/texlive/run-mtxrun\n");
+					fprintf(fpack, "if [ -e /var/run/texlive/run-texhash ] && [ -e %%{_bindir}/texhash ]; then %%{_bindir}/texhash 2> /dev/null; rm -f /var/run/texlive/run-texhash; fi\n");
+					fprintf(fpack, "if [ -e /var/run/texlive/run-mtxrun ]; then export TEXMF=/usr/share/texlive/texmf-dist; export TEXMFCNF=/usr/share/texlive/texmf-dist/web2c; export TEXMFCACHE=/var/lib/texmf; %%{_bindir}/mtxrun --generate &> /dev/null; rm -f /var/run/texlive/run-mtxrun; fi\n");
 					fprintf(fpack, ":\n\n");
 				}
 
@@ -1814,15 +1849,16 @@ void solve(char *name) {
 #ifdef SRPMS
 				mainpkg = 1;
 #endif
+				main_written = 0;
 				append_filelist(pkg[i].name, "", pkg[i].runfs, pkg[i].runf, pkg[i].fedora_license?pkg[i].fedora_license:put_token(pkg[i].catalogue_license, license));
 #ifdef SRPMS
 				mainpkg = 0;
 #endif
 			}
+			main_written = pkg[i].runfs || pkg[i].reqs || pkg[i].exes;
 #ifdef PACKAGE_DOCS
 			/* write doc package if exists */
 			if ( pkg[i].docfs ) {
-				main_written = pkg[i].runfs || pkg[i].reqs || pkg[i].exes;
 				if ( !doc_expanded ) {
 					fprintf(funpack, UNPACK" -dc %%{SOURCE%d} | tar x -C %%{buildroot}%%{_texdir}%s\n", srcno, pkg[i].reloc?"/texmf-dist":"");
 					fprintf(fsrc, "Source%04d: "CTAN_URL"%s.doc.tar."UNPACK"\n", srcno++, name);
@@ -1988,11 +2024,11 @@ void solve(char *name) {
 #ifdef SRPMS
 			if (pkg[i].has_man) {
 				fprintf(fremove, "mkdir -p %%{buildroot}/%%{_datadir}/\n");
-				fprintf(fremove, "mv %%{buildroot}/%%{_texdir}/texmf/doc/man %%{buildroot}/%%{_datadir}/\n");
+				fprintf(fremove, "mv %%{buildroot}/%%{_texdir}/texmf-dist/doc/man %%{buildroot}/%%{_datadir}/\n");
 			}
 			if (pkg[i].has_info) {
 				fprintf(fremove, "mkdir -p %%{buildroot}/%%{_infodir}/\n");
-				fprintf(fremove, "mv %%{buildroot}/%%{_texdir}/texmf/doc/info/* %%{buildroot}/%%{_infodir}/\n");
+				fprintf(fremove, "mv %%{buildroot}/%%{_texdir}/texmf-dist/doc/info/* %%{buildroot}/%%{_infodir}/\n");
 			}
 #endif
 #ifdef SRPMS
@@ -2019,19 +2055,16 @@ void solve(char *name) {
 				fprintf(fpack, "Summary: Binaries for %s\n", name);
 				fprintf(fpack, "Version: %s\n", print_noarch_version(&pkg[i]));
 				if ( strncmp(name, "kpathsea", 8) ) fprintf(fpack, "Requires: texlive-base\n"); //else fprintf(fpack, "Provides: kpathsea = %%{tl_version}\nObsoletes: kpathsea < %%{tl_version}\n");
-				fprintf(fpack, "Requires: tex-%s\n", name);
+				if ( main_written ) fprintf(fpack, "Requires: tex-%s\n", name); else printf("!%s\n", name);
+				fprintf(fpack, "Requires: texlive-kpathsea-lib = %%{epoch}:%%{tl_version}-%%{tl_release}\n");
 				if ( !strcmp(name, "xetex") ) {
 					fprintf(fpack, "Requires: teckit\n");
 					fprintf(fpack, "Provides: xdvipdfmx = %%{version}-%%{release}\n");
 					fprintf(fpack, "Obsoletes: xdvipdfmx < %%{version}-%%{release}\n");
 				}
-				if ( !strcmp(name, "dvipdfm") ) {
-					fprintf(fpack, "Provides: dvipdfm = %%{tl_version}\n");
-					fprintf(fpack, "Obsoletes: dvipdfm < %%{tl_version}\n");
-				}
 				if ( !strcmp(name, "dvipdfmx") ) {
-					fprintf(fpack, "Provides: dvipdfmx = %%{tl_version}\n");
-					fprintf(fpack, "Obsoletes: dvipdfmx < %%{tl_version}\n");
+					fprintf(fpack, "Provides: dvipdfmx = %%{tl_version}, dvipdfm = %%{tl_version}, texlive-dvipdfm-bin = 3:%%{tl_version}\n");
+					fprintf(fpack, "Obsoletes: dvipdfmx < %%{tl_version}, dvipdfm < %%{tl_version}, texlive-dvipdfm-bin < 3:%%{tl_version}\n");
 				}
 				if ( !strcmp(name, "xdvi") ) {
 					fprintf(fpack, "Provides: xdvi = %%{tl_version}, xdvik = %%{tl_version}, tetex-xdvi = 3.1-99\n");
@@ -2040,6 +2073,9 @@ void solve(char *name) {
 				if ( !strcmp(name, "dvipng") ) {
 					fprintf(fpack, "Provides: dvipng = %%{tl_version}\n");
 					fprintf(fpack, "Obsoletes: dvipng < %%{tl_version}\n");
+				}
+				if ( !strcmp(name, "pdfcrop") ) {
+					fprintf(fpack, "Requires: ghostscript-devel\n");
 				}
 				if ( !strcmp(name, "dvisvgm") ) {
 					fprintf(fpack, "Provides: dvisvgm = %%{tl_version}\n");
