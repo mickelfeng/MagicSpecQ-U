@@ -64,6 +64,8 @@ Patch400: rpm-4.10.90-rpmlib-filesystem-check.patch
 
 #为了使 magic_rpm_clean.sh 可以清理掉所有翻译文件 
 Patch500: rpm-4.11.0.1-findlang.patch
+# Add mips64el arch
+Patch600: rpm-4.11.0.1-mips64el.patch
 # Partially GPL/LGPL dual-licensed and some bits with BSD
 # SourceLicense: (GPLv2+ and LGPLv2+ with exceptions) and BSD 
 License: GPLv2+
@@ -238,6 +240,7 @@ packages on a system.
 %patch400 -p1 -b .rpmlib-filesystem-check
 
 %patch500 -p1
+%patch600 -p1 -b .mips64el
 
 %patch5 -p1 -b .armhfp
 # this patch cant be applied on softfp builds
