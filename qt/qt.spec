@@ -10,10 +10,12 @@
 #  qt-devel
 # ...maybe others !!!!
 
+%define tdeversion 3.5.13.2
+
 Name:			qt
 Epoch:			1
-Version:		3.3.8.d
-Release:		9%{?dist}
+Version:		3.3.8d
+Release:		11%{?dist}
 Summary:		The shared library for the Qt 3 GUI toolkit
 
 License:		QPL or GPLv2 or GPLv3
@@ -27,7 +29,7 @@ Provides:		qt = %{?epoch:%{epoch}:}%{version}-%{release}
 
 BuildRoot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0: qt3-3.5.13.1.tar.gz
+Source0: qt3-trinity-%{tdeversion}.tar.xz
 Source2: qt.sh
 Source3: qt.csh
 Source4: designer3.desktop
@@ -297,7 +299,7 @@ for the Qt 3 toolkit.
 
 
 %prep
-%setup -q -n qt3-3.5.13.1
+%setup -q -n qt3-trinity-%{tdeversion}
 
 %patch1 -p1 -b .cjk
 %patch2 -p1 -b .ndebug
@@ -316,7 +318,7 @@ for the Qt 3 toolkit.
 %patch34 -p1 -b .fontrendering-#209974
 %patch35 -p1 -b .fontrendering-ml_IN-217657
 %patch37 -p1 -b .fontrendering-gu-228452
-%patch38 -p1 -b .odbc
+#%patch38 -p1 -b .odbc
 # it's not 100% clear to me if this is safe for all archs -- Rex
 %ifarch armv5tel
 %patch39 -p1 -b .arm
@@ -329,13 +331,13 @@ for the Qt 3 toolkit.
 %endif
 
 # qt-copy patches
-%patch110 -p0 -b .0084-compositing-properties
+# %patch110 -p0 -b .0084-compositing-properties
 
 # upstream patches
 %patch200 -p1 -b .fullscreen
 
 # TDE 3.5.13 patches
-%patch300 -p1
+# %patch300 -p1
 
 # convert to UTF-8
 iconv -f iso-8859-1 -t utf-8 < doc/man/man3/qdial.3qt > doc/man/man3/qdial.3qt_
