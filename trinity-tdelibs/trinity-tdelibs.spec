@@ -17,7 +17,7 @@
 %define _docdir %{tde_docdir}
 
 Name:		trinity-tdelibs
-Version:	3.5.13.1
+Version:	3.5.13.2
 Release:	1%{?dist}%{?_variant}
 License:	GPL
 Summary:	TDE Libraries
@@ -30,7 +30,7 @@ URL:		http://www.trinitydesktop.org/
 Prefix:		%{tde_prefix}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	kdelibs-3.5.13.1.tar.gz
+Source0:	kdelibs-trinity-%{version}.tar.xz
 
 Obsoletes:	tdelibs < %{version}-%{release}
 Provides:	tdelibs = %{version}-%{release}
@@ -292,8 +292,8 @@ applications for TDE.
 ##########
 
 %prep
-%setup -q -n kdelibs-3.5.13.1
-
+%setup -q -n kdelibs-trinity-%{version}
+sed -i 's/TQT_PREFIX/TDE_PREFIX/g' cmake/modules/FindTQt.cmake
 
 %build
 unset QTDIR || : ; . /etc/profile.d/qt3.sh
@@ -311,6 +311,7 @@ cd build
 %endif
 
 %cmake \
+  -DTDE_PREFIX=%{tde_prefix} \
   -DCMAKE_INSTALL_PREFIX=%{tde_prefix} \
   -DBIN_INSTALL_DIR=%{tde_bindir} \
   -DDOC_INSTALL_DIR=%{tde_docdir} \
