@@ -23,7 +23,7 @@
 
 
 Name:		trinity-tdebase
-Version:	3.5.13.1
+Version:	3.5.13.2
 Release:	1%{?dist}%{?_variant}
 License:	GPL
 Summary:	Trinity Base Programs
@@ -45,7 +45,7 @@ URL:		http://www.trinitydesktop.org/
 Prefix:		%{tde_prefix}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	kdebase-3.5.13.1.tar.gz
+Source0:	kdebase-trinity-%{version}.tar.xz
 
 # Wrapper script to prevent Plasma launch at Trinity Startup
 Source1:	plasma-desktop
@@ -394,6 +394,8 @@ web browser, X terminal emulator, and many other programs and components.
 %files
 %defattr(-,root,root,-)
 %doc AUTHORS COPYING COPYING-DOCS README README.pam
+%{tde_bindir}/crashtest
+%{tde_bindir}/migratekde3
 
 ##########
 
@@ -552,7 +554,7 @@ Group:		Environment/Libraries
 
 %description -n trinity-libkateinterfaces
 %{summary}
-
+1
 %files -n trinity-libkateinterfaces
 %{tde_libdir}/libkateinterfaces.so.*
 
@@ -1547,6 +1549,8 @@ group.
 %{tde_datadir}/services/ar.protocol
 %{tde_datadir}/services/bzip.protocol
 %{tde_datadir}/services/bzip2.protocol
+%{tde_datadir}/services/lzma.protocol
+%{tde_datadir}/services/xz.protocol
 %{tde_datadir}/services/cgi.protocol
 %{tde_datadir}/services/cursorthumbnail.desktop
 %{tde_datadir}/services/djvuthumbnail.desktop
@@ -2969,9 +2973,9 @@ Konqueror libraries.
 ##########
 
 %prep
-%setup -q -n kdebase-3.5.13.1
+%setup -q -n kdebase-trinity-%{version}
 
-%patch1 -p1 -b .icon
+#%patch1 -p1 -b .icon
 %patch11 -p1 -b .openterminalhere
 %if 0%{?rhel} || 0%{?fedora}
 %patch13 -p1 -b .Xsession
@@ -2981,6 +2985,8 @@ Konqueror libraries.
 %patch21 -p1 -b .man
 %endif
 %patch30 -p1 -b .xtestsupport
+
+%__sed -i 's/TQT_PREFIX/TDE_PREFIX/g' cmake/modules/FindTQt.cmake
 
 # Applies an optional distro-specific graphical theme
 %if "%{?tde_bg}" != ""
@@ -3040,6 +3046,8 @@ cd build
 %endif
 
 %cmake \
+  -DCMAKE_PREFIX_PATH=%{tde_prefix} \
+  -DTDE_PREFIX=%{tde_prefix} \
   -DBIN_INSTALL_DIR=%{tde_bindir} \
   -DINCLUDE_INSTALL_DIR=%{tde_tdeincludedir} \
   -DLIB_INSTALL_DIR=%{tde_libdir} \
