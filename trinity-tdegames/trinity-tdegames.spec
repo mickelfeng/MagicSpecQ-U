@@ -20,7 +20,7 @@
 
 Name:		trinity-tdegames
 Summary:	Trinity Desktop Environment - Games
-Version:	3.5.13.1
+Version:	3.5.13.2
 Release:	1%{?dist}%{?_variant}
 
 License:	GPLv2
@@ -33,7 +33,7 @@ URL:		http://www.trinitydesktop.org/
 Prefix:		%{tde_prefix}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source: 	kdegames-3.5.13.1.tar.gz
+Source: 	kdegames-trinity-%{version}.tar.xz
 
 BuildRequires:	autoconf automake libtool m4
 BuildRequires:	trinity-tdelibs-devel
@@ -138,7 +138,7 @@ This package is part of TDE, and a component of the TDE games module.
 %{tde_datadir}/apps/[kt]degames/pics/star.png
 %{tde_datadir}/icons/crystalsvg/*/actions/roll.png
 %{tde_datadir}/icons/crystalsvg/*/actions/highscore.png
-%{tde_tdedocdir}/HTML/en/[kt]degames-3.5.13.1-apidocs/
+%{tde_tdedocdir}/HTML/en/[kt]degames-trinity-%{version}-apidocs/
 
 %post -n trinity-libtdegames1
 for f in crystalsvg ; do
@@ -1519,7 +1519,7 @@ update-desktop-database %{tde_datadir}/applications > /dev/null 2>&1 || :
 
 
 %prep
-%setup -q -n kdegames-3.5.13.1
+%setup -q -n kdegames-trinity-%{version}
 
 # Ugly hack to modify TQT include directory inside autoconf files.
 # If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
