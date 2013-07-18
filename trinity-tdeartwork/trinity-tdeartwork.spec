@@ -20,7 +20,7 @@
 
 Name:		trinity-tdeartwork
 Summary:	Additional artwork (themes, sound themes, ...) for TDE
-Version:	3.5.13.1
+Version:	3.5.13.2
 Release:	1%{?dist}%{?_variant}
 
 License:	GPLv2
@@ -31,7 +31,7 @@ Vendor:		Trinity Project
 Packager:	Francois Andriot <francois.andriot@free.fr>
 Url:		http://www.trinitydesktop.org/
 
-Source:		kdeartwork-3.5.13.1.tar.gz
+Source:		kdeartwork-trinity-%{version}.tar.xz
 
 # [kdeartwork] Renames theme 'Locolor' to 'locolor'
 Patch1:		kdeartwork-3.5.13.1-fix_locolor_theme_name.patch.gz
@@ -289,6 +289,8 @@ This package is part of Trinity, and a component of the TDE artwork module.
 %{tde_bindir}/kblob.kss
 %{tde_bindir}/klines.kss
 %{tde_bindir}/kwave.kss
+%{tde_bindir}/xscreensaver-getimage
+%{tde_bindir}/xscreensaver-getimage-file
 %{tde_datadir}/applnk/System/ScreenSavers/KBanner.desktop
 %{tde_datadir}/applnk/System/ScreenSavers/KBlob.desktop
 %{tde_datadir}/applnk/System/ScreenSavers/KClock.desktop
@@ -621,9 +623,9 @@ This package is part of Trinity, and a component of the TDE artwork module.
 ##########
 
 %prep
-%setup -q -n kdeartwork-3.5.13.1
-%patch1 -p0
+%setup -q -n kdeartwork-trinity-%{version}
 
+%__sed -i 's/TQT_PREFIX/TDE_PREFIX/g' cmake/modules/FindTQt.cmake
 
 %build
 unset QTDIR || : ; . /etc/profile.d/qt3.sh
@@ -638,6 +640,7 @@ cd build
 %endif
 
 %cmake \
+  -DTDE_PREFIX=%{tde_prefix} \
   -DBIN_INSTALL_DIR=%{tde_bindir} \
   -DINCLUDE_INSTALL_DIR=%{tde_tdeincludedir} \
   -DLIB_INSTALL_DIR=%{tde_libdir} \
