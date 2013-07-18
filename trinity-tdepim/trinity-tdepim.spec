@@ -29,7 +29,7 @@ BuildRequires:	gnokii-devel
 
 
 Name:		trinity-tdepim
-Version:	3.5.13.1
+Version:	3.5.13.2
 Release:	1%{?dist}%{?_variant}
 License:	GPL
 Group:		Applications/Productivity
@@ -40,7 +40,7 @@ Summary:	Personal Information Management apps from the official Trinity release
 
 Prefix:		%{tde_prefix}
 
-Source0:	kdepim-3.5.13.1.tar.gz
+Source0:	kdepim-trinity-%{version}.tar.xz
 
 # [tdepim] Fix include directory location for installer .h files
 Patch13:	kdepim-3.5.13-fix_include_directory.patch
@@ -912,6 +912,7 @@ mbox files, and/or trinity-tdebase-kio-plugins if you want to use POP3.
 %{tde_datadir}/services/kontact/kmailplugin.desktop
 %{tde_datadir}/servicetypes/dcopimap.desktop
 %{tde_datadir}/servicetypes/dcopmail.desktop
+%{tde_datadir}/apps/konqueror/servicemenus/email.desktop
 # 'libkmailprivate.so' is required at runtime, not devel !
 %{tde_libdir}/libkmailprivate.so
 %{tde_libdir}/libkmailprivate.la
@@ -2079,9 +2080,11 @@ update-desktop-database %{tde_datadir}/applications > /dev/null 2>&1 || :
 ##########
 
 %prep
-%setup -q -n kdepim-3.5.13.1
-%patch13 -p1 -b .incdir
+%setup -q -n kdepim-trinity-%{version}
+#%patch13 -p1 -b .incdir
 %patch14 -p1 -b .ldflags
+
+%__sed -i 's/TQT_PREFIX/TDE_PREFIX/g' cmake/modules/FindTQt.cmake
 
 %build
 unset QTDIR || : ; . /etc/profile.d/qt3.sh
@@ -2096,6 +2099,8 @@ cd build
 %endif
 
 %cmake \
+  -DCMAKE_PREFIX_PATH=%{tde_prefix} \
+  -DTDE_PREFIX=%{tde_prefix} \
   -DCMAKE_INSTALL_PREFIX=%{tde_prefix} \
   -DBIN_INSTALL_DIR=%{tde_bindir} \
   -DINCLUDE_INSTALL_DIR=%{tde_tdeincludedir} \
