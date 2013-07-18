@@ -22,7 +22,7 @@
 
 Name:    trinity-tdeedu
 Summary: Educational/Edutainment applications
-Version: 3.5.13.1
+Version: 3.5.13.2
 Release: 1%{?dist}%{?_variant}
 
 License: GPLv2
@@ -35,7 +35,7 @@ URL:		http://www.trinitydesktop.org/
 Prefix:    %{tde_prefix}
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0: kdeedu-3.5.13.1.tar.gz
+Source0: kdeedu-trinity-%{version}.tar.xz
 
 
 BuildRequires: autoconf automake libtool m4
@@ -1313,7 +1313,7 @@ Provides:	trinity-kdeedu-devel = %{version}-%{release}
 
 
 %prep
-%setup -q -n kdeedu-3.5.13.1
+%setup -q -n kdeedu-trinity-%{version}
 
 # Ugly hack to modify TQT include directory inside autoconf files.
 # If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
@@ -1355,7 +1355,7 @@ export LDFLAGS="-L%{tde_libdir} -I%{tde_includedir}"
 
 %__make %{_smp_mflags} \
   OCAMLLIB=$(ocamlc -where) \
-  FACILELIB=$(ocamlc -where)
+  FACILELIB=$(ocamlc -where) || %__make
 
 
 %install
