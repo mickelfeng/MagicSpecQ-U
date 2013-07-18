@@ -24,7 +24,7 @@
 
 Name:			trinity-tdeadmin
 Summary:		Administrative tools for TDE
-Version:		3.5.13.1
+Version:		3.5.13.2
 Release:		1%{?dist}%{?_variant}
 
 License:		GPLv2
@@ -40,7 +40,7 @@ Prefix:			%{tde_prefix}
 Obsoletes:		trinity-kdeadmin < %{version}-%{release}
 Provides:		trinity-kdeadmin = %{version}-%{release}
 
-Source0: kdeadmin-%{version}.tar.gz
+Source0: kdeadmin-trinity-%{version}.tar.xz
 Source1: kuser.pam
 Source2: kuser.pamd
 Source5: kpackagerc
@@ -362,7 +362,7 @@ touch /etc/lilo.conf
 ##########
 
 %prep
-%setup -q -n kdeadmin-3.5.13.1
+%setup -q -n kdeadmin-trinity-%{version}
 
 # Ugly hack to modify TQT include directory inside autoconf files.
 # If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
