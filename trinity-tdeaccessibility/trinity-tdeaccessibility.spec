@@ -20,7 +20,7 @@
 
 Summary:	Trinity Desktop Environment - Accessibility
 Name:		trinity-tdeaccessibility
-Version:	3.5.13.1
+Version:	3.5.13.2
 Release:	1%{?dist}%{?_variant}
 
 License:	GPLv2
@@ -30,7 +30,7 @@ Vendor:		Trinity Project
 Packager:	Francois Andriot <francois.andriot@free.fr>
 URL:		http://www.trinitydesktop.org/
 
-Source0:	kdeaccessibility-3.5.13.1.tar.gz
+Source0:	kdeaccessibility-trinity-%{version}.tar.xz
 
 Prefix:		%{tde_prefix}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -439,7 +439,7 @@ Provides:		trinity-kdeaccessibility-devel = %{version}-%{release}
 ##########
 
 %prep
-%setup -q -n kdeaccessibility-3.5.13.1
+%setup -q -n kdeaccessibility-trinity-%{version}
 
 # Ugly hack to modify TQT include directory inside autoconf files.
 # If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
