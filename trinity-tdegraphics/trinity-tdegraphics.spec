@@ -19,7 +19,7 @@
 
 
 Name:		trinity-tdegraphics
-Version:	3.5.13.1
+Version:	3.5.13.2
 Release:	1%{?dist}%{_variant}
 License:	GPL
 Summary:    Trinity Desktop Environment - Graphics Applications
@@ -33,7 +33,7 @@ URL:		http://www.trinitydesktop.org/
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	kdegraphics-3.5.13.1.tar.gz
+Source0:	kdegraphics-trinity-%{version}.tar.xz
 
 # TDE 3.5.13
 ## RHEL / Fedora specific patches
@@ -1131,6 +1131,7 @@ Requires: %{name}-libpoppler-tqt-devel = %{version}-%{release}
 %{tde_tdeincludedir}/kmultipageInterface.h
 %{tde_tdeincludedir}/ksvg/
 %{tde_tdeincludedir}/kviewshell/
+%{tde_tdeincludedir}/kfaximage.h
 %{tde_tdeincludedir}/libtext2path-0.1/BezierPath.h
 %{tde_tdeincludedir}/libtext2path-0.1/Glyph.h
 %{tde_tdeincludedir}/libtext2path-0.1/GlyphTracer.h
@@ -1182,12 +1183,12 @@ Requires: %{name}-libpoppler-tqt-devel = %{version}-%{release}
 ##########
 
 %prep
-%setup -q -n kdegraphics-3.5.13.1
+%setup -q -n kdegraphics-trinity-%{version}
 %if 0%{?rhel} && 0%{?rhel} <= 5
 %patch3 -p1 -b .mkstemps
 %endif
-%patch9 -p1
 
+%__sed -i 's/TQT_PREFIX/TDE_PREFIX/g' cmake/modules/FindTQt.cmake
 
 %build
 unset QTDIR || : ; . /etc/profile.d/qt3.sh
@@ -1201,6 +1202,8 @@ cd build
 %endif
 
 %cmake \
+  -DCMAKE_PREFIX_PATH=%{tde_prefix} \
+  -DTDE_PREFIX=%{tde_prefix} \
   -DBIN_INSTALL_DIR=%{tde_bindir} \
   -DINCLUDE_INSTALL_DIR=%{tde_tdeincludedir} \
   -DLIB_INSTALL_DIR=%{tde_libdir} \
