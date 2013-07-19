@@ -25,7 +25,7 @@
 
 Name:		trinity-tdemultimedia
 Summary:	Multimedia applications for the Trinity Desktop Environment (TDE)
-Version:	3.5.13.1
+Version:	3.5.13.2
 Release:	1%{?dist}%{?_variant}
 
 License:	GPLv2
@@ -38,7 +38,7 @@ URL:		http://www.trinitydesktop.org/
 Prefix:		%{tde_prefix}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	kdemultimedia-%{version}.tar.gz
+Source0:	kdemultimedia-trinity-%{version}.tar.xz
 
 
 # RedHat Legacy patches (from Fedora 8)
@@ -1075,10 +1075,9 @@ noatun plugins.
 
 
 %prep
-%setup -q -n kdemultimedia-3.5.13.1
-%patch3 -p1 -b .xdg
-%patch5 -p1 -b .pthread
-
+%setup -q -n kdemultimedia-trinity-%{version}
+#%patch3 -p1 -b .xdg
+#%patch5 -p1 -b .pthread
 
 # Ugly hack to modify TQT include directory inside autoconf files.
 # If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
@@ -1090,6 +1089,7 @@ noatun plugins.
 %__cp "/usr/share/libtool/config/ltmain.sh" "admin/ltmain.sh" || %__cp "/usr/share/libtool/ltmain.sh" "admin/ltmain.sh"
 %__make -f "admin/Makefile.common"
 
+%__sed -i 's/TQT_PREFIX/TDE_PREFIX/g' cmake/modules/FindTQt.cmake
 
 %build
 unset QTDIR || : ; . /etc/profile.d/qt3.sh
@@ -1127,7 +1127,32 @@ export KDEDIRS=%{tde_prefix}
    --with-extra-includes="%{_includedir}/cdda:%{_includedir}/cddb:%{tde_includedir}/tqt:%{tde_tdeincludedir}/arts:%{tde_includedir}/artsc" \
    --enable-closure
 
-%__make %{?_smp_mflags}
+%if 0
+# Shitty hack for RHEL4 ...
+if [ -d /usr/X11R6 ]; then
+  export CMAKE_INCLUDE_PATH="${CMAKE_INCLUDE_PATH=}:/usr/X11R6/include:/usr/X11R6/%{_lib}"
+  export CFLAGS="${CFLAGS} -I/usr/X11R6/include -L/usr/X11R6/%{_lib}"
+  export CXXFLAGS="${CXXFLAGS} -I/usr/X11R6/include -L/usr/X11R6/%{_lib}"
+fi
+
+%if 0%{?rhel} || 0%{?fedora} || 0%{?suse_version}
+%__mkdir_p build
+cd build
+%endif
+
+%cmake \
+  -DCMAKE_PREFIX_PATH=%{tde_prefix} \
+  -DTDE_PREFIX=%{tde_prefix} \
+  -DBIN_INSTALL_DIR=%{tde_bindir} \
+  -DINCLUDE_INSTALL_DIR=%{tde_tdeincludedir} \
+  -DLIB_INSTALL_DIR=%{tde_libdir} \
+  -DSHARE_INSTALL_PREFIX=%{tde_datadir} \
+  -DCMAKE_SKIP_RPATH="OFF" \
+  -DBUILD_ALL=ON \
+    ..
+%endif
+
+%__make %{?_smp_mflags} || %__make
 
 
 %install
