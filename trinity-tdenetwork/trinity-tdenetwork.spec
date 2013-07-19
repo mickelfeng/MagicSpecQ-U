@@ -32,7 +32,7 @@
 %endif
 
 Name:    trinity-tdenetwork
-Version: 3.5.13.1
+Version: 3.5.13.2
 Release: 1%{?dist}%{?_variant}
 Summary: Trinity Desktop Environment - Network Applications
 
@@ -46,7 +46,7 @@ Group:   Applications/Internet
 Prefix:		%{tde_prefix}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0: kdenetwork-3.5.13.1.tar.gz
+Source0: kdenetwork-trinity-%{version}.tar.xz
 Source1: kppp.pamd
 Source2: ktalk
 Source4: lisarc
@@ -234,6 +234,7 @@ development-related files for the TDE network module.
 %{tde_libdir}/libkopete_videodevice.so
 %{tde_libdir}/librss.la
 %{tde_libdir}/librss.so
+%{tde_datadir}/cmake/librss.cmake
 
 %post devel
 /sbin/ldconfig
@@ -405,8 +406,8 @@ good news sources which provide such files.
 %{tde_bindir}/knewstickerstub
 %{tde_tdelibdir}/knewsticker_panelapplet.la
 %{tde_tdelibdir}/knewsticker_panelapplet.so
-%{tde_tdelibdir}/kntsrcfilepropsdlg.la
-%{tde_tdelibdir}/kntsrcfilepropsdlg.so
+%{tde_tdelibdir}/libkntsrcfilepropsdlg.la
+%{tde_tdelibdir}/libkntsrcfilepropsdlg.so
 %{tde_tdeappdir}/knewsticker-standalone.desktop
 %{tde_datadir}/applnk/.hidden/knewstickerstub.desktop
 %{tde_datadir}/apps/kconf_update/knewsticker.upd
@@ -474,9 +475,9 @@ Support for more IM protocols can be added through a plugin system.
 # Main kopete package
 %{tde_bindir}/kopete
 %{tde_bindir}/kopete_latexconvert.sh
-%{tde_libdir}/kconf_update_bin/kopete_account_kconf_update
-%{tde_libdir}/kconf_update_bin/kopete_nameTracking_kconf_update
-%{tde_libdir}/kconf_update_bin/kopete_pluginloader2_kconf_update
+%{tde_libdir}/kconf_update_bin/kopete-account-kconf_update
+%{tde_libdir}/kconf_update_bin/kopete-nameTracking-kconf_update
+%{tde_libdir}/kconf_update_bin/kopete-pluginloader2-kconf_update
 %{tde_tdelibdir}/kcm_kopete_*.so
 %{tde_tdelibdir}/kcm_kopete_*.la
 %{tde_tdelibdir}/kio_jabberdisco.la
@@ -576,6 +577,8 @@ Support for more IM protocols can be added through a plugin system.
 %{tde_datadir}/icons/hicolor/*/actions/status_unknown_overlay.png
 %{tde_datadir}/icons/hicolor/*/actions/status_unknown.png
 %{tde_datadir}/icons/hicolor/*/apps/jabber_protocol.png
+%{tde_datadir}/icons/*/*/actions/jabber_connecting.mng
+%{tde_datadir}/icons/*/*/actions/newmessage.mng
 %{tde_datadir}/icons/hicolor/scalable/apps/kopete2.svgz
 %{tde_datadir}/mimelnk/application/x-icq.desktop
 %{tde_datadir}/mimelnk/application/x-kopete-emoticons.desktop
@@ -596,8 +599,8 @@ Support for more IM protocols can be added through a plugin system.
 %{tde_bindir}/winpopup-install.sh
 %{tde_bindir}/winpopup-send.sh
 # meanwhile protocol support for kopete
-%{tde_tdelibdir}/new_target0.la
-%{tde_tdelibdir}/new_target0.so
+#%{tde_libdir}/new_target0.la
+#%{tde_libdir}/new_target0.so
 # motionaway plugin for kopete
 %{tde_datadir}/config.kcfg/motionawayconfig.kcfg
 # smpp plugin for kopete
@@ -701,7 +704,7 @@ track of the time spent online for you.
 %{tde_sbindir}/kppp3
 %{tde_tdeappdir}/Kppp.desktop
 %{tde_tdeappdir}/kppplogview.desktop
-%{tde_datadir}/apps/checkrules
+#%{tde_datadir}/apps/checkrules
 %{tde_datadir}/apps/kppp
 %{tde_datadir}/icons/hicolor/*/apps/kppp.png
 %{tde_tdedocdir}/HTML/en/kppp
@@ -895,8 +898,8 @@ wavelan card that uses the wireless extensions interface.
 %defattr(-,root,root,-)
 %{tde_bindir}/kwifimanager
 %{tde_tdelibdir}/kcm_wifi.*
-%{tde_tdelibdir}/libkwireless.la
-%{tde_tdelibdir}/libkwireless.so
+%{tde_libdir}/libkwireless.la
+%{tde_libdir}/libkwireless.so
 %{tde_tdeappdir}/kcmwifi.desktop
 %{tde_tdeappdir}/kwifimanager.desktop
 %{tde_datadir}/apps/kicker/applets/kwireless.desktop
@@ -1036,14 +1039,15 @@ update-desktop-database 2> /dev/null || :
 ##########
 
 %prep
-%setup -q -n kdenetwork-3.5.13.1
+%setup -q -n kdenetwork-trinity-%{version}
 
 %patch1 -p1 -b .ldflags
-%patch2 -p1 -b .ftbfs
+#%patch2 -p1 -b .ftbfs
 %patch3 -p1 -b .kppp
 %patch4 -p1 -b .resolv
 %patch6 -p1 -b .krfb_httpd
 
+%__sed -i 's/TQT_PREFIX/TDE_PREFIX/g' cmake/modules/FindTQt.cmake
 
 %build
 unset QTDIR || : ; . /etc/profile.d/qt3.sh
@@ -1063,6 +1067,8 @@ export LDFLAGS="${LDFLAGS} -lm"
 %endif
 
 %cmake \
+  -DCMAKE_PREFIX_PATH=%{tde_prefix} \
+  -DTDE_PREFIX=%{tde_prefix} \
   -DBIN_INSTALL_DIR=%{tde_bindir} \
   -DINCLUDE_INSTALL_DIR=%{tde_tdeincludedir} \
   -DLIB_INSTALL_DIR=%{tde_libdir} \
