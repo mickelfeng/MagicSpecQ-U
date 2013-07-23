@@ -22,7 +22,7 @@
 %define _docdir %{tde_docdir}
 
 Name:		trinity-tdeutils
-Version:	3.5.13.1
+Version:	3.5.13.2
 Release:	1%{?dist}%{?_variant}
 License:	GPL
 Summary:	TDE Utilities
@@ -35,7 +35,7 @@ URL:		http://www.trinitydesktop.org/
 Prefix:		%{tde_prefix}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	kdeutils-3.5.13.1.tar.gz
+Source0:	kdeutils-trinity-%{version}.tar.xz
 Source1:	klaptop_acpi_helper.pam
 Source2:	klaptop_acpi_helper.console
 Source3:	kcmlaptoprc
@@ -923,9 +923,9 @@ Development files for %{name}.
 ##########
 
 %prep
-%setup -q -n kdeutils-3.5.13.1
+%setup -q -n kdeutils-trinity-%{version}
 
-%patch1 -p1 -b .label
+#%patch1 -p1 -b .label
 
 # Ugly hack to modify TQT include directory inside autoconf files.
 # If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
