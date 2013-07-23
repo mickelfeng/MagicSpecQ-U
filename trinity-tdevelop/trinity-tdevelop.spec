@@ -19,7 +19,7 @@
 
 Name:		trinity-tdevelop
 Summary:	Integrated Development Environment for C++/C
-Version:	3.5.13.1
+Version:	3.5.13.2
 Release:	1%{?dist}%{?_variant}
 
 License:	GPLv2
@@ -32,7 +32,7 @@ URL:		http://www.trinitydesktop.org/
 Prefix:		%{tde_prefix}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source:		kdevelop-3.5.13.1.tar.gz
+Source:		kdevelop-trinity-%{version}.tar.xz
 Source1:	ftp://129.187.206.68/pub/unix/ide/KDevelop/c_cpp_reference-2.0.2_for_KDE_3.0.tar.bz2
 
 # [c_cpp_ref] Fix library directories detection
@@ -301,7 +301,16 @@ individual needs.
 %{tde_datadir}/icons/hicolor/*/apps/kdevelop.png
 %{tde_datadir}/icons/locolor/*/actions/kdevelop_tip.png
 %{tde_datadir}/mimelnk/application/x-kdevelop.desktop
-%{tde_datadir}/mimelnk/x-fortran.desktop
+#%{tde_datadir}/mimelnk/x-fortran.desktop
+%{tde_libdir}/libd.so.*
+%{tde_libdir}/libkinterfacedesigner.so.*
+%{tde_tdelibdir}/libkdevvisualboyadvance.la
+%{tde_tdelibdir}/libkdevvisualboyadvance.so
+%{tde_datadir}/apps/kdevdesignerpart/pics/*
+%{tde_datadir}/apps/kdevvisualboyadvance/kdevpart_visualboyadvance.rc
+%{tde_datadir}/doc/tde/HTML/en/kde_app_devel/*
+%{tde_datadir}/mimelnk/text/x-fortran.desktop
+%{tde_datadir}/services/kdevvisualboyadvance.desktop
 %{tde_datadir}/services/chm.protocol
 %{tde_datadir}/services/csharpdoc.protocol
 %{tde_datadir}/services/docchmplugin.desktop
@@ -553,7 +562,7 @@ Provides:	trinity-kdevelop-libs = %{version}-%{release}
 ##########
 
 %prep
-%setup -q -n kdevelop-3.5.13.1 -a1
+%setup -q -n kdevelop-trinity-%{version} -a1
 %patch1 -p0 -b .config
 %patch2 -p1
 %patch4 -p1
@@ -571,6 +580,8 @@ Provides:	trinity-kdevelop-libs = %{version}-%{release}
 %__cp -ar admin c_cpp_reference-2.0.2_for_KDE_3.0/
 %__make -C c_cpp_reference-2.0.2_for_KDE_3.0 -f admin/Makefile.common cvs
 
+
+%__sed -i 's/TQT_PREFIX/TDE_PREFIX/g' cmake/modules/FindTQt.cmake
 
 %build
 unset QTDIR || : ; . /etc/profile.d/qt3.sh
@@ -599,6 +610,8 @@ cd build
 %endif
 
 %cmake \
+  -DCMAKE_PREFIX_PATH=%{tde_prefix} \
+  -DTDE_PREFIX=%{tde_prefix} \
   -DBIN_INSTALL_DIR=%{tde_bindir} \
   -DINCLUDE_INSTALL_DIR=%{tde_tdeincludedir} \
   -DLIB_INSTALL_DIR=%{tde_libdir} \
