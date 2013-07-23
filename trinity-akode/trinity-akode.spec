@@ -21,7 +21,7 @@
 Summary: Audio-decoding framework 
 Name:	 trinity-akode 
 Version: 2.0.2
-Release:	3%{?dist}%{?_variant}
+Release:	4%{?dist}%{?_variant}
 
 License: LGPLv2+
 Group: 	 System Environment/Libraries
@@ -248,6 +248,9 @@ done
 
 
 %changelog
+* Tue Jul 23 2013 Liu Di <liudidi@gmail.com> - 2.0.2-4.opt
+- 为 Magic 3.0 重建
+
 * Wed Oct 03 2012 Francois Andriot <francois.andriot@free.fr> - 2.0.2-3
 - Initial build for TDE 3.5.13.1
 
