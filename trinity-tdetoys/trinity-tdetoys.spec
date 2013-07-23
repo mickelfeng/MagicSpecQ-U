@@ -21,11 +21,11 @@
 Summary:		Trinity Desktop Environment - Toys and Amusements
 Name:			trinity-tdetoys
 Group:			Amusements/Graphics
-Version:		3.5.13.1
+Version:		3.5.13.2
 Release:		1%{?dist}%{?_variant}
 
 License: GPLv2+
-Source0: kdetoys-3.5.13.1.tar.gz
+Source0: kdetoys-trinity-%{version}.tar.xz
 
 Vendor:		Trinity Project
 Packager:	Francois Andriot <francois.andriot@free.fr>
@@ -375,7 +375,7 @@ update-desktop-database %{tde_datadir}/applications > /dev/null 2>&1 || :
 ##########
 
 %prep
-%setup -q -n kdetoys-3.5.13.1
+%setup -q -n kdetoys-trinity-%{version}
 
 # Ugly hack to modify TQT include directory inside autoconf files.
 # If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
