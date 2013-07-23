@@ -24,7 +24,7 @@
 Name:		trinity-%{kdecomp}
 Summary:	Calculator for TDE
 Version:	0.91
-Release:	4%{?dist}%{?_variant}
+Release:	5%{?dist}%{?_variant}
 
 License:	GPLv2+
 Group:		Applications/Utilities
