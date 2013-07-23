@@ -19,7 +19,7 @@
 
 Name:			trinity-tdesdk
 Summary:		The KDE Software Development Kit (SDK)
-Version:		3.5.13.1
+Version:		3.5.13.2
 Release:		1%{?dist}%{?_variant}
 
 License:		GPLv2
@@ -31,7 +31,7 @@ Packager:		Francois Andriot <francois.andriot@free.fr>
 Prefix:			%{tde_prefix}
 BuildRoot:		%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source: 		kdesdk-3.5.13.1.tar.gz
+Source: 		kdesdk-trinity-%{version}.tar.xz
 
 # [tdesdk] fixes for RHEL/Fedora/MGA2 after previous patch
 Patch4:		kdesdk-3.5.13-misc_ftbfs.patch
@@ -154,7 +154,7 @@ This package is part of Trinity, and a component of the TDE SDK module.
 %{tde_datadir}/icons/hicolor/*/apps/cervisia.png
 %{tde_datadir}/icons/crystalsvg/*/actions/vcs_*.png
 %{tde_datadir}/icons/crystalsvg/scalable/actions/vcs_*.svgz
-#%{tde_mandir}/man1/cervisia.1*
+%{tde_mandir}/man1/man1/cervisia.1*
 %{tde_tdedocdir}/HTML/en/cervisia/
 
 %post -n trinity-cervisia
@@ -517,8 +517,8 @@ This package is part of Trinity, and a component of the TDE SDK module.
 %{tde_tdeincludedir}/kprofilemethod.h
 %{tde_tdelibdir}/kabcformat_kdeaccounts.la
 %{tde_tdelibdir}/kabcformat_kdeaccounts.so
-%{tde_tdelibdir}/scheck.so
-%{tde_tdelibdir}/scheck.la
+%{tde_tdelibdir}/plugins/styles/scheck.so
+%{tde_tdelibdir}/plugins/styles/scheck.la
 %{tde_datadir}/apps/kabc/formats/kdeaccountsplugin.desktop
 %{tde_datadir}/apps/kstyle/themes/scheck.themerc
 %{tde_datadir}/kdepalettes/
@@ -608,13 +608,13 @@ This package is part of Trinity, and a component of the TDE SDK module.
 %{tde_bindir}/svnchangesince
 %{tde_bindir}/svn-clean
 %{tde_datadir}/apps/katepart/syntax/[kt]desvn-buildrc.xml
-%{tde_mandir}/man1/cvsblame.1
-%{tde_mandir}/man1/cvscheck.1
-%{tde_mandir}/man1/cvsversion.1
-%{tde_mandir}/man1/kde-build.1
-%{tde_mandir}/man1/includemocs.1
-%{tde_mandir}/man1/noncvslist.1
-%{tde_mandir}/man1/[kt]desvn-build.1
+%{tde_mandir}/man1/man1/cvsblame.1*
+%{tde_mandir}/man1/man1/cvscheck.1*
+%{tde_mandir}/man1/man1/cvsversion.1*
+%{tde_mandir}/man1/man1/kde-build.1*
+%{tde_mandir}/man1/man1/includemocs.1*
+%{tde_mandir}/man1/man1/noncvslist.1*
+%{tde_mandir}/man1/man1/[kt]desvn-build.1*
 %{tde_tdedocdir}/HTML/en/[kt]desvn-build/
 #scripts/kde-devel-gdb /opt/trinity/share/tdesdk-scripts
 #scripts/kde-devel-vim.vim /opt/trinity/share/tdesdk-scripts
@@ -650,10 +650,10 @@ This package is part of Trinity, and a component of the TDE SDK module.
 %{tde_bindir}/kminspector
 %{tde_bindir}/kmmatch
 %{tde_bindir}/kmtrace
-#%{tde_tdeincludedir}/ktrace.h
+%{tde_tdeincludedir}/ktrace.h
 %{tde_libdir}/kmtrace/libktrace.la
 %{tde_libdir}/kmtrace/libktrace.so
-%{tde_libdir}/libktrace_s.a
+%{tde_libdir}/kmtrace/libktrace_s.a
 %{tde_datadir}/apps/kmtrace/kde.excludes
 
 ##########
@@ -673,7 +673,7 @@ This package is part of Trinity, and a component of the TDE SDK module.
 %{tde_bindir}/kompare
 %{tde_libdir}/libkompareinterface.la
 %{tde_libdir}/libkompareinterface.so
-#%{tde_libdir}/libkompareinterface.so.*
+%{tde_libdir}/libkompareinterface.so.*
 %{tde_tdelibdir}/libkomparenavtreepart.la
 %{tde_tdelibdir}/libkomparenavtreepart.so
 %{tde_tdelibdir}/libkomparepart.la
@@ -1019,7 +1019,7 @@ This package is part of Trinity, and a component of the TDE SDK module.
 %{tde_bindir}/kunittestguimodrunner
 %{tde_libdir}/libkunittestgui.la
 %{tde_libdir}/libkunittestgui.so
-#%{tde_libdir}/libkunittestgui.so.*
+%{tde_libdir}/libkunittestgui.so.*
 %{tde_tdeincludedir}/kunittest/runnergui.h
 
 %post -n trinity-kunittest
@@ -1055,13 +1055,14 @@ Provides:	trinity-kdesdk-devel = %{version}-%{release}
 
 
 %prep
-%setup -q -n kdesdk-3.5.13.1
-%patch4 -p1 -b .ftbfs
-%patch5 -p1 -b .svn
+%setup -q -n kdesdk-trinity-%{version}
+#%patch4 -p1 -b .ftbfs
+#%patch5 -p1 -b .svn
 %patch6 -p1 -b .cmake
-%patch7 -p1
-%patch8 -p1 -b .flex
+#%patch7 -p1
+#%patch8 -p1 -b .flex
 
+%__sed -i 's/TQT_PREFIX/TDE_PREFIX/g' cmake/modules/FindTQt.cmake
 
 %build
 unset QTDIR || :; . /etc/profile.d/qt3.sh
@@ -1076,6 +1077,8 @@ cd build
 %endif
 
 %cmake \
+  -DCMAKE_PREFIX_PATH=%{tde_prefix} \
+  -DTDE_PREFIX=%{tde_prefix} \
   -DBIN_INSTALL_DIR=%{tde_bindir} \
   -DINCLUDE_INSTALL_DIR=%{tde_tdeincludedir} \
   -DLIB_INSTALL_DIR=%{tde_libdir} \
