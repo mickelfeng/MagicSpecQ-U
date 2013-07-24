@@ -1,5 +1,6 @@
 # Default version for this component
 %define kdecomp abakus
+%define tdeversion 3.5.13.2
 
 # If TDE is built in a specific prefix (e.g. /opt/trinity), the release will be suffixed with ".opt".
 %if "%{?tde_prefix}" != "/usr"
@@ -36,7 +37,7 @@ URL:		http://www.trinitydesktop.org/
 Prefix:    %{tde_prefix}
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	%{kdecomp}-3.5.13.1.tar.gz
+Source0:	%{kdecomp}-trinity-%{tdeversion}.tar.xz
 
 # [abakus] Fix install icon
 Patch1:		abakus-3.5.13.1-fix_install_icon.patch
@@ -62,8 +63,9 @@ has the user-friendly menu options of a normal TDE application.
 
 
 %prep
-%setup -q -n %{kdecomp}-3.5.13.1
-%patch1 -p1 -b .icon
+%setup -q -n %{kdecomp}-trinity-%{tdeversion}
+
+%__sed -i 's/TQT_PREFIX/TDE_PREFIX/g' cmake/modules/FindTQt.cmake
 
 %build
 unset QTDIR; . /etc/profile.d/qt3.sh
@@ -77,6 +79,8 @@ cd build
 %endif
 
 %cmake \
+  -DCMAKE_PREFIX_PATH=%{tde_prefix} \
+  -DTDE_PREFIX=%{tde_prefix} \
   -DCMAKE_INSTALL_PREFIX=%{tde_prefix} \
   -DSHARE_INSTALL_PREFIX=%{tde_datadir} \
   -DBUILD_ALL=ON \
