@@ -1,5 +1,6 @@
 # Default version for this component
-%define kdecomp kmymoney
+%define tdecomp kmymoney
+%define tdeversion 3.5.13.2
 
 # Required for Mageia 2: removes the ldflag '--no-undefined'
 %define _disable_ld_no_undefined 1
@@ -36,11 +37,11 @@
 %define _docdir %{tde_docdir}
 
 
-Name:		trinity-%{kdecomp}
+Name:		trinity-%{tdecomp}
 Summary:	personal finance manager for TDE
 
 Version:	1.0.5
-Release:	3%{?dist}%{?_variant}
+Release:	4%{?dist}%{?_variant}
 
 License:	GPLv2+
 Group:		Applications/Utilities
@@ -52,7 +53,7 @@ URL:		http://www.trinitydesktop.org/
 Prefix:    %{tde_prefix}
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	%{kdecomp}-3.5.13.1.tar.gz
+Source0:	%{tdecomp}-trinity-%{tdeversion}.tar.xz
 Source1:	kmymoneytitlelabel.png
 
 # [kmymoney] Missing LDFLAGS causing FTBFS
@@ -61,20 +62,34 @@ Patch4:		kmymoney-3.5.13-missing_ldflags.patch
 # [kmymoney] Fix QT3 plugins directory location
 Patch5:		kmymoney-3.5.13-fix_qt3_plugins_location.patch
 
-BuildRequires:	trinity-tqtinterface-devel >= 3.5.13.1
-BuildRequires:	trinity-arts-devel >= 3.5.13.1
-BuildRequires:	trinity-tdelibs-devel >= 3.5.13.1
-BuildRequires:	trinity-tdebase-devel >= 3.5.13.1
-BuildRequires: desktop-file-utils
+BuildRequires:	trinity-tqtinterface-devel >= 3.5.13.2
+BuildRequires:	trinity-arts-devel >= 3.5.13.2
+BuildRequires:	trinity-tdelibs-devel >= 3.5.13.2
+BuildRequires:	trinity-tdebase-devel >= 3.5.13.2
+BuildRequires:	desktop-file-utils
 
-BuildRequires: recode
-BuildRequires: html2ps
-BuildRequires: libofx-devel
+BuildRequires:	recode
+BuildRequires:	libofx-devel
 
-%if 0%{?mgaversion}
-BuildRequires: %{_lib}OpenSP5-devel
+# PDF support
+%if 0%{?mdkversion} || 0%{?rhel} >= 5 || 0%{?fedora} || 0%{?suse_version} || 0%{?mdkversion}
+%define with_pdf 1
+BuildRequires:	html2ps
+%endif
+
+# OPENSP support
+%if 0%{?mgaversion} || 0%{?pclinuxos} || 0%{?mdkversion}
+%if 0%{?mgaversion} || 0%{?pclinuxos}
+BuildRequires:	%{_lib}OpenSP5-devel
 %else
-BuildRequires: opensp-devel
+BuildRequires:	opensp-devel
+%endif
+%endif
+%if 0%{?rhel} >= 5 || 0%{?fedora} || 0%{?suse_version}
+BuildRequires:	opensp-devel
+%endif
+%if 0%{?rhel} == 4
+BuildRequires:	openjade-devel
 %endif
 
 Requires:		%{name}-common == %{version}
@@ -106,15 +121,19 @@ Requires:	%{name} == %{version}
 This package contains development files needed for KMyMoney plugins.
 
 
-%if 0%{?suse_version}
+%if 0%{?suse_version} || 0%{?pclinuxos}
 %debug_package
 %endif
 
 
 %prep
-%setup -q -n %{kdecomp}-3.5.13.1
+%setup -q -n %{tdecomp}-trinity-%{tdeversion}
 %if 0%{?mgaversion} || 0%{?mdkversion}
 %patch5 -p1 -b .qtpluginsdir
+%endif
+
+%if 0%{?mgaversion} >= 3 || 0%{?pclinuxos} >= 2013
+%__cp /usr/share/automake-1.13/test-driver admin/
 %endif
 
 %__install -m644 %{SOURCE1} kmymoney2/widgets/
@@ -135,10 +154,16 @@ unset QTDIR; . /etc/profile.d/qt3.sh
 export PATH="%{tde_bindir}:${PATH}"
 export LDFLAGS="-L%{tde_libdir} -I%{tde_includedir}"
 export PKG_CONFIG_PATH="%{tde_libdir}/pkgconfig:${PKG_CONFIG_PATH}"
+export KDEDIR="%{tde_prefix}"
 
 # Required to find the QT3 plugins directory
 %if 0%{?mgaversion} || 0%{?mdkversion}
-export QTPLUGINS=%{_libdir}/qt3/plugins
+export QTPLUGINS="%{_libdir}/qt3/plugins"
+%endif
+
+# Fix strange FTBFS on RHEL4
+%if 0%{?rhel} == 4
+grep -v "^#~" po/it.po >/tmp/it.po && mv -f /tmp/it.po po/it.po
 %endif
 
 %configure \
@@ -152,7 +177,7 @@ export QTPLUGINS=%{_libdir}/qt3/plugins
   --disable-rpath \
   --with-extra-includes=%{tde_includedir}/tqt \
   --enable-closure \
-  --enable-pdf-docs \
+  %{?with_pdf:--enable-pdf-docs} %{?!with_pdf:--disable-pdf-docs} \
   --enable-ofxplugin \
   --enable-ofxbanking \
   --enable-qtdesigner \
@@ -161,7 +186,7 @@ export QTPLUGINS=%{_libdir}/qt3/plugins
 # Fix FTBFS inside sqlite3 archive
 patch -p1 < %{PATCH4}
 
-%__make %{?_smp_mflags}
+%__make %{?_smp_mflags} || %__make
 
 %install
 export PATH="%{tde_bindir}:${PATH}"
@@ -262,8 +287,11 @@ done
 %{qt3pluginsdir}/designer/libkmymoney.so
 
 %changelog
+* Mon Jun 03 2013 Francois Andriot <francois.andriot@free.fr> - 1.0.5-4
+- Initial release for TDE 3.5.13.2
+
 * Wed Oct 03 2012 Francois Andriot <francois.andriot@free.fr> - 1.0.5-3
-- Initial build for TDE 3.5.13.1
+- Initial release for TDE 3.5.13.1
 
 * Wed May 02 2012 Francois Andriot <francois.andriot@free.fr> - 1.0.5-2
 - Rebuild for Fedora 17
