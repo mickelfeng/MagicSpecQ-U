@@ -1,5 +1,6 @@
 # Basic package informations
 %define kdecomp amarok
+%define tdeversion 3.5.13.2
 
 # If TDE is built in a specific prefix (e.g. /opt/trinity), the release will be suffixed with ".opt".
 %if "%{?tde_prefix}" != "/usr"
@@ -25,7 +26,7 @@
 Name:		trinity-%{kdecomp}
 Summary:	Media player
 Version:	1.4.10
-Release:	8%{?dist}%{?_variant}
+Release:	9%{?dist}%{?_variant}
 
 Group: 	    Applications/Multimedia
 License:    GPLv2+
@@ -34,7 +35,7 @@ Url:        http://amarok.kde.org
 Prefix:     %{tde_prefix}
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:    amarok-3.5.13.1.tar.gz
+Source0:    amarok-trinity-%{tdeversion}.tar.xz
 
 Patch1:		amarok-3.5.13.1-add_xine12_support.patch
 
@@ -276,9 +277,9 @@ use any of xmms' visualisation plugins with Amarok.
 ##########
 
 %prep
-%setup -q -n amarok-3.5.13.1
-%patch1 -p1 -b .xine
+%setup -q -n amarok-trinity-%{tdeversion}
 
+%__sed -i 's/TQT_PREFIX/TDE_PREFIX/g' cmake/modules/FindTQt.cmake
 
 %build
 unset QTDIR; . /etc/profile.d/qt3.sh
@@ -293,6 +294,8 @@ cd build
 %endif
 
 %cmake \
+	-DCMAKE_PREFIX_PATH=%{tde_prefix} \
+	-DTDE_PREFIX=%{tde_prefix} \
 	-DBIN_INSTALL_DIR=%{tde_bindir} \
 	-DINCLUDE_INSTALL_DIR=%{tde_tdeincludedir} \
 	-DLIB_INSTALL_DIR=%{tde_libdir} \
@@ -305,6 +308,7 @@ cd build
 	-DWITH_YAUAP=ON \
 	-DWITH_AKODE=ON \
 	-DWITH_IPOD=ON \
+	-DWITH_MP4V2=ON \
 	%{?with_ifp:-DWITH_IFP=ON} \
 	-DWITH_NJB=ON \
 	-DWITH_MTP=ON \
