@@ -12,7 +12,7 @@
 
 
 Name:		trinity-avahi-tqt
-Version:	3.5.13.1
+Version:	3.5.13.2
 Release:	1%{?dist}%{?_variant}
 License:	GPL
 Summary:	Avahi TQT Interface
@@ -25,7 +25,7 @@ URL:		http://www.trinitydesktop.org/
 Prefix:		%{tde_prefix}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	avahi-tqt-3.5.13.1.tar.gz
+Source0:	avahi-tqt-trinity-%{version}.tar.xz
 
 BuildRequires:	gcc-c++
 BuildRequires:	cmake >= 2.8
@@ -86,7 +86,7 @@ Development files for %{name}
 
 
 %prep
-%setup -q -n avahi-tqt-3.5.13.1
+%setup -q -n avahi-tqt-trinity-%{version}
 
 # Ugly hack to modify TQT include directory inside autoconf files.
 # If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
