@@ -12,7 +12,7 @@
 %define _docdir %{tde_prefix}/share/doc
 
 Name:		trinity-arts
-Version:	3.5.13.1
+Version:	3.5.13.2
 Release:	1%{?dist}%{?_variant}
 License:	GPL
 Summary:	aRts (analog realtime synthesizer) - the KDE sound system
