@@ -8,7 +8,7 @@
 %define tde_libdir %{tde_prefix}/%{_lib}
 
 Name:		trinity-dbus-1-tqt
-Version:	3.5.13.1
+Version:	3.5.13.2
 Release:	1%{?dist}%{?_variant}
 License:	GPL
 Summary:	Dbus TQT Interface
@@ -23,7 +23,7 @@ Packager:	Francois Andriot <francois.andriot@free.fr>
 Prefix:		%{tde_prefix}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	dbus-1-tqt-3.5.13.1.tar.gz
+Source0:	dbus-1-tqt-trinity-%{version}.tar.xz
 
 BuildRequires:	gcc-c++
 %if 0%{?suse_version}
@@ -60,7 +60,7 @@ Development files for %{name}
 
 
 %prep
-%setup -q -n dbus-1-tqt-3.5.13.1
+%setup -q -n dbus-1-tqt-trinity-%{version}
 
 %build
 unset QTDIR || : ; . /etc/profile.d/qt?.sh
@@ -72,6 +72,7 @@ cd build
 %endif
 
 %cmake \
+  -DTDE_PREFIX=%{tde_prefix} \
   -DBIN_INSTALL_DIR=%{tde_bindir} \
   -DINCLUDE_INSTALL_DIR=%{tde_includedir} \
   -DLIB_INSTALL_DIR=%{tde_libdir} \
