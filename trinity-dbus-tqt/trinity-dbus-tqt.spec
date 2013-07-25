@@ -7,7 +7,7 @@
 %define tde_libdir %{tde_prefix}/%{_lib}
 
 Name:		trinity-dbus-tqt
-Version:	3.5.13.1
+Version:	3.5.13.2
 Release:	1%{?dist}%{?_variant}
 License:	GPL
 Summary:	Dbus TQT Interface
@@ -19,7 +19,7 @@ Packager:	Francois Andriot <francois.andriot@free.fr>
 Prefix:		%{tde_prefix}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	dbus-tqt-3.5.13.1.tar.gz
+Source0:	dbus-tqt-trinity-%{version}.tar.xz
 
 # [dbus-tqt] Fix build on RHEL 4
 Patch1:		dbus-tqt-3.5.13-fix_old_dbus_types.patch
@@ -64,14 +64,14 @@ Development files for %{name}
 
 
 %prep
-%setup -q -n dbus-tqt-3.5.13.1
+%setup -q -n dbus-tqt-trinity-%{version}
 
 %if 0%{?rhel} == 4
 %patch1 -p1 -b .dbustypes
 %endif
 
 %build
-unset QTDIR || : ; . /etc/profile.d/qt?.sh
+unset QTDIR || : ; . /etc/profile.d/qt3.sh
 export PKG_CONFIG_PATH="%{tde_libdir}/pkgconfig"
 
 %if 0%{?rhel} == 4
@@ -84,6 +84,7 @@ cd build
 %endif
 
 %cmake \
+  -DTDE_PREFIX=%{tde_prefix} \
   -DINCLUDE_INSTALL_DIR=%{tde_includedir} \
   -DLIB_INSTALL_DIR=%{tde_libdir} \
   ..
