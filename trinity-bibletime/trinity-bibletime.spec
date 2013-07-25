@@ -1,5 +1,6 @@
 # Default version for this component
 %define kdecomp bibletime
+%define tdeversion 3.5.13.2
 
 # If TDE is built in a specific prefix (e.g. /opt/trinity), the release will be suffixed with ".opt".
 %if "%{?tde_prefix}" != "/usr"
@@ -37,7 +38,7 @@ URL:		http://www.trinitydesktop.org
 Prefix:    %{_prefix}
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	%{kdecomp}-3.5.13.1.tar.gz
+Source0:	%{kdecomp}-trinity-%{tdeversion}.tar.xz
 
 # Fix detection of older versions of clucene in Fedora >= 16
 Patch0:		bibletime-3.5.13-clucene_detection.patch
@@ -52,7 +53,7 @@ BuildRequires:	gettext
 
 # Bibletime only works with clucene 0.9 ! Mageia 2 does not ship with that old version !
 %if 0%{?fedora} >= 16 || 0%{?suse_version}
-BuildRequires:	clucene09-core-devel
+#BuildRequires:	clucene09-core-devel
 %else
 %if 0%{?mgaversion} || 0%{?mdkversion}
 BuildRequires:	clucene-devel < 1.0
@@ -78,9 +79,9 @@ texts, write own notes, save, print etc.).
 
 
 %prep
-%setup -q -n %{kdecomp}-3.5.13.1
-%patch0 -p0 -b .clucene
-%patch2 -p1 -b .ftbfs
+%setup -q -n %{kdecomp}-trinity-%{tdeversion}
+#%patch0 -p0 -b .clucene
+#%patch2 -p1 -b .ftbfs
 
 # Ugly hack to modify TQT include directory inside autoconf files.
 # If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
@@ -106,6 +107,7 @@ export LDFLAGS="-L%{tde_libdir} -I%{tde_includedir}"
 	--datadir=%{tde_datadir} \
 	--includedir=%{tde_tdeincludedir} \
 	--disable-rpath \
+	--with-extra-libs=%{_libdir}/clucene09 \
 	--with-extra-includes=%{tde_includedir}/tqt
 
 # Not SMP safe !
