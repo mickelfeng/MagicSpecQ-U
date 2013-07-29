@@ -1,5 +1,6 @@
 # Default version for this component
 %define kdecomp digikam
+%define tdeversion 3.5.13.2
 
 # If TDE is built in a specific prefix (e.g. /opt/trinity), the release will be suffixed with ".opt".
 %if "%{?tde_prefix}" != "/usr"
@@ -25,7 +26,7 @@
 Name:		trinity-%{kdecomp}
 Summary:	digital photo management application for KDE [Trinity]
 Version:	0.9.6
-Release:	4%{?dist}%{?_variant}
+Release:	5%{?dist}%{?_variant}
 
 License:	GPLv2+
 Group:		Applications/Utilities
@@ -37,7 +38,7 @@ URL:		http://www.trinitydesktop.org/
 Prefix:    %{_prefix}
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	%{kdecomp}-3.5.13.1.tar.gz
+Source0:	%{kdecomp}-trinity-%{tdeversion}.tar.xz
 
 # [digikam] Fix FTBFS on png >= 0.15 [Commit #18ecd512]
 Patch9:		digikam-3.5.13-fix_ftbfs_png_015.patch
@@ -117,8 +118,8 @@ Requires:	%{name} = %{version}
 
 
 %prep
-%setup -q -n %{kdecomp}-3.5.13.1
-%patch9 -p1 -b .png015
+%setup -q -n %{kdecomp}-trinity-%{tdeversion}
+#%patch9 -p1 -b .png015
 
 
 # Ugly hack to modify TQT include directory inside autoconf files.
