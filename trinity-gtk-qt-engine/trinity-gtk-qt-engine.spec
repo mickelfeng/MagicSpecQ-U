@@ -1,5 +1,6 @@
 # Default version for this component
 %define kdecomp gtk-qt-engine
+%define tdeversion 3.5.13.2
 
 # If TDE is built in a specific prefix (e.g. /opt/trinity), the release will be suffixed with ".opt".
 %if "%{?tde_prefix}" != "/usr"
@@ -26,7 +27,7 @@
 Name:		trinity-%{kdecomp}
 Summary:	theme engine using Qt for GTK+ 2.x and Trinity
 Version:	0.8
-Release:	4%{?dist}%{?_variant}
+Release:	5%{?dist}%{?_variant}
 
 License:	GPLv2+
 Group:		Applications/Utilities
@@ -38,7 +39,7 @@ URL:		http://www.trinitydesktop.org/
 Prefix:    %{_prefix}
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	%{kdecomp}-3.5.13.1.tar.gz
+Source0:	%{kdecomp}-trinity-%{tdeversion}.tar.xz
 Source1:	gtk-qt-engine.rc.sh
 Source2:	gtkrc-2.0-kde4
 Source3:	gtkrc-2.0-kde-kde4
@@ -66,7 +67,7 @@ a way to configure it from within KControl.
 
 
 %prep
-%setup -q -n %{kdecomp}-3.5.13.1
+%setup -q -n %{kdecomp}-trinity-%{tdeversion}
 
 # Renames the '.po' files
 for f in po/*/*.po; do
@@ -80,6 +81,7 @@ done
 %__sed -i "CMakeLists.txt" \
   -e "s|/usr/include/tqt|%{tde_includedir}/tqt|g"
 
+%__sed -i 's/TQT_PREFIX/TDE_PREFIX/g' cmake/modules/FindTQt.cmake
 
 %build
 unset QTDIR || : ; . /etc/profile.d/qt3.sh
@@ -92,6 +94,8 @@ cd build
 %endif
 
 %cmake \
+	-DCMAE_PREFIX_PATH=%{tde_prefix} \
+	-DTDE_PREFIX=%{tde_prefix} \
 	-DCMAKE_INSTALL_PREFIX=%{tde_prefix} \
 	-DDATA_INSTALL_DIR=%{tde_datadir} \
 	-DLIB_INSTALL_DIR=%{tde_libdir} \
@@ -134,6 +138,9 @@ export PATH="%{tde_bindir}:${PATH}"
 
 
 %changelog
+* Wed Jul 31 2013 Liu Di <liudidi@gmail.com> - 0.8-5.opt
+- 为 Magic 3.0 重建
+
 * Wed Oct 03 2012 Francois Andriot <francois.andriot@free.fr> - 0.8-4
 - Initial build for TDE 3.5.13.1
 
