@@ -1,5 +1,6 @@
 # Default version for this component
 %define kdecomp kaffeine-mozilla
+%define tdeversion 3.5.13.2
 
 # If TDE is built in a specific prefix (e.g. /opt/trinity), the release will be suffixed with ".opt".
 %if "%{?tde_prefix}" != "/usr"
@@ -26,7 +27,7 @@
 Name:		trinity-%{kdecomp}
 Summary:	mozilla plugin that lanches kaffeine for supported media types [Trinity]
 Version:	0.4.3.1
-Release:	3%{?dist}%{?_variant}
+Release:	4%{?dist}%{?_variant}
 
 License:	GPLv2+
 Group:		Applications/Multimedia
@@ -38,7 +39,7 @@ URL:		http://www.trinitydesktop.org/
 Prefix:		%{tde_prefix}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	%{kdecomp}-3.5.13.1.tar.gz
+Source0:	%{kdecomp}-trinity-%{tdeversion}.tar.xz
 
 # Fix 'nspr' includes location
 Patch1:		kaffeine-mozilla-3.5.13-fix_nspr_include.patch
@@ -74,7 +75,7 @@ when a page containing a supported media format is loaded.
 
 %prep
 unset QTDIR; . /etc/profile.d/qt3.sh
-%setup -q -n %{kdecomp}-3.5.13.1
+%setup -q -n %{kdecomp}-trinity-%{tdeversion}
 %patch1 -p1
 
 %__cp -f "/usr/share/aclocal/libtool.m4" .
@@ -123,6 +124,9 @@ export PATH="%{tde_bindir}:${PATH}"
 
 
 %changelog
+* Wed Jul 31 2013 Liu Di <liudidi@gmail.com> - 0.4.3.1-4.opt
+- 为 Magic 3.0 重建
+
 * Wed Oct 03 2012 Francois Andriot <francois.andriot@free.fr> - 0.4.3.1-3
 - Initial build for TDE 3.5.13.1
 
