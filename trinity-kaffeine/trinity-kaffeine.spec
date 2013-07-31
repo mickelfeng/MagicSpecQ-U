@@ -1,5 +1,6 @@
 # Default version for this component
 %define kdecomp kaffeine
+%define tdeversion 3.5.13.2
 
 # If TDE is built in a specific prefix (e.g. /opt/trinity), the release will be suffixed with ".opt".
 %if "%{?tde_prefix}" != "/usr"
@@ -25,13 +26,13 @@ Name:		trinity-%{kdecomp}
 Summary:	Xine-based media player
 
 Version:	0.8.8
-Release:	4%{?dist}%{?_variant}
+Release:	5%{?dist}%{?_variant}
 
 License: GPLv2+
 Group:   Applications/Multimedia
 URL:     http://kaffeine.sourceforge.net/
 
-Source0:	kaffeine-3.5.13.1.tar.gz
+Source0:	kaffeine-trinity-%{tdeversion}.tar.xz
 
 # [kaffeine] Add Xine 1.2 support
 Patch1:		kaffeine-3.5.13.1-add_xine12_support.patch
@@ -175,8 +176,7 @@ Requires: %{name} = %{version}-%{release}
 
 
 %prep
-%setup -q -n kaffeine-3.5.13.1
-%patch1 -p1 -b .xine12
+%setup -q -n kaffeine-trinity-%{tdeversion}
 
 # Ugly hack to modify TQT include directory inside autoconf files.
 # If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
@@ -255,6 +255,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Wed Jul 31 2013 Liu Di <liudidi@gmail.com> - 0.8.8-5.opt
+- 为 Magic 3.0 重建
+
 * Wed Oct 03 2012 Francois Andriot <francois.andriot@free.fr> - 0.8.8-4
 - Initial build for TDE 3.5.13.1
 
