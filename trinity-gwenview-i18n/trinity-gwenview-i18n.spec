@@ -1,5 +1,6 @@
 # Default version for this component
 %define kdecomp gwenview-i18n
+%define tdeversion 3.5.13.2
 
 # If TDE is built in a specific prefix (e.g. /opt/trinity), the release will be suffixed with ".opt".
 %if "%{?tde_prefix}" != "/usr"
@@ -26,7 +27,7 @@
 Name:		trinity-%{kdecomp}
 Summary:	Gwenview is an image viewer for KDE.
 Version:	1.4.2
-Release:	1%{?dist}%{?_variant}
+Release:	2%{?dist}%{?_variant}
 
 License:	GPLv2+
 Group:		Applications/Utilities
@@ -40,7 +41,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildArch:	noarch
 
-Source0:	%{kdecomp}-3.5.13.1.tar.gz
+Source0:	%{kdecomp}-trinity-%{tdeversion}.tar.xz
 
 
 BuildRequires:	trinity-tqtinterface-devel >= 3.5.13.1
@@ -86,7 +87,7 @@ KIPI image framework.
 
 
 %prep
-%setup -q -n %{kdecomp}-3.5.13.1
+%setup -q -n %{kdecomp}-trinity-%{tdeversion}
 
 # Ugly hack to modify TQT include directory inside autoconf files.
 # If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
@@ -175,6 +176,9 @@ done
 %doc AUTHORS ChangeLog COPYING TODO
 
 %changelog
+* Wed Jul 31 2013 Liu Di <liudidi@gmail.com> - 1.4.2-2.opt
+- 为 Magic 3.0 重建
+
 * Wed Oct 03 2012 Francois Andriot <francois.andriot@free.fr> - 1.4.2-1
 - Initial build for TDE 3.5.13.1
 
