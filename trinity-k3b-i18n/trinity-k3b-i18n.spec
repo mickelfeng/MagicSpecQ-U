@@ -3,6 +3,8 @@
 %define _variant .opt
 %endif
 
+%define tdeversion 3.5.13.2
+
 # TDE 3.5.13 specific building variables
 %define tde_bindir %{tde_prefix}/bin
 %define tde_datadir %{tde_prefix}/share
@@ -23,7 +25,7 @@
 Name:		trinity-k3b-i18n
 Summary:	Locale files for K3B
 Version:	1.0.5
-Release:	2%{?dist}%{?_variant}
+Release:	3%{?dist}%{?_variant}
 
 Vendor:		Trinity Project
 Packager:	Francois Andriot <francois.andriot@free.fr>
@@ -42,7 +44,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Group:   Applications/Archiving
 License: GPLv2+
 
-Source0: k3b-i18n-3.5.13.1.tar.gz
+Source0: k3b-i18n-trinity-%{tdeversion}.tar.xz
 
 BuildRequires:	trinity-tdelibs-devel >= 3.5.13.1
 BuildRequires:	desktop-file-utils
@@ -61,107 +63,23 @@ steps of the burning process the beginner may find comfort in the
 automatic settings and the reasonable k3b defaults which allow a quick
 start.
 
-%package da
+%package zh_CN
 Group:   Applications/Archiving
 Requires: trinity-k3b
-Summary: Danish (da) translations for K3B [Trinity]
-%description da
-This package contains the Danish translations for K3B.
-
-%package de
-Group:   Applications/Archiving
-Requires: trinity-k3b
-Summary: German (de) translations for K3B [Trinity]
-%description de
-This package contains the German translations for K3B.
-
-%package el
-Group:   Applications/Archiving
-Requires: trinity-k3b >= %{version}
-Summary: Greek (el) translations for K3B [Trinity]
-%description el
-This package contains the greek translations for K3B.
-
-%package es
-Group:   Applications/Archiving
-Requires: trinity-k3b
-Summary: Spanish (es) translations for K3B [Trinity]
-%description es
-This package contains the Spanish translations for K3B.
-
-%package et
-Group:   Applications/Archiving
-Requires: trinity-k3b
-Summary: Estonian (et) translations for K3B [Trinity]
-%description et
-This package contains the Estonian translations for K3B.
-
-%package fr
-Group:   Applications/Archiving
-Requires: trinity-k3b
-Summary: French (fr) translations for K3B [Trinity]
-%description fr
-This package contains the French translations for K3B.
-
-%package it
-Group:   Applications/Archiving
-Requires: trinity-k3b
-Summary: Italian (it) translations for K3B [Trinity]
-%description it
-This package contains the Italian translations for K3B.
-
-%package nl
-Group:   Applications/Archiving
-Requires: trinity-k3b
-Summary: Dutch (nl) translations for K3B [Trinity]
-%description nl
-This package contains the Dutch translations for K3B.
-
-%package pl
-Group:   Applications/Archiving
-Requires: trinity-k3b
-Summary: Polish (pl) translations for K3B [Trinity]
-%description pl
-This package contains the Polish translations for K3B.
-
-%package pt
-Group:   Applications/Archiving
-Requires: trinity-k3b
-Summary: Portuguese (pt) translations for K3B [Trinity]
-%description pt
-This package contains the Portuguese translations for K3B.
-
-%package ptbr
-Group:   Applications/Archiving
-Requires: trinity-k3b
-Summary: Brazilian Portuguese (pt_BR) translations for K3B [Trinity]
-%description ptbr
-This package contains the Brazilian Portuguese translations for K3B.
-
-%package ru
-Group:   Applications/Archiving
-Requires: trinity-k3b
-Summary: Russian (ru) translations for K3B [Trinity]
-%description ru
-This package contains the Russian translations for K3B.
-
-%package sv
-Group:   Applications/Archiving
-Requires: trinity-k3b
-Summary: Swedish (sv) translations for K3B [Trinity]
-%description sv
+Summary: Chinese (zh_CN) translations for K3B [Trinity]
+%description zh_CN
 This package contains the Swedish translations for K3B.
 
-%package uk
+%package zh_TW
 Group:   Applications/Archiving
 Requires: trinity-k3b
-Summary: Ukrainian (uk) translations for K3B [Trinity]
-%description uk
+Summary: Chinses (zh_TW) translations for K3B [Trinity]
+%description zh_TW
 This package contains the Ukrainian translations for K3B.
 
 
 %prep
-%setup -q -n k3b-i18n-3.5.13.1
+%setup -q -n k3b-i18n-trinity-%{tdeversion}
 
 
 # Ugly hack to modify TQT include directory inside autoconf files.
@@ -199,125 +117,27 @@ export LDFLAGS="-L%{tde_libdir} -I%{tde_includedir}"
 %__rm -rf %{buildroot}
 %__make install DESTDIR=%{buildroot}
 
-%__rm -rf %{buildroot}%{tde_datadir}/locale/af
-%__rm -rf %{buildroot}%{tde_datadir}/locale/ar
-%__rm -rf %{buildroot}%{tde_datadir}/locale/bg
-%__rm -rf %{buildroot}%{tde_datadir}/locale/br
-%__rm -rf %{buildroot}%{tde_datadir}/locale/bs
-%__rm -rf %{buildroot}%{tde_datadir}/locale/ca
-%__rm -rf %{buildroot}%{tde_datadir}/locale/cs
-%__rm -rf %{buildroot}%{tde_datadir}/locale/cy
-%__rm -rf %{buildroot}%{tde_datadir}/locale/en_GB
-%__rm -rf %{buildroot}%{tde_datadir}/locale/eu
-%__rm -rf %{buildroot}%{tde_datadir}/locale/fa
-%__rm -rf %{buildroot}%{tde_datadir}/locale/fi
-%__rm -rf %{buildroot}%{tde_datadir}/locale/ga
-%__rm -rf %{buildroot}%{tde_datadir}/locale/gl
-%__rm -rf %{buildroot}%{tde_datadir}/locale/he
-%__rm -rf %{buildroot}%{tde_datadir}/locale/hi
-%__rm -rf %{buildroot}%{tde_datadir}/locale/hu
-%__rm -rf %{buildroot}%{tde_datadir}/locale/is
-%__rm -rf %{buildroot}%{tde_datadir}/locale/ja
-%__rm -rf %{buildroot}%{tde_datadir}/locale/ka
-%__rm -rf %{buildroot}%{tde_datadir}/locale/km
-%__rm -rf %{buildroot}%{tde_datadir}/locale/lt
-%__rm -rf %{buildroot}%{tde_datadir}/locale/mk
-%__rm -rf %{buildroot}%{tde_datadir}/locale/ms
-%__rm -rf %{buildroot}%{tde_datadir}/locale/nb
-%__rm -rf %{buildroot}%{tde_datadir}/locale/nds
-%__rm -rf %{buildroot}%{tde_datadir}/locale/ne
-%__rm -rf %{buildroot}%{tde_datadir}/locale/nn
-%__rm -rf %{buildroot}%{tde_datadir}/locale/pa
-%__rm -rf %{buildroot}%{tde_datadir}/locale/rw
-%__rm -rf %{buildroot}%{tde_datadir}/locale/se
-%__rm -rf %{buildroot}%{tde_datadir}/locale/sk
-%__rm -rf %{buildroot}%{tde_datadir}/locale/sr
-%__rm -rf %{buildroot}%{tde_datadir}/locale/sr@Latn
-%__rm -rf %{buildroot}%{tde_datadir}/locale/ta
-%__rm -rf %{buildroot}%{tde_datadir}/locale/tr
-%__rm -rf %{buildroot}%{tde_datadir}/locale/uz
-%__rm -rf %{buildroot}%{tde_datadir}/locale/uz@cyrillic
-%__rm -rf %{buildroot}%{tde_datadir}/locale/zh_CN
-%__rm -rf %{buildroot}%{tde_datadir}/locale/zh_TW
-
+%__rm -rf %{buildroot}%{tde_datadir}/locale/[a-y]*
+%__rm -rf %{buildroot}%{tde_docdir}/tde/*
 
 %clean
 %__rm -rf %{buildroot}
 
 
-%files da
+%files zh_CN
 %defattr(-,root,root,-)
-%lang(da) %{tde_tdedocdir}/HTML/da/k3b
-%lang(da) %{tde_datadir}/locale/da/LC_MESSAGES/*.mo
+%lang(zh_CN) %{tde_datadir}/locale/zh_CN/LC_MESSAGES/*.mo
 
-%files de
+%files zh_TW
 %defattr(-,root,root,-)
-%lang(de) %{tde_tdedocdir}/HTML/de/k3b
-%lang(de) %{tde_datadir}/locale/de/LC_MESSAGES/*.mo
-
-%files el
-%defattr(-,root,root,-)
-#%lang(el) %{tde_tdedocdir}/HTML/el/k3b
-%lang(el) %{tde_datadir}/locale/el/LC_MESSAGES/*.mo
-
-%files es
-%defattr(-,root,root,-)
-%lang(es) %{tde_tdedocdir}/HTML/es/k3b
-%lang(es) %{tde_datadir}/locale/es/LC_MESSAGES/*.mo
-
-%files et
-%defattr(-,root,root,-)
-%lang(et) %{tde_tdedocdir}/HTML/et/k3b
-%lang(et) %{tde_datadir}/locale/et/LC_MESSAGES/*.mo
-
-%files fr
-%defattr(-,root,root,-)
-%lang(fr) %{tde_tdedocdir}/HTML/fr/k3b
-%lang(fr) %{tde_datadir}/locale/fr/LC_MESSAGES/*.mo
-
-%files it
-%defattr(-,root,root,-)
-%lang(it) %{tde_tdedocdir}/HTML/it/k3b
-%lang(it) %{tde_datadir}/locale/it/LC_MESSAGES/*.mo
-
-%files nl
-%defattr(-,root,root,-)
-%lang(nl) %{tde_tdedocdir}/HTML/nl/k3b
-%lang(nl) %{tde_datadir}/locale/nl/LC_MESSAGES/*.mo
-
-%files pl
-%defattr(-,root,root,-)
-%lang(pl) %{tde_tdedocdir}/HTML/pl/k3b
-%lang(pl) %{tde_datadir}/locale/pl/LC_MESSAGES/*.mo
-
-%files pt
-%defattr(-,root,root,-)
-%lang(pt) %{tde_tdedocdir}/HTML/pt/k3b
-%lang(pt) %{tde_datadir}/locale/pt/LC_MESSAGES/*.mo
-
-%files ptbr
-%defattr(-,root,root,-)
-%lang(pt_BR) %{tde_tdedocdir}/HTML/pt_BR/k3b
-%lang(pt_BR) %{tde_datadir}/locale/pt_BR/LC_MESSAGES/*.mo
-
-%files ru
-%defattr(-,root,root,-)
-%lang(ru) %{tde_tdedocdir}/HTML/ru/k3b
-%lang(ru) %{tde_datadir}/locale/ru/LC_MESSAGES/*.mo
-
-%files sv
-%defattr(-,root,root,-)
-%lang(sv) %{tde_tdedocdir}/HTML/sv/k3b
-%lang(sv) %{tde_datadir}/locale/sv/LC_MESSAGES/*.mo
-
-%files uk
-%defattr(-,root,root,-)
-%lang(uk) %{tde_tdedocdir}/HTML/uk/k3b
-%lang(uk) %{tde_datadir}/locale/uk/LC_MESSAGES/*.mo
+%lang(zh_TW) %{tde_datadir}/locale/zh_TW/LC_MESSAGES/*.mo
 
 
 
 %changelog
+* Wed Jul 31 2013 Liu Di <liudidi@gmail.com> - 1.0.5-3
+- 为 Magic 3.0 重建
+
 * Wed Oct 03 2012 Francois Andriot <francois.andriot@free.fr> - 1.0.5-2
 - Initial build for TDE 3.5.13.1
 
