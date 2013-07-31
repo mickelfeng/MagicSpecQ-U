@@ -22,7 +22,7 @@
 
 Name:		trinity-k3b
 Summary:	CD/DVD burning application
-Version:	3.5.13.1
+Version:	3.5.13.2
 Release:	1%{?dist}%{?_variant}
 
 Vendor:		Trinity Project
@@ -35,7 +35,7 @@ BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Group:		Applications/Archiving
 License:	GPLv2+
 
-Source0:	k3b-%{version}.tar.gz
+Source0:	k3b-trinity-%{version}.tar.xz
 Source2:	k3brc
 
 # Legacy RedHat / Fedora patches
@@ -224,7 +224,7 @@ Requires: %{name}-libs = %{version}-%{release}
 
 
 %prep
-%setup -q -a 0 -n k3b-3.5.13.1
+%setup -q -a 0 -n k3b-trinity-%{version}
 
 # set in k3brc too 
 %patch4 -p1 -b .manualbufsize
