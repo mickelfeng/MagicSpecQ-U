@@ -1,15 +1,15 @@
 Name:          qmmp
-Version:        0.6.5
-Release:        2%{?dist}
+Version:        0.7.1
+Release:        1%{?dist}
 Summary:        A qt4 based media player similar to xmms
 Summary(zh_CN): 基于 qt4 的类似 xmms 的媒体播放器
 
 Group:         Applications/Multimedia
 Group(zh_CN):	应用程序/多媒体
 License:       GPLv2
-URL:           http://qmmp.ylsoftware.com/index_en.php
+URL:           http://qmmp.ylsoftware.com
 
-Source0:       qmmp-%{version}.tar.bz2
+Source0:       http://qmmp.ylsoftware.com/files/qmmp-%{version}.tar.bz2
 Source1:	     skins.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:  qt4-devel
