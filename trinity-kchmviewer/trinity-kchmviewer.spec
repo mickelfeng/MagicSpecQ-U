@@ -1,5 +1,6 @@
 # Default version for this component
 %define kdecomp kchmviewer
+%define tdeversion 3.5.13.2
 
 # If TDE is built in a specific prefix (e.g. /opt/trinity), the release will be suffixed with ".opt".
 %if "%{?tde_prefix}" != "/usr"
@@ -26,7 +27,7 @@
 Name:		trinity-%{kdecomp}
 Summary:	CHM viewer for Trinity
 Version:	3.1.2
-Release:	3%{?dist}%{?_variant}
+Release:	4%{?dist}%{?_variant}
 
 License:	GPLv2+
 Group:		Applications/Utilities
@@ -38,7 +39,7 @@ URL:		http://www.trinitydesktop.org/
 Prefix:    %{_prefix}
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	%{kdecomp}-3.5.13.1.tar.gz
+Source0:	%{kdecomp}-trinity-%{tdeversion}.tar.xz
 
 # [kchmviewer] Missing LDFLAGS cause FTBFS on Mageia 2 / Mandriva 2011
 Patch0:		kchmviewer-3.5.13-missing_ldflags.patch
@@ -75,8 +76,7 @@ support. Correctly detects and shows encoding of any valid chm file.
 
 
 %prep
-%setup -q -n %{kdecomp}-3.5.13.1
-%patch0 -p1
+%setup -q -n %{kdecomp}-trinity-%{tdeversion}
 
 # Ugly hack to modify TQT include directory inside autoconf files.
 # If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
@@ -146,6 +146,9 @@ gtk-update-icon-cache --quiet %{tde_datadir}/icons/crystalsvg || :
 
 
 %changelog
+* Wed Jul 31 2013 Liu Di <liudidi@gmail.com> - 3.1.2-4.opt
+- 为 Magic 3.0 重建
+
 * Wed Oct 03 2012 Francois Andriot <francois.andriot@free.fr> - 3.1.2-3
 - Initial build for TDE 3.5.13.1
 
