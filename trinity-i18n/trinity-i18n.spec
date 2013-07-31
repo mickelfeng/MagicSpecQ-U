@@ -21,7 +21,7 @@ BuildRequires: autoconf automake libtool m4
 
 Name:		trinity-i18n
 Summary:	Internationalization support for Trinity
-Version:	3.5.13.1
+Version:	3.5.13.2
 Release:	1%{?dist}%{?_variant}
 
 Vendor:		Trinity Project
@@ -41,7 +41,7 @@ BuildArch:	noarch
 %define __spec_install_post %{nil}
 AutoReq: no
 
-Source0:	kde-i18n-%{version}.tar.gz
+Source0:	kde-i18n-trinity-%{version}.tar.xz
 
 # TDE 3.5.12: Translate 'kdesu' message was modified in 'kdebase' package
 Patch0:		kde-i18n-kdesu.patch
@@ -686,19 +686,9 @@ Provides:	 trinity-kde-i18n-Chinese-Big5 = %{version}-%{release}
 
 
 %prep
-%setup -q -n kde-i18n-3.5.13.1
-
-# Patches for French translations
-pushd tde-i18n-fr
-%patch0 -p1
-%patch1 -p1
-%patch2 -p1
-popd
+%setup -q -n kde-i18n-trinity-%{version}
 
 # Patches for Chinese (zh_TW) translations
-pushd tde-i18n-zh_TW
-%patch3 -p1
-popd
 
 # Ugly hack to modify TQT include directory inside autoconf files.
 # If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
