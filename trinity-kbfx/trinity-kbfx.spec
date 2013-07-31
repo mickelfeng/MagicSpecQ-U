@@ -1,5 +1,6 @@
 # Default version for this component
 %define kdecomp kbfx
+%define tdeversion 3.5.13.2
 
 # If TDE is built in a specific prefix (e.g. /opt/trinity), the release will be suffixed with ".opt".
 %if "%{?tde_prefix}" != "/usr"
@@ -26,7 +27,7 @@
 Name:		trinity-%{kdecomp}
 Summary:	an alternative to K-Menu for KDE [Trinity]
 Version:	0.4.9.3.1
-Release:	2%{?dist}%{?_variant}
+Release:	3%{?dist}%{?_variant}
 
 License:	GPLv2+
 Group:		Applications/Utilities
@@ -38,7 +39,7 @@ URL:		http://www.trinitydesktop.org/
 Prefix:		%{tde_prefix}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	%{kdecomp}-3.5.13.1.tar.gz
+Source0:	%{kdecomp}-trinity-%{tdeversion}.tar.xz
 
 # [kbfx] Some files are installed in wrong directories ...
 Patch2:		kbfx-3.5.13.1-fix_install_directories.patch
@@ -66,8 +67,9 @@ Homepage: http://www.kbfx.org
 
 
 %prep
-%setup -q -n %{kdecomp}-3.5.13.1
-%patch2 -p1 -b .dir
+%setup -q -n %{kdecomp}-trinity-%{tdeversion}
+
+%__sed -i 's/TQT_PREFIX/TDE_PREFIX/g' cmake/modules/FindTQt.cmake
 
 # Fix TDE executable path in 'CMakeLists.txt' ...
 %__sed -i "CMakeLists.txt" \
@@ -87,6 +89,8 @@ cd build
 %endif
 
 %cmake \
+  -DCMAKE_PREFIX_PATH=%{tde_prefix} \
+  -DTDE_PREFIX=%{tde_prefix} \
   -DCMAKE_INSTALL_PREFIX=%{tde_prefix} \
   -DINCLUDE_INSTALL_DIR=%{tde_tdeincludedir} \
   -DDATA_INSTALL_DIR=%{tde_datadir}/apps \
@@ -162,6 +166,9 @@ update-desktop-database %{tde_appdir} &> /dev/null
 
 
 %changelog
+* Wed Jul 31 2013 Liu Di <liudidi@gmail.com> - 0.4.9.3.1-3.opt
+- 为 Magic 3.0 重建
+
 * Wed Oct 03 2012 Francois Andriot <francois.andriot@free.fr> - 0.4.9.3.1-2
 - Initial build for TDE 3.5.13.1
 
