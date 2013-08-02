@@ -1,5 +1,6 @@
 # Default version for this component
 %define kdecomp kmplayer
+%define tdeversion 3.5.13.2
 
 # If TDE is built in a specific prefix (e.g. /opt/trinity), the release will be suffixed with ".opt".
 %if "%{?tde_prefix}" != "/usr"
@@ -26,7 +27,7 @@
 Name:		trinity-%{kdecomp}
 Summary:	media player for Trinity
 Version:	0.10.0c
-Release:	3%{?dist}%{?_variant}
+Release:	5%{?dist}%{?_variant}
 
 License:	GPLv2+
 Group:		Applications/Multimedia
@@ -38,7 +39,7 @@ URL:		http://kmplayer.kde.org
 Prefix:		%{tde_prefix}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	%{kdecomp}-3.5.13.1.tar.gz
+Source0:	%{kdecomp}-trinity-%{tdeversion}.tar.xz
 
 # [kmplayer] Fix xine 1.2 support
 Patch1:		kmplayer-3.5.13.1-fix_xine12_support.patch
@@ -121,8 +122,8 @@ Documention for KMPlayer, a basic audio/video viewer application for KDE.
 
 
 %prep
-%setup -q -n %{kdecomp}-3.5.13.1
-%patch1 -p1
+%setup -q -n %{kdecomp}-trinity-%{tdeversion}
+#%patch1 -p1
 
 # Ugly hack to modify TQT include directory inside autoconf files.
 # If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
@@ -195,7 +196,7 @@ gtk-update-icon-cache --quiet %{tde_datadir}/icons/hicolor || :
 %defattr(-,root,root,-)
 %doc AUTHORS COPYING ChangeLog INSTALL README TODO kmplayer.lsm
 %{tde_bindir}/kmplayer
-%{tde_bindir}/knpplayer
+#%{tde_bindir}/knpplayer
 %{tde_bindir}/kxvplayer
 %{tde_libdir}/libkdeinit_kmplayer.la
 %{tde_libdir}/libkdeinit_kmplayer.so
@@ -235,6 +236,12 @@ gtk-update-icon-cache --quiet %{tde_datadir}/icons/hicolor || :
 
 
 %changelog
+* Fri Aug 02 2013 Liu Di <liudidi@gmail.com> - 0.10.0c-5.opt
+- 为 Magic 3.0 重建
+
+* Fri Aug 02 2013 Liu Di <liudidi@gmail.com> - 0.10.0c-4.opt
+- 为 Magic 3.0 重建
+
 * Wed Oct 03 2012 Francois Andriot <francois.andriot@free.fr> - 0.10.0c-3
 - Initial build for TDE 3.5.13.1
 
