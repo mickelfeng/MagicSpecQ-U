@@ -1,5 +1,6 @@
 # Default version for this component
 %define kdecomp kstreamripper
+%define tdeversion 3.5.13.2
 
 # If TDE is built in a specific prefix (e.g. /opt/trinity), the release will be suffixed with ".opt".
 %if "%{?tde_prefix}" != "/usr"
@@ -27,7 +28,7 @@ Name:		trinity-%{kdecomp}
 Summary:	TDE frontend for streamripper
 
 Version:	0.3.4
-Release:	2%{?dist}%{?_variant}
+Release:	3%{?dist}%{?_variant}
 
 License:	GPLv2+
 Group:		Applications/Utilities
@@ -39,7 +40,7 @@ URL:		http://www.trinitydesktop.org/
 Prefix:    %{tde_prefix}
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	%{kdecomp}-3.5.13.1.tar.gz
+Source0:	%{kdecomp}-trinity-%{tdeversion}.tar.xz
 
 Patch0:		kstreamripper-3.5.13-missing_include_tqt.patch
 
@@ -64,7 +65,7 @@ you with managing/ripping your preferred streams.
 
 
 %prep
-%setup -q -n %{kdecomp}-3.5.13.1
+%setup -q -n %{kdecomp}-trinity-%{tdeversion}
 %patch0 -p1
 
 %__sed -i kde.py \
@@ -122,6 +123,9 @@ fi
 
 
 %changelog
+* Tue Aug 06 2013 Liu Di <liudidi@gmail.com> - 0.3.4-3.opt
+- 为 Magic 3.0 重建
+
 * Wed Oct 03 2012 Francois Andriot <francois.andriot@free.fr> - 0.3.4-2
 - Initial build for TDE 3.5.13.1
 
