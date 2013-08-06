@@ -1,5 +1,6 @@
 # Default version for this component
 %define kdecomp piklab
+%define tdeversion 3.5.13.2
 
 # If TDE is built in a specific prefix (e.g. /opt/trinity), the release will be suffixed with ".opt".
 %if "%{?tde_prefix}" != "/usr"
@@ -26,7 +27,7 @@
 Name:		trinity-%{kdecomp}
 Summary:	IDE for PIC-microcontroller development [Trinity]
 Version:	0.15.2
-Release:	4%{?dist}%{?_variant}
+Release:	5%{?dist}%{?_variant}
 
 License:	GPLv2+
 Group:		Applications/Utilities
@@ -38,7 +39,7 @@ URL:		http://www.trinitydesktop.org/
 Prefix:    %{tde_prefix}
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	%{kdecomp}-3.5.13.1.tar.gz
+Source0:	%{kdecomp}-trinity-%{tdeversion}.tar.xz
 
 # [piklab] Do not build the 'gui' directory
 Patch1:		piklab-3.5.13.1-remove_gui_dir.patch
@@ -67,7 +68,7 @@ are supported. A command-line programmer and debugger are also available.
 
 
 %prep
-%setup -q -n %{kdecomp}-3.5.13.1
+%setup -q -n %{kdecomp}-trinity-%{tdeversion}
 %patch1 -p1
 
 # Ugly hack to modify TQT include directory inside autoconf files.
@@ -147,6 +148,9 @@ gtk-update-icon-cache --quiet %{tde_datadir}/icons/hicolor || :
 
 
 %changelog
+* Tue Aug 06 2013 Liu Di <liudidi@gmail.com> - 0.15.2-5.opt
+- 为 Magic 3.0 重建
+
 * Wed Oct 03 2012 Francois Andriot <francois.andriot@free.fr> - 0.15.2-4
 - Initial build for TDE 3.5.13.1
 
