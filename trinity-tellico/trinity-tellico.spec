@@ -1,5 +1,6 @@
 # Default version for this component
 %define kdecomp tellico
+%define tdeversion 3.5.13.2
 
 # If TDE is built in a specific prefix (e.g. /opt/trinity), the release will be suffixed with ".opt".
 %if "%{?tde_prefix}" != "/usr"
@@ -26,7 +27,7 @@
 Name:		trinity-%{kdecomp}
 Summary:	Icollection manager for books, videos, music [Trinity]
 Version:	1.3.2.1
-Release:	4%{?dist}%{?_variant}
+Release:	5%{?dist}%{?_variant}
 
 License:	GPLv2+
 Group:		Applications/Utilities
@@ -38,7 +39,7 @@ URL:		http://periapsis.org/tellico/
 Prefix:    %{tde_prefix}
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	%{kdecomp}-3.5.13.1.tar.gz
+Source0:	%{kdecomp}-trinity-%{tdeversion}.tar.xz
 
 
 # [tellico] Fix "not a string literal" error
@@ -121,9 +122,7 @@ as a separate package which can be updated through debian-volatile.
 
 
 %prep
-%setup -q -n %{kdecomp}-3.5.13.1
-%patch2 -p1
-%patch3 -p1
+%setup -q -n %{kdecomp}-trinity-%{tdeversion}
 
 # Ugly hack to modify TQT include directory inside autoconf files.
 # If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
@@ -221,6 +220,9 @@ gtk-update-icon-cache --quiet %{tde_datadir}/icons/hicolor || :
 
 
 %changelog
+* Tue Aug 06 2013 Liu Di <liudidi@gmail.com> - 1.3.2.1-5.opt
+- 为 Magic 3.0 重建
+
 * Wed Oct 03 2012 Francois Andriot <francois.andriot@free.fr> - 1.3.2.1-4
 - Initial build for TDE 3.5.13.1
 
