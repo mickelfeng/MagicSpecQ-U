@@ -3,6 +3,8 @@
 %define _variant .opt
 %endif
 
+%define tdeversion 3.5.13.2
+
 # TDE 3.5.13 specific building variables
 %define tde_bindir %{tde_prefix}/bin
 %define tde_datadir %{tde_prefix}/share
@@ -21,14 +23,14 @@
 
 # Builds all supported languages (not unsupported ones)
 %if "%{?KDE_LANGS}" == ""
-%define KDE_LANGS bg ca cs da de el en_GB es et fi fr hu it ja km lv ms nb nds ne nl pl pt pt_BR ru sk sl sr sv tr uk zh_CN zh_TW
+%define KDE_LANGS zh_CN zh_TW
 %endif
 
 
 Name:		trinity-koffice-i18n
 Summary:	Internationalization support for Trinity
 Version:	1.6.3
-Release:	2%{?dist}%{?_variant}
+Release:	3%{?dist}%{?_variant}
 
 Vendor:		Trinity Project
 Packager:	Francois Andriot <francois.andriot@free.fr>
@@ -47,7 +49,7 @@ BuildArch:	noarch
 %define __spec_install_post %{nil}
 AutoReq: no
 
-Source0:	koffice-i18n-3.5.13.1.tar.gz
+Source0:	koffice-i18n-trinity-%{tdeversion}.tar.xz
 
 BuildRequires:	findutils
 BuildRequires:	gettext
@@ -537,7 +539,7 @@ Provides: %{name}-tz_TW = %{version}-%{release}
 
 
 %prep
-%setup -q -n koffice-i18n-3.5.13.1
+%setup -q -n koffice-i18n-trinity-%{tdeversion}
 
 # Ugly hack to modify TQT include directory inside autoconf files.
 # If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
@@ -617,7 +619,7 @@ popd
 %endif
 
 # remove zero-length file
-find "%{buildroot}%{tde_tdedocdir}/HTML" -size 0 -exec rm -f {} \;
+# find "%{buildroot}%{tde_tdedocdir}/HTML" -size 0 -exec rm -f {} \;
 
 %clean
 %__rm -rf %{buildroot}
@@ -1078,6 +1080,9 @@ find "%{buildroot}%{tde_tdedocdir}/HTML" -size 0 -exec rm -f {} \;
 %endif
 
 %changelog
+* Tue Aug 06 2013 Liu Di <liudidi@gmail.com> - 1.6.3-3.opt
+- 为 Magic 3.0 重建
+
 * Wed Oct 03 2012 Francois Andriot <francois.andriot@free.fr> - 1.6.3-2
 - Initial build for TDE 3.5.13.1
 
