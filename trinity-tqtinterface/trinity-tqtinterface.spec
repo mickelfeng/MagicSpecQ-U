@@ -13,7 +13,7 @@
 %define tde_libdir %{tde_prefix}/%{_lib}
 
 Name:		trinity-tqtinterface
-Version:	3.5.13.1
+Version:	3.5.13.2
 Release:	1%{?dist}%{?_variant}
 License:	GPL
 Summary:	Trinity QT Interface
@@ -25,7 +25,7 @@ Packager:	Francois Andriot <francois.andriot@free.fr>
 
 Prefix:		%{tde_prefix}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-Source0:	tqtinterface-3.5.13.1.tar.gz
+Source0:	tqtinterface-trinity-%{version}.tar.xz
 
 # [tqtinterface] Add missing endian-ness defines [Bug #727] [Commit #458e74a6]
 Patch1:		tqtinterface-3.5.13-add_missing_endianness_defines.patch
@@ -72,7 +72,7 @@ Development files for %{name}
 
 
 %prep
-%setup -q -n tqtinterface-3.5.13.1
+%setup -q -n tqtinterface-trinity-%{version}
 %patch1 -p1
 
 %build
