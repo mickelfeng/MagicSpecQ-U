@@ -1,5 +1,6 @@
 # Default version for this component
 %define kdecomp kopete-otr
+%define tdeversion 3.5.13.2
 
 # Required for Mageia 2: removes the ldflag '--no-undefined'
 %define _disable_ld_no_undefined 1
@@ -29,7 +30,7 @@
 Name:		trinity-%{kdecomp}
 Summary:	Off-The-Record encryption for Kopete [Trinity]
 Version:	0.7
-Release:	3%{?dist}%{?_variant}
+Release:	4%{?dist}%{?_variant}
 
 License:	GPLv2+
 Group:		Applications/Utilities
@@ -41,7 +42,7 @@ URL:		http://www.trinitydesktop.org/
 Prefix:		%{tde_prefix}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	%{kdecomp}-3.5.13.1.tar.gz
+Source0:	%{kdecomp}-trinity-%{tdeversion}.tar.xz
 
 
 BuildRequires:	trinity-tqtinterface-devel >= 3.5.13.1
@@ -66,7 +67,7 @@ users with IM-Cients supporting the OTR encryption method.
 
 
 %prep
-%setup -q -n %{kdecomp}-3.5.13.1
+%setup -q -n %{kdecomp}-trinity-%{tdeversion}
 
 # Ugly hack to modify TQT include directory inside autoconf files.
 # If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
@@ -142,6 +143,9 @@ gtk-update-icon-cache --quiet %{tde_datadir}/icons/crystalsvg || :
 
 
 %changelog
+* Tue Aug 06 2013 Liu Di <liudidi@gmail.com> - 0.7-4.opt
+- 为 Magic 3.0 重建
+
 * Wed Oct 03 2012 Francois Andriot <francois.andriot@free.fr> - 0.7-3
 - Initial build for TDE 3.5.13.1
 
