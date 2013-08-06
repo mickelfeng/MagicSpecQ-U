@@ -26,7 +26,7 @@
 Name:		trinity-%{kdecomp}
 Summary:	library for apps that want to use kipi-plugins (runtime version) [Trinity]
 
-Version:	3.5.13.1
+Version:	3.5.13.2
 Release:	1%{?dist}%{?_variant}
 
 License:	GPLv2+
@@ -39,7 +39,7 @@ URL:		http://www.trinitydesktop.org/
 Prefix:		%{_prefix}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	%{kdecomp}-3.5.13.1.tar.gz
+Source0:	%{kdecomp}-trinity-%{version}.tar.xz
 
 BuildRequires: trinity-tqtinterface-devel >= %{version}
 BuildRequires: trinity-arts-devel >= %{version}
@@ -91,7 +91,7 @@ Homepage: http://www.kipi-plugins.org/
 
 
 %prep
-%setup -q -n %{kdecomp}-3.5.13.1
+%setup -q -n %{kdecomp}-trinity-%{version}
 
 # Ugly hack to modify TQT include directory inside autoconf files.
 # If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
