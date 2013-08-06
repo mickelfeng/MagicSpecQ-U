@@ -1,5 +1,6 @@
 # Default version for this component
 %define kdecomp knemo
+%define tdeversion 3.5.13.2
 
 # If TDE is built in a specific prefix (e.g. /opt/trinity), the release will be suffixed with ".opt".
 %if "%{?tde_prefix}" != "/usr"
@@ -26,7 +27,7 @@
 Name:		trinity-%{kdecomp}
 Summary:	network interfaces monitor for the Trinity systray
 Version:	0.4.8
-Release:	3%{?dist}%{?_variant}
+Release:	4%{?dist}%{?_variant}
 
 License:	GPLv2+
 Group:		Applications/Utilities
@@ -38,7 +39,7 @@ URL:		http://beta.smileaf.org/projects
 Prefix:    %{tde_prefix}
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	%{kdecomp}-3.5.13.1.tar.gz
+Source0:	%{kdecomp}-trinity-%{tdeversion}.tar.xz
 
 BuildRequires:	trinity-tqtinterface-devel >= 3.5.13.1
 BuildRequires:	trinity-tdelibs-devel >= 3.5.13.1
@@ -66,7 +67,7 @@ Homepage: http://extragear.kde.org/apps/knemo/
 
 
 %prep
-%setup -q -n %{kdecomp}-3.5.13.1
+%setup -q -n %{kdecomp}-trinity-%{tdeversion}
 
 # Ugly hack to modify TQT include directory inside autoconf files.
 # If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
