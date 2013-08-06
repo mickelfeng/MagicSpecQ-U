@@ -1,5 +1,6 @@
 # Default version for this component
 %define kdecomp knutclient
+%define tdeversion 3.5.13.2
 
 # If TDE is built in a specific prefix (e.g. /opt/trinity), the release will be suffixed with ".opt".
 %if "%{?tde_prefix}" != "/usr"
@@ -26,7 +27,7 @@
 Name:		trinity-%{kdecomp}
 Summary:	A KDE GUI that displays UPS statistics from NUT's upsd [Trinity]
 Version:	0.9.5
-Release:	3%{?dist}%{?_variant}
+Release:	4%{?dist}%{?_variant}
 
 License:	GPLv2+
 Group:		Applications/Utilities
@@ -38,7 +39,7 @@ URL:		http://www.knut.noveradsl.cz/knutclient/
 Prefix:		%{tde_prefix}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	%{kdecomp}-3.5.13.1.tar.gz
+Source0:	%{kdecomp}-trinity-%{tdeversion}.tar.xz
 
 
 BuildRequires:	trinity-tqtinterface-devel >= 3.5.13.1
@@ -60,7 +61,7 @@ stations using an UPS.
 
 
 %prep
-%setup -q -n %{kdecomp}-3.5.13.1
+%setup -q -n %{kdecomp}-trinity-%{tdeversion}
 
 # Ugly hack to modify TQT include directory inside autoconf files.
 # If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
@@ -130,6 +131,9 @@ done
 %{tde_datadir}/icons/locolor/*/apps/*.png
 
 %changelog
+* Tue Aug 06 2013 Liu Di <liudidi@gmail.com> - 0.9.5-4.opt
+- 为 Magic 3.0 重建
+
 * Wed Oct 03 2012 Francois Andriot <francois.andriot@free.fr> - 0.9.5-3
 - Initial build for TDE 3.5.13.1
 
