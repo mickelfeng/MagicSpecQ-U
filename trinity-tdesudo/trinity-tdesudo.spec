@@ -24,11 +24,11 @@
 %define _docdir %{tde_docdir}
 
 
-Name:		trinity-%{tdecomp}
+Name:		trinity-tdesudo
 Summary:	sudo frontend for Trinity
 
 Version:	2.5.1
-Release:	5%{?dist}%{?_variant}
+Release:	6%{?dist}%{?_variant}
 
 License:	GPLv2+
 Group:		Applications/Utilities
@@ -132,6 +132,9 @@ fi
 
 
 %changelog
+* Wed Aug 07 2013 Liu Di <liudidi@gmail.com> - 2.5.1-6.opt
+- 为 Magic 3.0 重建
+
 * Wed Aug 07 2013 Liu Di <liudidi@gmail.com> - 2.5.1-5.opt
 - 为 Magic 3.0 重建
 
