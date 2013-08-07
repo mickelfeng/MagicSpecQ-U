@@ -4,6 +4,7 @@
 %if "%{?tde_prefix}" != "/usr"
 %define _variant .opt
 %endif
+%define tdeversion 3.5.13.2
 
 # TDE 3.5.13 specific building variables
 %define tde_bindir %{tde_prefix}/bin
@@ -26,7 +27,7 @@
 Name:		trinity-pytdeextensions
 Summary:	Python packages to support TDE applications (scripts) [Trinity]
 Version:	0.4.0
-Release:	3%{?dist}%{?_variant}
+Release:	5%{?dist}%{?_variant}
 
 License:	GPLv2+
 Group:		Applications/Utilities
@@ -38,7 +39,7 @@ URL:		http://www.simonzone.com/software/pykdeextensions
 Prefix:    %{tde_prefix}
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	pykdeextensions-3.5.13.1.tar.gz
+Source0:	pykdeextensions-trinity-%{tdeversion}.tar.xz
 
 
 
@@ -108,10 +109,9 @@ This package contains the libpythonize development files.
 
 
 %prep
-%setup -q -n pykdeextensions-3.5.13.1
+%setup -q -n pykdeextensions-trinity-%{tdeversion}
 %patch2 -p1 -b .extramodule
 %patch5 -p1 -b .incdir
-%patch6 -p1 -b .libgcc
 
 # Changes library directory to 'lib64'
 for f in src/*.py; do
