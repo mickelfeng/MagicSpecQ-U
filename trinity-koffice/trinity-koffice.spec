@@ -1,5 +1,6 @@
 # Default version for this component
-%define kdecomp koffice
+%define tdecomp koffice
+%define tdeversion 3.5.13.2
 
 # Required for Mageia 2: removes the ldflag '--no-undefined'
 %define _disable_ld_no_undefined 1
@@ -26,24 +27,21 @@
 %define _docdir %{tde_docdir}
 
 # Disable Kross support for RHEL <= 5 (python is too old)
-%if 0%{?fedora} > 0 || 0%{?rhel} >= 6 || 0%{?mgaversion} || 0%{?mdkversion}
+%if 0%{?fedora} > 0 || 0%{?rhel} >= 6 || 0%{?mgaversion} || 0%{?mdkversion} || 0%{?suse_version}
 %define with_kross 1
 %endif
 
-%if 0%{?fedora} >= 17
-%define with_ruby 0
-%else
+# Ruby support
 %define with_ruby 1
-%endif
 
 # Ruby 1.9 includes are located in strance directories ... (taken from ruby 1.9 spec file)
 %global	_normalized_cpu	%(echo %{_target_cpu} | sed 's/^ppc/powerpc/;s/i.86/i386/;s/sparcv./sparc/;s/armv.*/arm/')
 
 
-Name:		trinity-%{kdecomp}
+Name:		trinity-%{tdecomp}
 Summary:	An integrated office suite
 Version:	1.6.3
-Release:	6%{?dist}%{?_variant}
+Release:	7%{?dist}%{?_variant}
 
 Group:          Applications/Productivity
 License:        GPLv2+
@@ -55,25 +53,16 @@ URL:		http://www.trinitydesktop.org/
 Prefix:    %{tde_prefix}
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	%{kdecomp}-3.5.13.1.tar.gz
-
-# [koffice] Fix compilation with Ruby 1.9 [Bug #735]
-Patch13:	koffice-3.5.13-fix_ruby_1.9.patch 
+Source0:	%{tdecomp}-trinity-%{tdeversion}.tar.xz
 
 
 # BuildRequires: world-devel ;)
-BuildRequires:	trinity-tdelibs-devel >= 3.5.13.1
-BuildRequires:  trinity-tdegraphics-devel >= 3.5.13.1
-BuildRequires:	trinity-tdegraphics-libpoppler-tqt-devel >= 3.5.13.1
+BuildRequires:	trinity-tdelibs-devel >= 3.5.13.2
+BuildRequires:  trinity-tdegraphics-devel >= 3.5.13.2
+BuildRequires:	trinity-tdegraphics-libpoppler-tqt-devel >= 3.5.13.2
 BuildRequires:  automake libtool
-BuildRequires:  freetype-devel
 BuildRequires:  fontconfig-devel
 BuildRequires:  libart_lgpl-devel
-%if 0%{?mdkversion} || 0%{?mgaversion}
-BuildRequires:  %{_lib}png15-devel
-%else
-BuildRequires:  libpng-devel
-%endif
 BuildRequires:  libtiff-devel
 BuildRequires:  libjpeg-devel
 BuildRequires:  ImageMagick-devel
@@ -91,53 +80,121 @@ BuildRequires:  libxslt-devel
 BuildRequires:  OpenEXR-devel
 BuildRequires:  libexif-devel
 BuildRequires:  readline-devel
-%if 0%{?with_ruby}
-BuildRequires:  ruby ruby-devel >= 1.8.2
-%endif
-%if 0%{?suse_version}
-BuildRequires:	GraphicsMagick >= 1.1.0
-%endif
-BuildRequires:	GraphicsMagick-devel >= 1.1.0
 
 %if 0%{?suse_version}
 BuildRequires:	libbz2-devel
 BuildRequires:  liblcms-devel
-BuildRequires:	utempter-devel
 %else
 BuildRequires:  bzip2-devel
 BuildRequires:  lcms-devel
-BuildRequires:	libutempter-devel
 
 BuildRequires:  libpaper-devel
 %endif
 
+# RUBY support
+%if 0%{?with_ruby}
+BuildRequires:  ruby ruby-devel >= 1.8.1
+%endif
 
-# These libraries are either too old or too recent on distributions !
-# We always provide our versions with TDE...
-BuildRequires:	trinity-libwpd-devel
-BuildRequires:  trinity-libpqxx-devel
+# FREETYPE support
+%if 0%{?suse_version} == 1140
+BuildRequires:  freetype2-devel
+%else
+BuildRequires:  freetype-devel
+%endif
 
+# LIBPNG support
+%if 0%{?mgaversion}
+BuildRequires:  %{_lib}png-devel
+%endif
+%if 0%{?mdkversion} && 0%{?pclinuxos} == 0
+BuildRequires:  %{_lib}png15-devel
+%endif
+%if 0%{?suse_version} || 0%{?fedora} || 0%{?rhel}
+BuildRequires:  libpng-devel
+%endif
+
+# GRAPHICSMAGICK support
+%if 0%{?suse_version} || 0%{?mgaversion} || 0%{?mdkversion} || 0%{?fedora} || 0%{?rhel} >= 5
+%define with_graphicsmagick 1
+%if 0%{?suse_version}
+BuildRequires:	GraphicsMagick >= 1.1.0
+%endif
+%if 0%{?mgaversion} || 0%{?mdkversion} || 0%{?fedora} || 0%{?rhel} >= 5 || 0%{?suse_version}
+BuildRequires:	GraphicsMagick-devel >= 1.1.0
+%endif
+%endif
+
+# UTEMPTER support
+%if 0%{?suse_version}
+BuildRequires:	utempter-devel
+%endif
+%if 0%{?rhel} == 4
+BuildRequires:	utempter
+%endif
+%if 0%{?mgaversion} || 0%{?mdkversion} || 0%{?fedora} || 0%{?rhel} >= 5
+BuildRequires:	libutempter-devel
+%endif
+
+# POSTGRESQL support
+#  Requires 'libpqxx', for kexi-driver-pgqsl
+%if 0%{?mdkversion} || 0%{?fedora} || 0%{?suse_version}
+%define with_postgresql 1
+BuildRequires:  libpqxx-devel
+%endif
+Obsoletes:		trinity-libpqxx
+
+# WPD support
+#  For chalk and filters
+BuildRequires:	libwpd-devel
+Obsoletes:		trinity-libwpd
+
+# WV2 support
+%if 0%{?mgaversion} || 0%{?mdkversion}
+BuildRequires:  %{_lib}wv2-devel
+%endif
+%if 0%{?rhel} || 0%{?fedora} || 0%{?suse_version}
+BuildRequires:  wv2-devel
+%endif
+
+# MESA support
 %if 0%{?mgaversion} || 0%{?mdkversion}
 BuildRequires:	%{_lib}mesagl1-devel
 BuildRequires:	%{_lib}mesaglu1-devel
-BuildRequires:	%{_lib}xi-devel
-BuildRequires:  wv2-devel
 %endif
 %if 0%{?fedora} || 0%{?rhel}
 BuildRequires:  libGL-devel
 BuildRequires:	libGLU-devel
-BuildRequires:  libXi-devel
-BuildRequires:  trinity-wv2-devel
 %endif
-%if 0%{?suse_version}
+%if 0%{?suse_version} >= 1220
 BuildRequires:  Mesa-libGL-devel
 BuildRequires:	Mesa-libGLU-devel
-BuildRequires:  libXi-devel
-BuildRequires:  wv2-devel
 %endif
+
+# OPENJPEG
+%if 0%{?mgaversion} || 0%{?mdkversion}
+BuildRequires:	%{_lib}openjpeg-devel
+%endif
+
+# LIBXI support
+%if 0%{?mgaversion} || 0%{?mdkversion}
+BuildRequires:	%{_lib}xi-devel
+%endif
+%if 0%{?rhel} >= 5 || 0%{?fedora}
+BuildRequires:  libXi-devel
+%endif
+%if 0%{?suse_version} == 1140
+BuildRequires:  libXi6-devel
+%endif
+%if 0%{?suse_version} >= 1220
+BuildRequires:  libXi-devel
+%endif
+
 
 %description
 KOffice is an integrated office suite.
+
+##########
 
 %package suite
 Summary:        An integrated office suite
@@ -153,7 +210,7 @@ Requires:       %{name}-karbon = %{version}-%{release}
 Requires:       %{name}-kugar = %{version}-%{release}
 Requires:       %{name}-kexi = %{version}-%{release}
 Requires:       %{name}-kexi-driver-mysql = %{version}-%{release}
-Requires:       %{name}-kexi-driver-pgsql = %{version}-%{release}
+%{?with_postgresql:Requires:       %{name}-kexi-driver-pgsql = %{version}-%{release}}
 Requires:       %{name}-kchart = %{version}-%{release}
 Requires:       %{name}-kformula = %{version}-%{release}
 Requires:       %{name}-filters = %{version}-%{release}
@@ -163,288 +220,26 @@ Requires:       %{name}-chalk = %{version}-%{release}
 %description suite
 KOffice is an integrated office suite.
 
+%files suite
+#empty => virtual package
+
+##########
+
 %package core
 Summary:        Core support files for %{name} 
 Group:          Applications/Productivity
 Requires:       %{name}-libs = %{version}-%{release}
 Requires:       perl
 Conflicts:      koffice-i18n < %{version}
+
 %description core
 %{summary}.
 
-%package libs
-Summary:        Runtime libraries for %{name} 
-Group:          System Environment/Libraries
-Conflicts:      %{name} <= %{version}-%{release}
-Requires:       trinity-kdelibs
-License:        LGPLv2+
-%description libs
-%{summary}.
-
-%package devel
-Summary:        Development files for %{name} 
-Group:          Development/Libraries
-Requires:       %{name}-libs = %{version}-%{release}
-License:        LGPLv2+
-%description devel
-%{summary}.
-
-%package kword
-Summary:	A frame-based word processor capable of professional standard documents
-Group:          Applications/Productivity
-Requires:       %{name}-core = %{version}-%{release}
-%description kword
-%{summary}.
-
-%package kspread
-Summary:        A powerful spreadsheet application
-Group:          Applications/Productivity
-Requires:       %{name}-core = %{version}-%{release}
-%description kspread
-%{summary}.
-
-%package kpresenter
-Summary:        A full-featured presentation program
-Group:          Applications/Productivity
-Requires:       %{name}-core = %{version}-%{release}
-%description kpresenter
-%{summary}.
-
-%package kivio
-Summary:        A flowcharting application
-Group:          Applications/Productivity
-Requires:       %{name}-core = %{version}-%{release}
-Obsoletes:      kivio < %{version}-%{release}
-%description kivio
-%{summary}.
-
-%package karbon
-Summary:        A vector drawing application
-Group:          Applications/Productivity
-Requires:       %{name}-core = %{version}-%{release}
-%description karbon
-%{summary}.
-
-%package kugar
-Summary:        A tool for generating business quality reports
-Group:          Applications/Productivity
-Requires:       %{name}-core = %{version}-%{release}
-%description kugar
-%{summary}.
-
-%package kexi
-Summary:        An integrated environment for managing data
-Group:          Applications/Productivity
-Requires:       %{name}-core = %{version}-%{release}
-%description kexi
-%{summary}.
-For additional database drivers take a look at %{name}-kexi-driver-*
-
-%package kexi-driver-mysql
-Summary:        Mysql-driver for kexi
-Group:          Applications/Productivity
-Requires:       %{name}-kexi = %{version}-%{release}
-%description kexi-driver-mysql
-%{summary}.
-
-%package kexi-driver-pgsql
-Summary:        Postgresql driver for kexi
-Group:          Applications/Productivity
-Requires:       %{name}-kexi = %{version}-%{release}
-%description kexi-driver-pgsql
-%{summary}.
-
-%package kchart
-Summary:        An integrated graph and chart drawing tool
-Group:          Applications/Productivity
-Requires:       %{name}-core = %{version}-%{release}
-%description kchart
-%{summary}.
-
-%package kformula
-Summary:        A powerful formula editor
-Group:          Applications/Productivity
-Requires:       %{name}-core = %{version}-%{release}
-
-%if 0%{?mgaversion} || 0%{?mdkversion}
-Requires:		fonts-ttf-dejavu
-%else
-%if 0%{?fedora} >= 11 || 0%{?rhel} >= 6
-Requires:       dejavu-lgc-sans-fonts
-Requires:       lyx-cmex10-fonts
-%endif
-%if 0%{?rhel} == 5
-Requires:       dejavu-lgc-fonts 
-Requires:       lyx-cmex10-fonts
-%endif
-%if 0%{?suse_version}
-Requires:       dejavu-fonts 
-%endif
-%endif
-
-%description kformula
-%{summary}.
-
-%package filters
-Summary:        Import and Export Filters for KOffice
-Group:          Applications/Productivity
-Requires:       %{name}-core = %{version}-%{release}
-%description filters
-%{summary}.
-
-%package kplato
-Summary:         An integrated project management and planning tool
-Group:           Applications/Productivity
-Requires:        %{name}-core = %{version}-%{release}
-%description kplato
-%{summary}.
-
-%package chalk
-Summary:		 pixel-based image manipulation program for the TDE Office Suite [Trinity]
-Group:           Applications/Productivity
-Requires:        %{name}-core = %{version}-%{release}
-Requires:        %{name}-chalk-data = %{version}-%{release}
-Requires:        %{name}-filters
-%description chalk
-Chalk is a painting and image editing application for KOffice. Chalk contains
-both ease-of-use and fun features like guided painting.
-
-This package is part of the TDE Office Suite.
-
-%package chalk-data
-Summary:		data files for Chalk painting program [Trinity]
-Group:           Applications/Productivity
-%description chalk-data
-This package contains architecture-independent data files for Chalk,
-the painting program shipped with the TDE Office Suite.
-
-See the chalk package for further information.
-
-This package is part of the TDE Office Suite.
-
-
-
-%if 0%{?suse_version}
-%debug_package
-%endif
-
-
-%prep
-%setup -q -n %{kdecomp}-3.5.13.1
-
-%if 0%{?fedora} >= 17
-%patch13 -p1 -b .ruby
-%endif
-
-# use LGC variant instead
-%__sed -i.dejavu-lgc \
-  -e 's|DejaVu Sans|DejaVu LGC Sans|' \
-  -e 's|dejavu sans|dejavu lgc sans|' \
-  lib/kformula/{contextstyle,fontstyle,symboltable}.cc 
-
-# Ugly hack to modify TQT include directory inside autoconf files.
-# If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
-%__sed -i admin/acinclude.m4.in \
-  -e "s|/usr/include/tqt|%{tde_includedir}/tqt|g" \
-  -e "s|kde_htmldir='.*'|kde_htmldir='%{tde_tdedocdir}/HTML'|g"
-
-%__cp -f "/usr/share/aclocal/libtool.m4" "admin/libtool.m4.in"
-%__cp -f "/usr/share/libtool/config/ltmain.sh" "admin/ltmain.sh" || %__cp -f "/usr/share/libtool/ltmain.sh" "admin/ltmain.sh"
-%__make -f "admin/Makefile.common"
-
-
-%build
-unset QTDIR || : ; . /etc/profile.d/qt3.sh
-export PATH="%{tde_bindir}:${PATH}"
-export LDFLAGS="-L%{tde_libdir} -I%{tde_includedir}"
-export PKG_CONFIG_PATH="%{tde_libdir}/pkgconfig:${PKG_CONFIG_PATH}"
-
-%configure \
-  --prefix=%{tde_prefix} \
-  --exec-prefix=%{tde_prefix} \
-  --bindir=%{tde_bindir} \
-  --datadir=%{tde_datadir} \
-  --libdir=%{tde_libdir} \
-  --mandir=%{tde_mandir} \
-  --includedir=%{tde_tdeincludedir} \
-  --disable-rpath --disable-dependency-tracking \
-  --enable-new-ldflags \
-  --disable-debug --disable-warnings \
-  --with-pic --enable-shared --disable-static \
-  --with-extra-libs=%{tde_libdir} \
-  --enable-final \
-  --with-extra-includes=%{tde_includedir}/tqt:%{tde_includedir}/arts \
-  --enable-closure \
-  --disable-kexi-macros \
-  --with-pqxx-includes=%{tde_includedir} \
-  --with-pqxx-libraries=%{tde_libdir} \
-%if 0%{?with_kross} > 0
-  --enable-scripting \
-%else
-  --disable-scripting \
-%endif
-
-%__make %{?_smp_mflags}
-
-
-%install
-%__rm -rf %{buildroot}
-%__make install DESTDIR=%{buildroot}
-
-
-# Replace absolute symlinks with relative ones
-pushd %{buildroot}%{tde_tdedocdir}/HTML
-for lang in *; do
-  if [ -d $lang ]; then
-    pushd $lang
-    for i in */*; do
-      [ -d $i -a -L $i/common ] && rm -f $i/common && ln -sf ../../common $i/common
-    done
-    popd
-  fi
-done
-popd
-
-desktop-file-install \
-  --dir=%{buildroot}%{tde_tdeappdir} \
-  --vendor="" \
-  --delete-original \
-  %{buildroot}%{tde_datadir}/applnk/Office/*.desktop
-
-## Hack-in NoDisplay=True (http://bugzilla.redhat.com/245061)
-## until http://bugzilla.redhat.com/245190 is fixed
-%if 0%{?rhel} || 0%{?fedora}
-for desktop_file in %{buildroot}%{tde_datadir}/applnk/.hidden/*.desktop ; do
-  grep "^NoDisplay=" ${desktop_file} || \
-    echo "NoDisplay=True" >> ${desktop_file}
-done
-%endif
-
-## unpackaged files
-# fonts
-rm -rfv %{buildroot}%{tde_datadir}/apps/kformula/fonts/
-# libtool archives
-rm -f %{buildroot}%{tde_libdir}/lib*.la
-# shouldn't these be in koffice-l10n? 
-rm -f %{buildroot}%{tde_datadir}/locale/pl/LC_MESSAGES/kexi_{add,delete}_column_gui_transl_pl.sh
-# -devel symlinks to nuke
-rm -f %{buildroot}%{tde_libdir}/lib*common.so
-rm -f %{buildroot}%{tde_libdir}/lib*filters.so
-rm -f %{buildroot}%{tde_libdir}/lib*private.so
-rm -f %{buildroot}%{tde_libdir}/libkarbon*.so
-rm -f %{buildroot}%{tde_libdir}/libkchart*.so
-rm -f %{buildroot}%{tde_libdir}/libkexi*.so
-rm -f %{buildroot}%{tde_libdir}/libkisexiv2.so
-rm -f %{buildroot}%{tde_libdir}/libkformdesigner.so
-rm -f %{buildroot}%{tde_libdir}/libkplato*.so
-rm -f %{buildroot}%{tde_libdir}/libkpresenter*.so
-rm -f %{buildroot}%{tde_libdir}/libkword*.so
-rm -f %{buildroot}%{tde_libdir}/libkross*.so
-rm -f %{buildroot}%{tde_libdir}/libkugar*.so
-
-
-%clean
-%__rm -rf %{buildroot}
+%posttrans core
+gtk-update-icon-cache %{tde_datadir}/icons/crystalsvg &> /dev/null || :
+gtk-update-icon-cache %{tde_datadir}/icons/hicolor &> /dev/null || :
+gtk-update-icon-cache %{tde_datadir}/icons/locolor &> /dev/null || :
+update-desktop-database -q &> /dev/null ||:
 
 %post core
 touch --no-create %{tde_datadir}/icons/crystalsvg &> /dev/null || :
@@ -458,87 +253,6 @@ if [ $1 -eq 0 ]; then
   gtk-update-icon-cache %{tde_datadir}/icons/locolor &> /dev/null || :
   update-desktop-database -q &> /dev/null ||:
 fi
-
-%posttrans core
-gtk-update-icon-cache %{tde_datadir}/icons/crystalsvg &> /dev/null || :
-gtk-update-icon-cache %{tde_datadir}/icons/hicolor &> /dev/null || :
-gtk-update-icon-cache %{tde_datadir}/icons/locolor &> /dev/null || :
-update-desktop-database -q &> /dev/null ||:
-
-%post karbon
-/sbin/ldconfig || :
-
-%postun karbon
-/sbin/ldconfig || :
-
-%post kword
-/sbin/ldconfig || :
-
-%postun kword
-/sbin/ldconfig || :
-
-%posttrans kword
-update-desktop-database -q &> /dev/null ||:
-
-%post kpresenter
-/sbin/ldconfig || :
-
-%postun kpresenter
-/sbin/ldconfig || :
-
-%posttrans kpresenter
-update-desktop-database -q &> /dev/null ||:
-
-%post kugar
-/sbin/ldconfig || :
-
-%postun kugar
-/sbin/ldconfig || :
-
-%posttrans kugar
-update-desktop-database -q &> /dev/null ||:
-
-%post kexi
-/sbin/ldconfig || :
-
-%postun kexi
-/sbin/ldconfig || :
-
-%posttrans kexi
-update-desktop-database -q &> /dev/null ||:
-
-%post kchart
-/sbin/ldconfig || :
-
-%postun kchart
-/sbin/ldconfig || :
-
-%posttrans kchart
-update-desktop-database -q &> /dev/null ||:
-
-%post filters
-/sbin/ldconfig || :
-
-%postun filters
-/sbin/ldconfig || :
-
-%post libs
-/sbin/ldconfig || :
-
-%postun libs
-/sbin/ldconfig || :
-
-%post chalk
-/sbin/ldconfig || :
-
-%postun chalk
-/sbin/ldconfig || :
-
-%posttrans chalk
-update-desktop-database -q &> /dev/null ||:
-
-%files suite
-#empty => virtual package
 
 %files core
 %defattr(-,root,root,-)
@@ -593,13 +307,25 @@ update-desktop-database -q &> /dev/null ||:
 %{tde_tdeappdir}/*KThesaurus.desktop
 %{tde_tdeappdir}/*koshell.desktop
 %{tde_datadir}/apps/kofficewidgets/
-%if 0%{?with_kross} > 0
+%if 0%{?with_kross}
 %{tde_datadir}/apps/kross/
 %{tde_tdelibdir}/krosspython.*
 %if 0%{?with_ruby}
 %{tde_tdelibdir}/krossruby.*
 %endif
 %endif
+
+##########
+
+%package libs
+Summary:        Runtime libraries for %{name} 
+Group:          System Environment/Libraries
+Conflicts:      %{name} <= %{version}-%{release}
+Requires:       trinity-kdelibs
+License:        LGPLv2+
+
+%description libs
+%{summary}.
 
 %files libs
 %defattr(-,root,root,-)
@@ -620,10 +346,27 @@ update-desktop-database -q &> /dev/null ||:
 %{tde_libdir}/libkformulalib.so.*
 %{tde_libdir}/libkopalette.so.*
 %{tde_libdir}/libkoproperty.so.*
-%if 0%{?with_kross} > 0
+%if 0%{?with_kross}
 %{tde_libdir}/libkrossapi.so.*
 %{tde_libdir}/libkrossmain.so.*
 %endif
+
+%post libs
+/sbin/ldconfig || :
+
+%postun libs
+/sbin/ldconfig || :
+
+##########
+
+%package devel
+Summary:        Development files for %{name} 
+Group:          Development/Libraries
+Requires:       %{name}-libs = %{version}-%{release}
+License:        LGPLv2+
+
+%description devel
+%{summary}.
 
 %files devel
 %defattr(-,root,root,-)
@@ -633,6 +376,25 @@ update-desktop-database -q &> /dev/null ||:
 %{tde_libdir}/lib*.so
 %exclude %{tde_libdir}/libkdeinit_*.so
 %exclude %{tde_libdir}/libkudesignercore.so
+
+##########
+
+%package kword
+Summary:	A frame-based word processor capable of professional standard documents
+Group:          Applications/Productivity
+Requires:       %{name}-core = %{version}-%{release}
+
+%description kword
+%{summary}.
+
+%post kword
+/sbin/ldconfig || :
+
+%postun kword
+/sbin/ldconfig || :
+
+%posttrans kword
+update-desktop-database -q &> /dev/null ||:
 
 %files kword
 %defattr(-,root,root,-)
@@ -648,6 +410,16 @@ update-desktop-database -q &> /dev/null ||:
 %{tde_datadir}/templates/TextDocument.desktop
 %{tde_datadir}/templates/.source/TextDocument.kwt
 %{tde_tdeappdir}/*kword.desktop
+
+##########
+
+%package kspread
+Summary:        A powerful spreadsheet application
+Group:          Applications/Productivity
+Requires:       %{name}-core = %{version}-%{release}
+
+%description kspread
+%{summary}.
 
 %files kspread
 %defattr(-,root,root,-)
@@ -671,10 +443,29 @@ update-desktop-database -q &> /dev/null ||:
 %{tde_datadir}/templates/SpreadSheet.desktop
 %{tde_datadir}/templates/.source/SpreadSheet.kst
 %{tde_tdeappdir}/*kspread.desktop
-%if 0%{?with_kross} > 0
+%if 0%{?with_kross}
 %{tde_tdelibdir}/kspreadscripting.*
 %{tde_tdelibdir}/krosskspreadcore.*
 %endif
+
+##########
+
+%package kpresenter
+Summary:        A full-featured presentation program
+Group:          Applications/Productivity
+Requires:       %{name}-core = %{version}-%{release}
+
+%description kpresenter
+%{summary}.
+
+%post kpresenter
+/sbin/ldconfig || :
+
+%postun kpresenter
+/sbin/ldconfig || :
+
+%posttrans kpresenter
+update-desktop-database -q &> /dev/null ||:
 
 %files kpresenter
 %defattr(-,root,root,-)
@@ -691,6 +482,46 @@ update-desktop-database -q &> /dev/null ||:
 %{tde_datadir}/templates/.source/Presentation.kpt
 %{tde_tdeappdir}/*kpresenter.desktop
 
+##########
+
+%package kivio
+Summary:        A flowcharting application
+Group:          Applications/Productivity
+Requires:       %{name}-core = %{version}-%{release}
+Obsoletes:      kivio < %{version}-%{release}
+
+%description kivio
+%{summary}.
+
+%files kivio
+%defattr(-,root,root,-)
+%lang(en) %{tde_tdedocdir}/HTML/en/kivio/
+%{tde_bindir}/kivio
+%{tde_libdir}/libkdeinit_kivio.so
+%{tde_libdir}/libkiviocommon.so.*
+%{tde_tdelibdir}/*kivio*.*
+%{tde_tdelibdir}/straight_connector.*
+%{tde_datadir}/apps/kivio/
+%{tde_datadir}/config.kcfg/kivio.kcfg
+%{tde_datadir}/services/kivio*.desktop
+%{tde_tdeappdir}/*kivio.desktop
+
+##########
+
+%package karbon
+Summary:        A vector drawing application
+Group:          Applications/Productivity
+Requires:       %{name}-core = %{version}-%{release}
+
+%description karbon
+%{summary}.
+
+%post karbon
+/sbin/ldconfig || :
+
+%postun karbon
+/sbin/ldconfig || :
+
 %files karbon
 %defattr(-,root,root,-)
 %lang(en) %{tde_tdedocdir}/HTML/en/karbon/
@@ -705,6 +536,25 @@ update-desktop-database -q &> /dev/null ||:
 %{tde_datadir}/templates/Illustration.desktop
 %{tde_datadir}/templates/.source/Illustration.karbon
 %{tde_tdeappdir}/*karbon.desktop
+
+##########
+
+%package kugar
+Summary:        A tool for generating business quality reports
+Group:          Applications/Productivity
+Requires:       %{name}-core = %{version}-%{release}
+
+%description kugar
+%{summary}.
+
+%post kugar
+/sbin/ldconfig || :
+
+%postun kugar
+/sbin/ldconfig || :
+
+%posttrans kugar
+update-desktop-database -q &> /dev/null ||:
 
 %files kugar
 %defattr(-,root,root,-)
@@ -724,6 +574,30 @@ update-desktop-database -q &> /dev/null ||:
 %{tde_datadir}/services/kugar*.desktop
 %{tde_tdeappdir}/*kugar.desktop
 %{tde_tdeappdir}/*kudesigner.desktop
+
+##########
+
+%package kexi
+Summary:        An integrated environment for managing data
+Group:          Applications/Productivity
+Requires:       %{name}-core = %{version}-%{release}
+
+%if 0%{?with_postgresql} == 0
+Obsoletes:		%{name}-kexi-driver-pgsql
+%endif
+
+%description kexi
+%{summary}.
+For additional database drivers take a look at %{name}-kexi-driver-*
+
+%post kexi
+/sbin/ldconfig || :
+
+%postun kexi
+/sbin/ldconfig || :
+
+%posttrans kexi
+update-desktop-database -q &> /dev/null ||:
 
 %files kexi
 %defattr(-,root,root,-)
@@ -749,11 +623,21 @@ update-desktop-database -q &> /dev/null ||:
 %{tde_datadir}/services/kformdesigner/*
 %{tde_tdeappdir}/*kexi.desktop
 %{tde_datadir}/services/kexidb_sqlite*driver.desktop
-%if 0%{?with_kross} > 0
+%if 0%{?with_kross}
 %{tde_bindir}/krossrunner
 %{tde_tdelibdir}/krosskexiapp.*
 %{tde_tdelibdir}/krosskexidb.*
 %endif
+
+##########
+
+%package kexi-driver-mysql
+Summary:        Mysql-driver for kexi
+Group:          Applications/Productivity
+Requires:       %{name}-kexi = %{version}-%{release}
+
+%description kexi-driver-mysql
+%{summary}.
 
 %files kexi-driver-mysql
 %defattr(-,root,root,-)
@@ -762,12 +646,45 @@ update-desktop-database -q &> /dev/null ||:
 %{tde_datadir}/services/keximigrate_mysql.desktop
 %{tde_datadir}/services/kexidb_mysqldriver.desktop
 
+##########
+
+%if 0%{?with_postgresql}
+
+%package kexi-driver-pgsql
+Summary:        Postgresql driver for kexi
+Group:          Applications/Productivity
+Requires:       %{name}-kexi = %{version}-%{release}
+
+%description kexi-driver-pgsql
+%{summary}.
+
 %files kexi-driver-pgsql
 %defattr(-,root,root,-)
 %{tde_tdelibdir}/kexidb_pqxxsqldriver.*
 %{tde_tdelibdir}/keximigrate_pqxx.*
 %{tde_datadir}/services/kexidb_pqxxsqldriver.desktop
 %{tde_datadir}/services/keximigrate_pqxx.desktop
+
+%endif
+
+##########
+
+%package kchart
+Summary:        An integrated graph and chart drawing tool
+Group:          Applications/Productivity
+Requires:       %{name}-core = %{version}-%{release}
+
+%description kchart
+%{summary}.
+
+%post kchart
+/sbin/ldconfig || :
+
+%postun kchart
+/sbin/ldconfig || :
+
+%posttrans kchart
+update-desktop-database -q &> /dev/null ||:
 
 %files kchart
 %defattr(-,root,root,-)
@@ -780,6 +697,35 @@ update-desktop-database -q &> /dev/null ||:
 %{tde_datadir}/services/kchart*.desktop
 %{tde_tdeappdir}/*kchart.desktop
 
+##########
+
+%package kformula
+Summary:        A powerful formula editor
+Group:          Applications/Productivity
+Requires:       %{name}-core = %{version}-%{release}
+
+%if 0%{?mgaversion} || 0%{?mdkversion}
+Requires:		fonts-ttf-dejavu
+%else
+%if 0%{?fedora} >= 11 || 0%{?rhel} >= 6
+Requires:       dejavu-lgc-sans-fonts
+Requires:       lyx-cmex10-fonts
+%endif
+%if 0%{?rhel} == 5
+Requires:       dejavu-lgc-fonts 
+Requires:       lyx-cmex10-fonts
+%endif
+%if 0%{?suse_version} >= 1220
+Requires:       dejavu-fonts 
+%endif
+%if 0%{?suse_version} == 1140
+Requires:       dejavu
+%endif
+%endif
+
+%description kformula
+%{summary}.
+
 %files kformula
 %defattr(-,root,root,-)
 %lang(en) %{tde_tdedocdir}/HTML/en/kformula/
@@ -790,18 +736,21 @@ update-desktop-database -q &> /dev/null ||:
 %{tde_datadir}/services/kformula*.desktop
 %{tde_tdeappdir}/*kformula.desktop
 
-%files kivio
-%defattr(-,root,root,-)
-%lang(en) %{tde_tdedocdir}/HTML/en/kivio/
-%{tde_bindir}/kivio
-%{tde_libdir}/libkdeinit_kivio.so
-%{tde_libdir}/libkiviocommon.so.*
-%{tde_tdelibdir}/*kivio*.*
-%{tde_tdelibdir}/straight_connector.*
-%{tde_datadir}/apps/kivio/
-%{tde_datadir}/config.kcfg/kivio.kcfg
-%{tde_datadir}/services/kivio*.desktop
-%{tde_tdeappdir}/*kivio.desktop
+##########
+
+%package filters
+Summary:        Import and Export Filters for KOffice
+Group:          Applications/Productivity
+Requires:       %{name}-core = %{version}-%{release}
+
+%description filters
+%{summary}.
+
+%post filters
+/sbin/ldconfig || :
+
+%postun filters
+/sbin/ldconfig || :
 
 %files filters
 %defattr(-,root,root,-)
@@ -857,6 +806,16 @@ update-desktop-database -q &> /dev/null ||:
 %{tde_datadir}/services/xslt*.desktop
 %{tde_datadir}/servicetypes/kofilter*.desktop
 
+##########
+
+%package kplato
+Summary:         An integrated project management and planning tool
+Group:           Applications/Productivity
+Requires:        %{name}-core = %{version}-%{release}
+
+%description kplato
+%{summary}.
+
 %files kplato
 %defattr(-,root,root,-)
 %lang(en) %{tde_tdedocdir}/HTML/en/kplato/
@@ -867,6 +826,30 @@ update-desktop-database -q &> /dev/null ||:
 %{tde_datadir}/apps/kplato/
 %{tde_datadir}/services/kplatopart.desktop
 %{tde_tdeappdir}/*kplato.desktop
+
+##########
+
+%package chalk
+Summary:		 pixel-based image manipulation program for the TDE Office Suite [Trinity]
+Group:           Applications/Productivity
+Requires:        %{name}-core = %{version}-%{release}
+Requires:        %{name}-chalk-data = %{version}-%{release}
+Requires:        %{name}-filters
+
+%description chalk
+Chalk is a painting and image editing application for KOffice. Chalk contains
+both ease-of-use and fun features like guided painting.
+
+This package is part of the TDE Office Suite.
+
+%post chalk
+/sbin/ldconfig || :
+
+%postun chalk
+/sbin/ldconfig || :
+
+%posttrans chalk
+update-desktop-database -q &> /dev/null ||:
 
 %files chalk
 %defattr(-,root,root,-)
@@ -986,6 +969,7 @@ update-desktop-database -q &> /dev/null ||:
 %{tde_tdelibdir}/chalkwetplugin.la
 %{tde_tdelibdir}/chalkwetplugin.so
 %{tde_tdelibdir}/chalk_ycbcr_*
+%if 0%{?with_graphicsmagick}
 %{tde_tdelibdir}/libchalkgmagickexport.la
 %{tde_tdelibdir}/libchalkgmagickexport.so
 %{tde_tdelibdir}/libchalkgmagickimport.la
@@ -994,6 +978,7 @@ update-desktop-database -q &> /dev/null ||:
 %{tde_tdelibdir}/libchalkjpegexport.so
 %{tde_tdelibdir}/libchalkjpegimport.la
 %{tde_tdelibdir}/libchalkjpegimport.so
+%endif
 %{tde_tdelibdir}/libchalk_openexr_export.la
 %{tde_tdelibdir}/libchalk_openexr_export.so
 %{tde_tdelibdir}/libchalk_openexr_import.la
@@ -1008,10 +993,12 @@ update-desktop-database -q &> /dev/null ||:
 %{tde_tdelibdir}/libchalkpngimport.so
 %{tde_tdelibdir}/libchalk_raw_import.la
 %{tde_tdelibdir}/libchalk_raw_import.so
+%if 0%{?with_graphicsmagick}
 %{tde_tdelibdir}/libchalktiffexport.la
 %{tde_tdelibdir}/libchalktiffexport.so
 %{tde_tdelibdir}/libchalktiffimport.la
 %{tde_tdelibdir}/libchalktiffimport.so
+%endif
 %{tde_libdir}/libkdeinit_chalk.so
 %{tde_libdir}/libchalk_cmyk_*.so.*
 %{tde_libdir}/libchalkcolor.so.*
@@ -1024,7 +1011,7 @@ update-desktop-database -q &> /dev/null ||:
 %{tde_libdir}/libchalkrgb.so.*
 %{tde_libdir}/libchalkui.so.*
 %{tde_libdir}/libchalk_ycbcr_*.so.*
-%if 0%{?with_kross} > 0
+%if 0%{?with_kross}
 %{tde_tdelibdir}/krosschalkcore.la
 %{tde_tdelibdir}/krosschalkcore.so
 %{tde_tdelibdir}/chalkscripting.la
@@ -1032,21 +1019,165 @@ update-desktop-database -q &> /dev/null ||:
 %{tde_libdir}/libchalkscripting.so.*
 %endif
 
+##########
+
+%package chalk-data
+Summary:		data files for Chalk painting program [Trinity]
+Group:           Applications/Productivity
+
+%description chalk-data
+This package contains architecture-independent data files for Chalk,
+the painting program shipped with the TDE Office Suite.
+
+See the chalk package for further information.
+
+This package is part of the TDE Office Suite.
+
 %files chalk-data
+%defattr(-,root,root,-)
 %{tde_tdeappdir}/chalk.desktop
 %{tde_datadir}/applnk/.hidden/chalk_*.desktop
 %{tde_datadir}/apps/konqueror/servicemenus/chalk_konqi.desktop
-%{tde_datadir}/apps/chalk
-%{tde_datadir}/apps/chalkplugins
-%lang(en) %{tde_tdedocdir}/HTML/en/chalk
+%{tde_datadir}/apps/chalk/
+%{tde_datadir}/apps/chalkplugins/
+%lang(en) %{tde_tdedocdir}/HTML/en/chalk/
 %{tde_datadir}/icons/hicolor/*/apps/chalk.png
 %{tde_datadir}/services/chalk*.desktop
 %{tde_datadir}/servicetypes/chalk*.desktop
 
+##########
+
+%if 0%{?suse_version} || 0%{?pclinuxos}
+%debug_package
+%endif
+
+##########
+
+%prep
+%setup -q -n %{tdecomp}-trinity-%{tdeversion}
+
+%if 0%{?mgaversion} >= 3 || 0%{?pclinuxos} >= 2013
+%__cp /usr/share/automake-1.13/test-driver admin/
+%endif
+
+# use LGC variant instead
+%__sed -i.dejavu-lgc \
+  -e 's|DejaVu Sans|DejaVu LGC Sans|' \
+  -e 's|dejavu sans|dejavu lgc sans|' \
+  lib/kformula/{contextstyle,fontstyle,symboltable}.cc 
+
+# Ugly hack to modify TQT include directory inside autoconf files.
+# If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
+%__sed -i admin/acinclude.m4.in \
+  -e "s|/usr/include/tqt|%{tde_includedir}/tqt|g" \
+  -e "s|kde_htmldir='.*'|kde_htmldir='%{tde_tdedocdir}/HTML'|g"
+
+%__cp -f "/usr/share/aclocal/libtool.m4" "admin/libtool.m4.in"
+%__cp -f "/usr/share/libtool/config/ltmain.sh" "admin/ltmain.sh" || %__cp -f "/usr/share/libtool/ltmain.sh" "admin/ltmain.sh"
+%__make -f "admin/Makefile.common"
+
+
+%build
+unset QTDIR || : ; . /etc/profile.d/qt3.sh
+export PATH="%{tde_bindir}:${PATH}"
+export LDFLAGS="-L%{tde_libdir} -I%{tde_includedir}"
+export PKG_CONFIG_PATH="%{tde_libdir}/pkgconfig:${PKG_CONFIG_PATH}"
+export KDEDIR="%{tde_prefix}"
+
+%if 0%{?suse_version} == 1220
+RD=$(ruby -r rbconfig -e 'printf("%s",Config::CONFIG["rubyhdrdir"])')
+export CXXFLAGS="${CXXFLAGS} -I${RD}/%_normalized_cpu-linux"
+%endif
+
+%configure \
+  --prefix=%{tde_prefix} \
+  --exec-prefix=%{tde_prefix} \
+  --bindir=%{tde_bindir} \
+  --datadir=%{tde_datadir} \
+  --libdir=%{tde_libdir} \
+  --mandir=%{tde_mandir} \
+  --includedir=%{tde_tdeincludedir} \
+  --disable-rpath --disable-dependency-tracking \
+  --enable-new-ldflags \
+  --disable-debug --disable-warnings \
+  --with-pic --enable-shared --disable-static \
+  --with-extra-libs=%{tde_libdir} \
+  --enable-final \
+  --with-extra-includes=%{tde_includedir}/tqt:%{tde_includedir}/arts \
+  --enable-closure \
+  --disable-kexi-macros \
+  %{?with_kross:--enable-scripting} %{!?with_kross:--disable-scripting} \
+  %{?with_postgresql:--enable-pgsql} %{!?with_postgresql:--disable-pgsql} \
+
+%__make %{?_smp_mflags}
+
+
+%install
+%__rm -rf %{buildroot}
+%__make install DESTDIR=%{buildroot}
+
+
+# Replace absolute symlinks with relative ones
+pushd %{buildroot}%{tde_tdedocdir}/HTML
+for lang in *; do
+  if [ -d $lang ]; then
+    pushd $lang
+    for i in */*; do
+      [ -d $i -a -L $i/common ] && rm -f $i/common && ln -sf ../../common $i/common
+    done
+    popd
+  fi
+done
+popd
+
+desktop-file-install \
+  --dir=%{buildroot}%{tde_tdeappdir} \
+  --vendor="" \
+  --delete-original \
+  %{buildroot}%{tde_datadir}/applnk/Office/*.desktop
+
+## Hack-in NoDisplay=True (http://bugzilla.redhat.com/245061)
+## until http://bugzilla.redhat.com/245190 is fixed
+%if 0%{?rhel} || 0%{?fedora}
+for desktop_file in %{buildroot}%{tde_datadir}/applnk/.hidden/*.desktop ; do
+  grep "^NoDisplay=" ${desktop_file} || \
+    echo "NoDisplay=True" >> ${desktop_file}
+done
+%endif
+
+## unpackaged files
+# fonts
+rm -rfv %{buildroot}%{tde_datadir}/apps/kformula/fonts/
+# libtool archives
+rm -f %{buildroot}%{tde_libdir}/lib*.la
+# shouldn't these be in koffice-l10n? 
+rm -f %{buildroot}%{tde_datadir}/locale/pl/LC_MESSAGES/kexi_{add,delete}_column_gui_transl_pl.sh
+# -devel symlinks to nuke
+rm -f %{buildroot}%{tde_libdir}/lib*common.so
+rm -f %{buildroot}%{tde_libdir}/lib*filters.so
+rm -f %{buildroot}%{tde_libdir}/lib*private.so
+rm -f %{buildroot}%{tde_libdir}/libkarbon*.so
+rm -f %{buildroot}%{tde_libdir}/libkchart*.so
+rm -f %{buildroot}%{tde_libdir}/libkexi*.so
+rm -f %{buildroot}%{tde_libdir}/libkisexiv2.so
+rm -f %{buildroot}%{tde_libdir}/libkformdesigner.so
+rm -f %{buildroot}%{tde_libdir}/libkplato*.so
+rm -f %{buildroot}%{tde_libdir}/libkpresenter*.so
+rm -f %{buildroot}%{tde_libdir}/libkword*.so
+rm -f %{buildroot}%{tde_libdir}/libkross*.so
+rm -f %{buildroot}%{tde_libdir}/libkugar*.so
+
+
+%clean
+%__rm -rf %{buildroot}
+
 
 %changelog
+* Mon Jun 03 2013 Francois Andriot <francois.andriot@free.fr> - 1.6.3-7
+- Initial release for TDE 3.5.13.2
+
 * Wed Oct 03 2012 Francois Andriot <francois.andriot@free.fr> - 1.6.3-6
-- Initial build for TDE 3.5.13.1
+- Initial release for TDE 3.5.13.1
 
 * Sun Jul 08 2012 Francois Andriot <francois.andriot@free.fr> - 1.6.3-5
 - Fix kformula dependancies (for RHEL6)
@@ -1071,6 +1202,6 @@ update-desktop-database -q &> /dev/null ||:
 - Fix HTML directory location
 
 * Tue Nov 22 2011 Francois Andriot <francois.andriot@free.fr> - 1.6.3-1
-- Initial build for RHEL 5, RHEL 6, Fedora 15, Fedora 16
+- Initial release for RHEL 5, RHEL 6, Fedora 15, Fedora 16
 - Based on Spec file from Fedora 11 'koffice-2:1.6.3-25.20090306svn'
 - Removed 'krita', added 'chalk'
