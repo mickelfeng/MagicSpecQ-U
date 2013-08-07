@@ -29,7 +29,7 @@
 Name:		trinity-tde-systemsettings
 Summary:	easy to use control centre for TDE
 Version:	0.0svn20070312
-Release:	7%{?dist}%{?_variant}
+Release:	8%{?dist}%{?_variant}
 
 License:	GPLv2+
 Group:		Applications/Utilities
@@ -54,7 +54,7 @@ BuildRequires:	trinity-tdelibs-devel >= 3.5.13.2
 BuildRequires:	trinity-tdebase-devel >= 3.5.13.2
 BuildRequires:	desktop-file-utils
 
-Requires:	trinity-guidance
+Requires:	trinity-tde-guidance
 
 %description
 System preferences is a replacement for the TDE
@@ -146,6 +146,9 @@ xdg-user-dirs-update
 
 
 %changelog
+* Wed Aug 07 2013 Liu Di <liudidi@gmail.com> - 0.0svn20070312-8.opt
+- 为 Magic 3.0 重建
+
 * Sat Jun 29 2013 Francois Andriot <francois.andriot@free.fr> - 0.0svn20070312-7
 - Rebuild
 
