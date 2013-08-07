@@ -1,5 +1,6 @@
 # Default version for this component
-%define kdecomp ksquirrel
+%define tdecomp ksquirrel
+%define tdeversion 3.5.13.2
 
 # If TDE is built in a specific prefix (e.g. /opt/trinity), the release will be suffixed with ".opt".
 %if "%{?tde_prefix}" != "/usr"
@@ -23,10 +24,10 @@
 %define _docdir %{tde_docdir}
 
 
-Name:		trinity-%{kdecomp}
+Name:		trinity-%{tdecomp}
 Summary:	Powerful Trinity image viewer
 Version:	0.8.0
-Release:	3%{?dist}%{?_variant}
+Release:	4%{?dist}%{?_variant}
 
 License:	GPLv2+
 Group:		Amusements/Games
@@ -38,11 +39,11 @@ URL:		http://www.trinitydesktop.org/
 Prefix:    %{tde_prefix}
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	%{kdecomp}-3.5.13.1.tar.gz
+Source0:	%{tdecomp}-trinity-%{tdeversion}.tar.xz
 
-BuildRequires:	trinity-tqtinterface-devel >= 3.5.13.1
-BuildRequires:	trinity-tdelibs-devel >= 3.5.13.1
-BuildRequires:	trinity-tdebase-devel >= 3.5.13.1
+BuildRequires:	trinity-tqtinterface-devel >= 3.5.13.2
+BuildRequires:	trinity-tdelibs-devel >= 3.5.13.2
+BuildRequires:	trinity-tdebase-devel >= 3.5.13.2
 BuildRequires:	desktop-file-utils
 BuildRequires:	gettext
 
@@ -59,13 +60,13 @@ KSquirrel is a fast and convenient image viewer for KDE featuring
 OpenGL and dynamic format support.
 
 
-%if 0%{?suse_version}
+%if 0%{?suse_version} || 0%{?pclinuxos}
 %debug_package
 %endif
 
 
 %prep
-%setup -q -n %{kdecomp}-3.5.13.1
+%setup -q -n %{tdecomp}-trinity-%{tdeversion}
 
 # Ugly hack to modify TQT include directory inside autoconf files.
 # If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
@@ -82,6 +83,11 @@ OpenGL and dynamic format support.
 unset QTDIR; . /etc/profile.d/qt3.sh
 export PATH="%{tde_bindir}:${PATH}"
 export LDFLAGS="-L%{tde_libdir} -I%{tde_includedir}"
+
+# Specific path for RHEL4
+if [ -d /usr/X11R6 ]; then
+  export CXXFLAGS="${RPM_OPT_FLAGS} -I/usr/X11R6/include -L/usr/X11R6/%{_lib}"
+fi
 
 %configure \
   --prefix=%{tde_prefix} \
@@ -102,7 +108,7 @@ export PATH="%{tde_bindir}:${PATH}"
 %__rm -rf %{buildroot}
 %__make install DESTDIR=%{buildroot}
 
-%find_lang %{kdecomp}
+%find_lang %{tdecomp}
 
 %clean
 %__rm -rf %{buildroot}
@@ -119,7 +125,7 @@ touch --no-create %{tde_datadir}/icons/hicolor || :
 gtk-update-icon-cache --quiet %{tde_datadir}/icons/hicolor || :
 
 
-%files -f %{kdecomp}
+%files -f %{tdecomp}.lang
 %defattr(-,root,root,-)
 %doc AUTHORS ChangeLog COPYING LICENSE LICENSE.GFDL LICENSE.LGPL README TODO
 %{tde_bindir}/ksquirrel
@@ -143,12 +149,15 @@ gtk-update-icon-cache --quiet %{tde_datadir}/icons/hicolor || :
 %{tde_mandir}/man1/ksquirrel.1
 
 %changelog
+* Mon Jun 03 2013 Francois Andriot <francois.andriot@free.fr> - 0.8.0-4
+- Initial release for TDE 3.5.13.2
+
 * Wed Oct 03 2012 Francois Andriot <francois.andriot@free.fr> - 0.8.0-3
-- Initial build for TDE 3.5.13.1
+- Initial release for TDE 3.5.13.1
 
 * Wed May 02 2012 Francois Andriot <francois.andriot@free.fr> - 0.8.1-2
 - Rebuild for Fedora 17
 - Fix HTML directory location
 
 * Sun Nov 20 2011 Francois Andriot <francois.andriot@free.fr> - 0.8.0-1
-- Initial build for RHEL 5, RHEL 6, Fedora 15, Fedora 16
+- Initial release for RHEL 5, RHEL 6, Fedora 15, Fedora 16
