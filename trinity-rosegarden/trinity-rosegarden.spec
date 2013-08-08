@@ -1,5 +1,6 @@
 # Default version for this component
-%define kdecomp rosegarden
+%define tdecomp rosegarden
+%define tdeversion 3.5.13.2
 
 # Required for Mageia 2: removes the ldflag '--no-undefined'
 %define _disable_ld_no_undefined 1
@@ -26,10 +27,10 @@
 %define _docdir %{tde_tdedocdir}
 
 
-Name:		trinity-%{kdecomp}
+Name:		trinity-%{tdecomp}
 Summary:	music editor and MIDI/audio sequencer [Trinity]
 Version:	1.7.0
-Release:	3%{?dist}%{?_variant}
+Release:	5%{?dist}%{?_variant}
 
 License:	GPLv2+
 Group: 	    Applications/Multimedia
@@ -41,27 +42,35 @@ URL:		http://www.rosegardenmusic.com/
 Prefix:    %{tde_prefix}
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	%{kdecomp}-3.5.13.1.tar.gz
+Source0:	%{tdecomp}-trinity-%{tdeversion}.tar.xz
 
-Patch0:		rosegarden-3.5.13-ftbfs.patch
-
-BuildRequires:	trinity-tqtinterface-devel >= 3.5.13.1
-BuildRequires:	trinity-tdelibs-devel >= 3.5.13.1
-BuildRequires:	trinity-tdebase-devel >= 3.5.13.1
+BuildRequires:	trinity-tqtinterface-devel >= 3.5.13.2
+BuildRequires:	trinity-tdelibs-devel >= 3.5.13.2
+BuildRequires:	trinity-tdebase-devel >= 3.5.13.2
 BuildRequires:	desktop-file-utils
 BuildRequires:	gettext
 
 BuildRequires:	fftw-devel
 BuildRequires:	dssi-devel
 BuildRequires:	liblo-devel
-BuildRequires:	liblrdf-devel
 BuildRequires:	fontconfig-devel
 
+# LRDF support
+%if 0%{?mgaversion} || 0%{?mdkversion} || 0%{?fedora} || 0%{?suse_version}
+BuildRequires:	liblrdf-devel
+%endif
+
+# JACK support
 %if 0%{?mgaversion} || 0%{?mdkversion}
 BuildRequires:	%{_lib}jack-devel
 %else
-BuildRequires:	lirc-devel
 BuildRequires:	jack-audio-connection-kit-devel
+%endif
+
+# LIRC support
+%if 0%{?fedora} || 0%{?mgaversion} || 0%{?mdkversion}
+%define with_lirc 1
+BuildRequires:	lirc-devel
 %endif
 
 Requires:	lilypond
@@ -77,10 +86,6 @@ Requires:	libsndfile-utils
 %endif
 %endif
 
-# LIRC does not exist on RHEL.
-%if 0%{?fedora} > 0
-BuildRequires:	lirc-devel
-%endif
 
 Requires:	%{name}-data == %{version}-%{release}
 
@@ -104,20 +109,22 @@ lilypond and Csound files export, etc.
 This package provides the data files necessary for running Rosegarden
 
 
-%if 0%{?suse_version}
+%if 0%{?suse_version} || 0%{?pclinuxos}
 %debug_package
 %endif
 
 
 %prep
-%setup -q -n %{kdecomp}-3.5.13.1
-%patch0 -p1
+%setup -q -n %{tdecomp}-trinity-%{tdeversion}
 
 # Hard-coded path to TQT binaries spotted !!!
 %__sed -i CMakeLists.txt \
 	-e "s|/usr/bin/uic-tqt|%{tde_bindir}/uic-tqt|g" \
 	-e "s|/usr/bin/tmoc|%{tde_bindir}/tmoc|g" \
 	-e "s|/usr/include/tqt|%{tde_includedir}/tqt|g"
+
+
+%__sed -i 's/TQT_PREFIX/TDE_PREFIX/g' cmake/modules/FindTQt.cmake
 
 %build
 unset QTDIR && . %{_sysconfdir}/profile.d/qt3.sh
@@ -130,10 +137,9 @@ export CMAKE_INCLUDE_PATH="%{tde_includedir}:%{tde_includedir}/tqt:%{tde_tdeincl
 cd build
 %endif
 
-### FIXME FIXME FIXME !!! FTBFS on Mageia 2 / Mandriva 2011
-export LDFLAGS="${LDFLAGS} -lXft -lfontconfig -lkio -lkdeprint -llrdf -lfftw3f -llirc_client -ljack"
-
 %cmake \
+  -DCMAKE_PREFIX_PATH=%{tde_prefix} \
+  -DTDE_PREFIX=%{tde_prefix} \
   -DCMAKE_INSTALL_PREFIX=%{tde_prefix} \
   -DBIN_INSTALL_DIR=%{tde_bindir} \
   -DINCLUDE_INSTALL_DIR=%{tde_tdeincludedir} \
@@ -145,11 +151,7 @@ export LDFLAGS="${LDFLAGS} -lXft -lfontconfig -lkio -lkdeprint -llrdf -lfftw3f -
   -DWANT_SOUND=ON \
   -DWANT_JACK=ON \
   -DWANT_DSSI=ON \
-%if 0%{?fedora} || 0%{?mgaversion} || 0%{?mdkversion}
-  -DWANT_LIRC=ON \
-%else
-  -DWANT_LIRC=OFF \
-%endif
+  %{?with_lirc:-DWANT_LIRC=ON} %{?!with_lirc:-DWANT_LIRC=OFF} \
   -DWANT_PCH=OFF \
   -DWANT_TEST=OFF \
   -DBUILD_ALL=ON \
@@ -164,7 +166,7 @@ export PATH="%{tde_bindir}:${PATH}"
 %__make install DESTDIR=%{buildroot} -C build
 
 
-%find_lang %{kdecomp}
+%find_lang %{tdecomp}
 
 %clean
 %__rm -rf %{buildroot}
@@ -193,7 +195,7 @@ done
 %{tde_bindir}/rosegarden-project-package
 %{tde_bindir}/rosegardensequencer
 
-%files data -f %{kdecomp}.lang
+%files data -f %{tdecomp}.lang
 %defattr(-,root,root,-)
 %{tde_tdeappdir}/rosegarden.desktop
 %{tde_datadir}/apps/profiles/rosegarden.profile.xml
@@ -211,12 +213,18 @@ done
 
 
 %changelog
+* Wed Aug 07 2013 Liu Di <liudidi@gmail.com> - 1.7.0-5.opt
+- 为 Magic 3.0 重建
+
+* Mon Jun 03 2013 Francois Andriot <francois.andriot@free.fr> - 1.7.0-4
+- Initial release for TDE 3.5.13.2
+
 * Wed Oct 03 2012 Francois Andriot <francois.andriot@free.fr> - 1.7.0-3
-- Initial build for TDE 3.5.13.1
+- Initial release for TDE 3.5.13.1
 
 * Sun Apr 06 2012 Francois Andriot <francois.andriot@free.fr> - 1.7.0-2
 - Updated to build with gcc 4.7. [Commit #15276f36]
 - Enables JACK support
 
 * Sat Nov 26 2011 Francois Andriot <francois.andriot@free.fr> - 1.7.0-1
-- Initial build for RHEL 5, RHEL 6, Fedora 15, Fedora 16
+- Initial release for RHEL 5, RHEL 6, Fedora 15, Fedora 16
