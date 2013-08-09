@@ -24,10 +24,10 @@
 %define _docdir %{tde_docdir}
 
 
-Name:		trinity-%{tdecomp}
+Name:		trinity-tdesvn
 Summary:	subversion client with tight KDE integration [Trinity]
 Version:	1.0.4
-Release:	6%{?dist}%{?_variant}
+Release:	7%{?dist}%{?_variant}
 
 License:	GPLv2+
 Group:		Applications/Utilities
@@ -272,6 +272,9 @@ fi
 
 
 %changelog
+* Fri Aug 09 2013 Liu Di <liudidi@gmail.com> - 1.0.4-7.opt
+- 为 Magic 3.0 重建
+
 * Fri Aug 09 2013 Liu Di <liudidi@gmail.com> - 1.0.4-6.opt
 - 为 Magic 3.0 重建
 
