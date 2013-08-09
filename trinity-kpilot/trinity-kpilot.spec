@@ -1,5 +1,6 @@
 # Default version for this component
-%define kdecomp kpilot
+%define tdecomp kpilot
+%define tdeversion 3.5.13.2
 
 # If TDE is built in a specific prefix (e.g. /opt/trinity), the release will be suffixed with ".opt".
 %if "%{?tde_prefix}" != "/usr"
@@ -23,10 +24,10 @@
 %define _docdir %{tde_docdir}
 
 
-Name:		trinity-%{kdecomp}
+Name:		trinity-%{tdecomp}
 Summary:	TDE Palm Pilot hot-sync tool
 Version:	0.7
-Release:	3%{?dist}%{?_variant}
+Release:	5%{?dist}%{?_variant}
 
 License:	GPLv2+
 Group:		Applications/Utilities
@@ -38,15 +39,12 @@ URL:		http://www.trinitydesktop.org
 Prefix:    %{tde_prefix}
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	%{kdecomp}-3.5.13.1.tar.gz
+Source0:	%{tdecomp}-trinity-%{tdeversion}.tar.xz
 
-# Fix FTBFS
-Patch0:		kpilot-3.5.13-ftbfs.patch
-Patch1:		kpilot-3.5.13.1-fix_ftbfs.patch
 
-BuildRequires:	trinity-tqtinterface-devel >= 3.5.13.1
-BuildRequires:	trinity-tdelibs-devel >= 3.5.13.1
-BuildRequires:	trinity-tdebase-devel >= 3.5.13.1
+BuildRequires:	trinity-tqtinterface-devel >= 3.5.13.2
+BuildRequires:	trinity-tdelibs-devel >= 3.5.13.2
+BuildRequires:	trinity-tdebase-devel >= 3.5.13.2
 BuildRequires:	desktop-file-utils
 BuildRequires:	gettext
 
@@ -60,15 +58,13 @@ software does for Windows.  KPilot can back-up and restore your Palm Pilot
 and synchronize the built-in applications with their KDE counterparts.
 
 
-%if 0%{?suse_version}
+%if 0%{?suse_version} || 0%{?pclinuxos}
 %debug_package
 %endif
 
 
 %prep
-%setup -q -n %{kdecomp}-3.5.13.1
-%patch0 -p1
-%patch1 -p1
+%setup -q -n %{tdecomp}-trinity-%{tdeversion}
 
 # Ugly hack to modify TQT include directory inside autoconf files.
 # If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
@@ -163,6 +159,8 @@ done
 %{tde_tdelibdir}/conduit_vcal.so
 %{tde_tdelibdir}/kcm_kpilot.la
 %{tde_tdelibdir}/kcm_kpilot.so
+%{tde_tdelibdir}/conduit_mal.la
+%{tde_tdelibdir}/conduit_mal.so
 %{tde_tdeappdir}/kpalmdoc.desktop
 %{tde_tdeappdir}/kpilot.desktop
 %{tde_tdeappdir}/kpilotdaemon.desktop
@@ -179,11 +177,17 @@ done
 
 
 %changelog
+* Fri Aug 09 2013 Liu Di <liudidi@gmail.com> - 0.7-5.opt
+- 为 Magic 3.0 重建
+
+* Mon Jun 03 2013 Francois Andriot <francois.andriot@free.fr> - 0.7-4
+- Initial release for TDE 3.5.13.2
+
 * Wed Oct 03 2012 Francois Andriot <francois.andriot@free.fr> - 0.7-3
-- Initial build for TDE 3.5.13.1
+- Initial release for TDE 3.5.13.1
 
 * Wed May 02 2012 Francois Andriot <francois.andriot@free.fr> - 0.7-2
 - Rebuild for Fedora 17
 
 * Wed Nov 30 2011 Francois Andriot <francois.andriot@free.fr> - 0.7-1
-- Initial build for RHEL 5, RHEL 6, Fedora 15, Fedora 16
+- Initial release for RHEL 5, RHEL 6, Fedora 15, Fedora 16
