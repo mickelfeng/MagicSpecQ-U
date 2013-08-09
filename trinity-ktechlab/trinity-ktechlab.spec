@@ -1,5 +1,6 @@
 # Default version for this component
-%define kdecomp ktechlab
+%define tdecomp ktechlab
+%define tdeversion 3.5.13.2
 
 # If TDE is built in a specific prefix (e.g. /opt/trinity), the release will be suffixed with ".opt".
 %if "%{?tde_prefix}" != "/usr"
@@ -23,10 +24,10 @@
 %define _docdir %{tde_docdir}
 
 
-Name:		trinity-%{kdecomp}
+Name:		trinity-%{tdecomp}
 Summary:	circuit simulator for microcontrollers and electronics [Trinity]
 Version:	0.3
-Release:	3%{?dist}%{?_variant}
+Release:	6%{?dist}%{?_variant}
 
 License:	GPLv2+
 Group:		Applications/Utilities
@@ -38,14 +39,11 @@ URL:		http://www.trinitydesktop.org/
 Prefix:    %{tde_prefix}
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	%{kdecomp}-3.5.13.1.tar.gz
+Source0:	%{tdecomp}-trinity-%{tdeversion}.tar.xz
 
-# [ktechlab] Removes harcoded gpsim linking
-Patch1:		ktechlab-3.5.13.1-remove_gpsim_link.patch
-
-BuildRequires:	trinity-tqtinterface-devel >= 3.5.13.1
-BuildRequires:	trinity-tdelibs-devel >= 3.5.13.1
-BuildRequires:	trinity-tdebase-devel >= 3.5.13.1
+BuildRequires:	trinity-tqtinterface-devel >= 3.5.13.2
+BuildRequires:	trinity-tdelibs-devel >= 3.5.13.2
+BuildRequires:	trinity-tdebase-devel >= 3.5.13.2
 BuildRequires:	desktop-file-utils
 BuildRequires:	gettext
 
@@ -58,14 +56,13 @@ as PIC programming in its own Basic dialect and some form of assembler.
 Homepage: http://ktechlab.org/
 
 
-%if 0%{?suse_version}
+%if 0%{?suse_version} || 0%{?pclinuxos}
 %debug_package
 %endif
 
 
 %prep
-%setup -q -n %{kdecomp}-3.5.13.1
-%patch1 -p1 -b .gpsim
+%setup -q -n %{tdecomp}-trinity-%{tdeversion}
 
 # Ugly hack to modify TQT include directory inside autoconf files.
 # If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
@@ -102,7 +99,7 @@ export PATH="%{tde_bindir}:${PATH}"
 %__rm -rf %{buildroot}
 %__make install DESTDIR=%{buildroot}
 
-%find_lang %{kdecomp}
+%find_lang %{tdecomp}
 
 %clean
 %__rm -rf %{buildroot}
@@ -117,7 +114,7 @@ touch --no-create %{tde_datadir}/icons/hicolor || :
 gtk-update-icon-cache --quiet %{tde_datadir}/icons/hicolor || :
 
 
-%files -f %{kdecomp}.lang
+%files -f %{tdecomp}.lang
 %defattr(-,root,root,-)
 %{tde_bindir}/ktechlab
 %{tde_bindir}/microbe
@@ -134,12 +131,21 @@ gtk-update-icon-cache --quiet %{tde_datadir}/icons/hicolor || :
 
 
 %changelog
+* Fri Aug 09 2013 Liu Di <liudidi@gmail.com> - 0.3-6.opt
+- 为 Magic 3.0 重建
+
+* Fri Aug 09 2013 Liu Di <liudidi@gmail.com> - 0.3-5.opt
+- 为 Magic 3.0 重建
+
+* Mon Jun 03 2013 Francois Andriot <francois.andriot@free.fr> - 0.3-4
+- Initial release for TDE 3.5.13.2
+
 * Wed Oct 03 2012 Francois Andriot <francois.andriot@free.fr> - 0.3-3
-- Initial build for TDE 3.5.13.1
+- Initial release for TDE 3.5.13.1
 
 * Fri Nov 25 2011 Francois Andriot <francois.andriot@free.fr> - 0.3-2
 - Fix HTML directory location
 
 * Thu Nov 24 2011 Francois Andriot <francois.andriot@free.fr> - 0.3-1
-- Initial build for RHEL 5, RHEL 6, Fedora 15, Fedora 16
+- Initial release for RHEL 5, RHEL 6, Fedora 15, Fedora 16
 - Fix list of icons to install [Bug #990]
