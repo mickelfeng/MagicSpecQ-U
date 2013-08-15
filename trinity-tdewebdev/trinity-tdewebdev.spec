@@ -19,7 +19,7 @@
 %define _docdir %{tde_docdir}
 
 Name:		trinity-tdewebdev
-Version:	3.5.13.1
+Version:	3.5.13.2
 Release:	1%{?dist}%{?_variant}
 License:	GPL
 Summary:	Web development applications 
@@ -32,14 +32,13 @@ URL:		http://www.trinitydesktop.org/
 Prefix:		%{tde_prefix}
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Source0:	kdewebdev-3.5.13.1.tar.gz
+Source0:	kdewebdev-trinity-%{version}.tar.xz
 Source1:	http://download.sourceforge.net/quanta/css.tar.bz2
 Source2:	http://download.sourceforge.net/quanta/html.tar.bz2
 Source3:	http://download.sourceforge.net/quanta/php_manual_en_20030401.tar.bz2
 Source4:	http://download.sourceforge.net/quanta/javascript.tar.bz2
 Source5:	hi48-app-kxsldbg.png
 
-Patch0:		javascript.patch
 Patch1:		kdewebdev-3.5.4-kxsldbg-icons.patch
 
 BuildRequires:	autoconf automake libtool m4
@@ -54,6 +53,11 @@ BuildRequires:	libgcrypt-devel
 %endif
 BuildRequires:	perl
 
+# KXSLDBG requires libxml2
+#if 0%{?mgaversion} || 0%{?mdkversion} || 0%{?rhel} >= 5 || ( 0%{?fedora} > 0 && %{?fedora} <= 17 ) || 0%{?suse_version}
+%define build_kxsldbg 1
+#endif
+
 
 Obsoletes:	trinity-kdewebdev-libs < %{version}-%{release}
 Provides:	trinity-kdewebdev-libs = %{version}-%{release}
@@ -66,8 +70,7 @@ Requires: trinity-kfilereplace = %{version}-%{release}
 Requires: trinity-kimagemapeditor = %{version}-%{release}
 Requires: trinity-klinkstatus = %{version}-%{release}
 Requires: trinity-kommander = %{version}-%{release}
-Requires: trinity-kxsldbg = %{version}-%{release}
-
+%{?build_kxsldbg:Requires: trinity-kxsldbg = %{version}-%{release}}
 
 %description
 %{summary}, including:
@@ -75,8 +78,8 @@ Requires: trinity-kxsldbg = %{version}-%{release}
 * kimagemapeditor: HTML image map editor
 * klinkstatus: link checker
 * kommander: visual dialog building tool
-* kxsldbg: xslt Debugger
 * quanta+: web development
+%{?build_kxsldbg:* kxsldbg: xslt Debugger}
 
 %files
 
@@ -325,7 +328,6 @@ This package is part of TDE, as a component of the TDE web development module.
 %{tde_tdeappdir}/kmdr-editor.desktop
 %{tde_datadir}/applnk/.hidden/kmdr-executor.desktop
 %{tde_datadir}/apps/katepart/syntax/kommander.xml
-%{tde_datadir}/apps/kommander/pics/kommandersplash.png
 %{tde_tdedocdir}/HTML/en/kommander/
 %{tde_datadir}/icons/crystalsvg/*/apps/kommander.png
 %{tde_datadir}/mimelnk/application/x-kommander.desktop
@@ -395,6 +397,8 @@ This package is part of TDE, as a component of the TDE web development module.
 
 ##########
 
+%if 0%{?build_kxsldbg}
+
 %package -n trinity-kxsldbg
 Summary:	graphical XSLT debugger for KDE [Trinity]
 Group:		Applications/Development
@@ -448,6 +452,8 @@ for f in hicolor locolor ; do
 done
 update-desktop-database %{tde_datadir}/applications > /dev/null 2>&1 || :
 
+%endif
+
 ##########
 
 %package devel
@@ -467,16 +473,20 @@ Requires:	trinity-kommander-devel = %{version}-%{release}
 
 ##########
 
-%if 0%{?suse_version}
+%if 0%{?suse_version} || 0%{?pclinuxos}
 %debug_package
 %endif
 
 ##########
 
 %prep
-%setup -q -a 1 -a 2 -a 3 -a 4 -n kdewebdev-3.5.13.1
-%patch0 -p0 -b .javascript
+%setup -q -n kdewebdev-trinity-%{version} -a 1 -a 2 -a 3 -a 4
 %patch1 -p1 -b .kxsldbg-icons
+
+%__install -m644 -p %{SOURCE5} kxsldbg/
+%if 0%{?build_kxsldbg} == 0
+%__rm -rf kxsldbg/ doc/kxsldbg/ doc/xsldbg/
+%endif
 
 # Ugly hack to modify TQT include directory inside autoconf files.
 # If TQT detection fails, it fallbacks to TQT4 instead of TQT3 !
@@ -488,14 +498,18 @@ Requires:	trinity-kommander-devel = %{version}-%{release}
 %__cp -f "/usr/share/libtool/config/ltmain.sh" "admin/ltmain.sh" || %__cp -f "/usr/share/libtool/ltmain.sh" "admin/ltmain.sh"
 %__make -f "admin/Makefile.common"
 
-
-%__install -m644 -p %{SOURCE5} kxsldbg/
-
-
 %build
 unset QTDIR || : ; source /etc/profile.d/qt3.sh
 export PATH="%{tde_bindir}:${PATH}"
 export LDFLAGS="-L%{tde_libdir} -I%{tde_includedir}"
+
+# Do not build against any "/usr" installed KDE
+export KDEDIR="%{tde_prefix}"
+
+# Specific path for RHEL4
+if [ -d "/usr/X11R6" ]; then
+  export CXXFLAGS="${RPM_OPT_FLAGS} -I/usr/X11R6/include -L/usr/X11R6/%{_lib}"
+fi
 
 %configure \
   --prefix=%{tde_prefix} \
@@ -511,7 +525,13 @@ export LDFLAGS="-L%{tde_libdir} -I%{tde_includedir}"
   --disable-dependancy-tracking --enable-final \
   --with-extra-includes=%{tde_includedir}/tqt \
 
-%__make %{?_smp_mflags}
+# WTF hack for RHEL4
+%if 0%{?rhel} == 4
+mkdir  kommander/plugin/.libs/
+ln -s . kommander/plugin/.libs/.libs
+%endif
+
+%__make %{?_smp_mflags} || %__make
 
 
 %install
@@ -549,5 +569,5 @@ popd
 
 
 %changelog
-* Sun Sep 30 2012 Francois Andriot <francois.andriot@free.fr> - 3.5.13.1-1
-- Initial build for TDE 3.5.13.1
+* Mon Jun 03 2013 Francois Andriot <francois.andriot@free.fr> - 3.5.13.2-1
+- Initial release for TDE 3.5.13.2
