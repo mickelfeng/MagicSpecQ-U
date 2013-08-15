@@ -27,7 +27,7 @@ AutoReq: no
 Name:			trinity-kickoff-i18n
 Summary:		Kickoff translations for Trinity Desktop Environment
 Version:		1.0
-Release:	2%{?dist}%{?_variant}
+Release:	3%{?dist}%{?_variant}
 Group:			System/Internationalization
 License:		GPL
 URL:			http://www.mandriva.com
@@ -44,8 +44,8 @@ Patch3:			kickoff-i18n-1.0-fix_autotools_detection.patch
 BuildRoot:		%{_tmppath}/%{name}-%{version}-%{release}-buildroot
 BuildArch:		noarch
 
-BuildRequires:	qt3-devel
-BuildRequires:	trinity-tdelibs-devel >= 3.5.13.1
+BuildRequires:	qt-devel
+BuildRequires:	trinity-tdelibs-devel >= 3.5.13.2
 
 %description
 kickoff translations
@@ -85,6 +85,7 @@ export LDFLAGS="-L%{tde_libdir} -I%{tde_includedir}"
 %__rm -fr %{buildroot}
 %__make install DESTDIR=%{?buildroot}
 
+magic_rpm_clean.sh
 %find_lang kickoff
 
 %clean
@@ -94,8 +95,11 @@ export LDFLAGS="-L%{tde_libdir} -I%{tde_includedir}"
 %defattr(-,root,root,-)
 
 %changelog
+* Sat Jan 19 2013 Francois Andriot <francois.andriot@free.fr> - 1.0-3
+- Initial release for TDE 3.5.13.2
+
 * Wed Oct 03 2012 Francois Andriot <francois.andriot@free.fr> - 1.0-2
-- Initial build for TDE 3.5.13.1
+- Initial release for TDE 3.5.13.1
 
 * Fri Aug 03 2012 Francois Andriot <francois.andriot@free.fr> - 1.0-1
-- Initial build for TDE 3.5.13
+- Initial release for TDE 3.5.13
